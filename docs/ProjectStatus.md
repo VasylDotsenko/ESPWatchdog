@@ -1,0 +1,211 @@
+# ESP Watchdog — Project Status
+
+Дата: 28.07.2026
+
+## Поточний статус
+
+Проєкт знаходиться у стані інтеграційної стабілізації після завершення базового runtime, HealthCheck, Watchdog decision-layer та початку переходу на Tuya LAN керування зовнішнім реле `TCOGCZ16-A`.
+
+Основний напрямок роботи зараз:
+
+- побудова Tuya LAN stack;
+- реалізація `TuyaCrypto`;
+- реалізація `TuyaPacket`;
+- реалізація `TuyaProtocol`;
+- інтеграція `WatchdogService -> TuyaService`;
+- заміна GPIO-реле на мережевий Tuya power-controller.
+
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.5-tuya-packet`.
+
+## Вже зроблено
+
+### Core
+
+- створено `Application`;
+- створено `IService`;
+- створено неблокуючий `Timer`;
+- додано `Version.h`;
+- додано `BuildInfo.h`;
+- `Application` переведено на глобальні сервіси:
+  - `Log`;
+  - `Config`;
+  - `Network`;
+  - `System`;
+  - `HealthCheck`;
+- виправлено помилку з неіснуючим глобальним сервісом `Health`;
+- додано підключення `IcmpProvider` через `HealthCheck.setProvider(IcmpProvider)`;
+- узгоджено швидкість `Logger` із `monitor_speed = 74880`.
+
+### Logger
+
+- реалізовано `Logger` з рівнями:
+  - `Error`;
+  - `Warning`;
+  - `Info`;
+  - `Debug`;
+  - `Verbose`;
+- додано підтримку форматування у стилі `printf`;
+- додано підтримку RAM-рядків `const char*`;
+- додано підтримку Flash-рядків `F(...)`;
+- усунуто конфлікти з викликами `Log.info(...)`, `Log.warning(...)`, `Log.error(...)`.
+
+### Storage
+
+- `Storage` синхронізовано з новим `Logger`;
+- прибрано логування через конкатенацію `String`;
+- повідомлення переведено на формат `printf`;
+- покращено діагностику помилок файлової системи та JSON.
+
+### Models
+
+- створено каталог `Models`;
+- створено `Common.h`;
+- створено `SystemData.h`;
+- створено `NetworkData.h`;
+- створено `HealthCheckData.h`;
+- створено `ConfigData.h`;
+- прийнято правило: у моделях не зберігати `String`;
+- `SystemData` переведено на фіксовані `char[]`;
+- `NetworkData` відв'язано від Arduino `IPAddress`;
+- додано власний тип `IPv4Address`.
+
+### SystemInfo
+
+- `SystemInfoService` синхронізовано з `SystemData`;
+- сервіс більше не відповідає за форматований вивід;
+- прибрано `print()` із сервісу;
+- прибрано прямі залежності від `Logger`;
+- дані прошивки, пам'яті, CPU та uptime зберігаються в `SystemData`.
+
+### WiFiService
+
+- `WiFiService` синхронізовано з новою моделлю `NetworkData`;
+- глобальний екземпляр сервісу зафіксовано як `Network`;
+- прибрано конфлікт із глобальним `ESP8266WiFi::WiFi`;
+- прибрано логування через `String`;
+- IP-адреси переводяться у власний `IPv4Address`;
+- додано збереження:
+  - стану підключення;
+  - hostname;
+  - SSID;
+  - IP;
+  - gateway;
+  - subnet;
+  - DNS;
+  - RSSI;
+  - якості сигналу;
+  - статистики перепідключень.
+
+### Network
+
+- створено базову архітектуру `Network/Common`;
+- створено `NetworkTypes.h`;
+- створено `NetworkResult.h`;
+- створено `INetworkSession.h`;
+- створено фінальну архітектуру `IcmpSession`;
+- ICMP реалізація переведена на native ESP8266 SDK `ping_start()`;
+- прибрано залежність від старого blocking `executePing`;
+- ICMP працює як асинхронна сесія через lwIP callback.
+
+### HealthCheck
+
+- створено `HealthCheckService`;
+- створено `HealthCheckResult`;
+- створено `HealthCheckInfo`;
+- створено `IHealthCheckProvider`;
+- створено `IcmpHealthCheckProvider`;
+- `HealthCheckService` працює через Dependency Injection;
+- `IcmpHealthCheckProvider` підключає `IcmpSession` до сервісу HealthCheck;
+- виправлено проблему з неоголошеним `Health`;
+- прийнято глобальний екземпляр:
+  - `HealthCheckService HealthCheck`;
+  - `IcmpHealthCheckProvider IcmpProvider`.
+
+### WatchdogService
+
+- створено `Models/WatchdogData.h`;
+- створено `WatchdogService.h`;
+- створено `WatchdogService.cpp`;
+- реалізовано decision-layer;
+- реалізовано `restartRequired()`;
+- реалізовано `restartCompleted()`;
+- додано захист від перевищення `maxRestartPerDay`;
+- додано cooldown через `bootDelay`.
+
+### Relay / PowerService
+
+- GPIO-based `RelayService` створено як проміжний етап, але після уточнення hardware визнано непридатним для `TCOGCZ16-A`;
+- керування живленням потрібно виконувати через Tuya LAN protocol;
+- `RelayService` не вважається фінальним power-controller для цього проєкту.
+
+### Tuya
+
+- у проєкті з'явився каталог `Services/Tuya`;
+- створено заготовки:
+  - `TuyaService.h`;
+  - `TuyaService.cpp`;
+  - `TuyaPacket.h`;
+  - `TuyaPacket.cpp`;
+- реалізовано:
+  - `TuyaCrypto.h`;
+  - `TuyaCrypto.cpp`;
+- реалізовано:
+  - `TuyaPacket.cpp`;
+- `TuyaCrypto` компілюється на ESP8266 `d1_mini`;
+- реалізовано AES-128-ECB + PKCS#7 як базу для Tuya LAN protocol `3.3/3.4`.
+- `TuyaPacket` реалізує binary framing, CRC32, prefix/suffix validation та payload extraction.
+
+## Поточні готові файли для інтеграції
+
+У каталозі `outputs/` підготовлено актуальні версії:
+
+- `Application.cpp`;
+- `Version.h`;
+- `BuildInfo.h`;
+- `platformio.ini`;
+- `Changelog.md`;
+- `Config.h`;
+- `ConfigDefaults.cpp`;
+- `ConfigJson.cpp`;
+- `config.json`;
+- `IcmpSession.h`;
+- `IcmpSession.cpp`;
+- `IcmpHealthCheckProvider.h`;
+- `IcmpHealthCheckProvider.cpp`;
+- `Storage.cpp`;
+- `SystemInfo.cpp`;
+- `WiFiService.h`;
+- `WiFiService.cpp`;
+- `WatchdogData.h`;
+- `WatchdogService.h`;
+- `WatchdogService.cpp`;
+- `RelayData.h`;
+- `RelayService.h`;
+- `RelayService.cpp`;
+- `TuyaCrypto.h`;
+- `TuyaCrypto.cpp`;
+- `TuyaPacket.h`;
+- `TuyaPacket.cpp`;
+- `TuyaService.h`;
+- `TuyaService.cpp`.
+
+## Відомі ризики
+
+- повна збірка проєкту після копіювання всіх файлів ще потребує перевірки;
+- частина старих файлів може містити застарілі include-шляхи;
+- GPIO-based `RelayService` не відповідає реальному hardware `TCOGCZ16-A`;
+- Tuya LAN protocol ще не завершено;
+- потрібні реальні `ip`, `deviceId`, `localKey`, `version`, `relayDps`;
+- `localKey` не можна логувати або дублювати у відкритих звітах;
+- потрібно перевірити, що Serial Monitor і `Log.begin(...)` використовують однакову швидкість;
+- потрібно поступово винести форматування в `Formatters/LogFormatter`.
+
+## Наступні кроки
+
+1. Скопіювати актуальні Tuya-файли з `outputs/` у проєкт.
+2. Запустити повну збірку PlatformIO.
+3. Реалізувати `TuyaProtocol`.
+4. Реалізувати Tuya payload encryption/decryption.
+5. Реалізувати command для `relayDps`.
+6. Підключити `WatchdogService` до `TuyaService`.
+7. Провести hardware smoke-test із `TCOGCZ16-A`.

@@ -9,4 +9,4 @@
 *.tmp
 *.bak
 *.orig
-data/config.local.json
+data/

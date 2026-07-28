@@ -1,64 +1,59 @@
 # ESP Watchdog
 
-**ESP Watchdog** — автономний апаратний watchdog для віддаленого перезапуску серверів та іншого мережевого обладнання.
+ESP Watchdog — автономний мережевий watchdog на базі ESP8266, призначений для автоматичного відновлення роботи серверів, Home Assistant та іншого мережевого обладнання шляхом циклічного контролю доступності та дистанційного перезапуску живлення через Tuya Wi-Fi Smart Plug.
 
-Проєкт побудований на **ESP8266 (WeMos D1 mini)** і працює незалежно від Home Assistant або будь-якого іншого сервера.
-
----
-
-## Основні можливості
-
-* Автоматичний контроль доступності сервера.
-* Перевірка доступності за допомогою ICMP Ping.
-* Автоматичний перезапуск живлення через Wi-Fi розетку.
-* Незалежна робота без Home Assistant.
-* Веб-інтерфейс для налаштування.
-* OTA оновлення прошивки.
-* Автоматичне перепідключення до Wi-Fi.
-* Зберігання конфігурації у LittleFS.
-* Детальна система логування.
-* Модульна архітектура.
+Проєкт розробляється як повністю незалежний пристрій і не потребує Home Assistant, MQTT або будь-якого зовнішнього сервера для роботи.
 
 ---
 
-# Апаратна платформа
+## Поточний статус
 
-* ESP8266 WeMos D1 mini
-* Wi-Fi 2.4 GHz
-* LittleFS
-* PlatformIO
-* Arduino Framework
+**Версія:** `v0.4.5-tuya-packet`
+
+Статус:
+
+> 🚧 Active Development
+
+Основний напрямок розробки:
+
+- Tuya LAN Protocol
+- Tuya AES Encryption
+- Packet Layer
+- Power Controller
+- Web Configuration
+- OTA Update
 
 ---
 
-# Призначення
+# Основні можливості
 
-Основна задача пристрою — автоматично відновлювати роботу обладнання у випадках, коли воно перестає відповідати по мережі.
+## Реалізовано
 
-Типовий сценарій:
+- модульна сервісна архітектура;
+- неблокуючий runtime;
+- централізований Logger;
+- файлова система LittleFS;
+- JSON-конфігурація;
+- Wi-Fi Service;
+- System Information Service;
+- власний Timer;
+- власний ICMP Ping стек;
+- Health Check Service;
+- Watchdog Decision Engine;
+- захист від циклічних перезапусків;
+- Dependency Injection для Health Providers.
 
-```
-Home Assistant
-        │
-        │ Ping
-        ▼
- ESP Watchdog
-        │
-        │ HTTP / Tuya
-        ▼
- Wi-Fi Smart Plug
-        │
-        ▼
- Home Assistant Power
-```
+---
 
-У випадку втрати зв'язку:
+## У розробці
 
-1. Виконується декілька перевірок Ping.
-2. Якщо сервер недоступний — вимикається Wi-Fi розетка.
-3. Через заданий час живлення знову подається.
-4. Watchdog очікує завершення завантаження сервера.
-5. Контроль продовжується.
+- Tuya LAN Protocol
+- Tuya Packet Layer
+- Tuya Crypto (AES)
+- Smart Plug Controller
+- Web UI
+- OTA Update
+- Event Log
 
 ---
 
@@ -67,28 +62,75 @@ Home Assistant
 ```
 Application
 │
-├── Logger
+├── Core
+│   ├── IService
+│   ├── Timer
+│   └── Logger
+│
+├── Models
+│
 ├── Storage
+│
 ├── Config
-├── SystemInfo
+│
 ├── Network
-├── Timer
-├── Ping
-├── PlugController
-├── Watchdog
-├── WebServer
-└── OTA
+│   ├── IcmpSession
+│   ├── NetworkResult
+│   └── NetworkTypes
+│
+├── Services
+│   ├── WiFiService
+│   ├── SystemInfoService
+│   ├── HealthCheckService
+│   └── WatchdogService
+│
+└── Tuya (WIP)
+    ├── TuyaPacket
+    ├── TuyaCrypto
+    ├── TuyaProtocol
+    └── TuyaService
 ```
 
-Кожен сервіс має однаковий життєвий цикл:
+---
+
+# Алгоритм роботи
 
 ```
-begin()
-
-loop()
-
-data()
+              Ping
+                 │
+                 ▼
+        HealthCheck Service
+                 │
+         Server available?
+          │            │
+         Yes           No
+          │             │
+          │      Retry policy
+          │             │
+          │      Restart required?
+          │             │
+          │            Yes
+          │             │
+          ▼             ▼
+      Continue     Tuya Power OFF
+                        │
+                    Boot Delay
+                        │
+                  Tuya Power ON
+                        │
+                 Continue monitoring
 ```
+
+---
+
+# Використані технології
+
+- ESP8266
+- Arduino Framework
+- PlatformIO
+- LittleFS
+- ArduinoJson
+- lwIP Native Ping API
 
 ---
 
@@ -96,113 +138,90 @@ data()
 
 ```
 src/
+│
+├── Core/
+├── Models/
+├── Network/
+├── Services/
+├── Storage/
+└── main.cpp
 
-Application.*
-
-Logger.*
-
-Storage.*
-
-Config.*
-
-SystemInfo.*
-
-WiFiService.*
-
-Timer.*
-
-PingService.*
-
-WatchdogService.*
-
-WebServer.*
-
-OTAService.*
-
-Version.h
+docs/
+│
+├── Architecture.md
+├── CodingStyle.md
+├── Roadmap.md
+├── ProjectStatus.md
+└── Changelog.md
 ```
 
 ---
 
-# Принципи розробки
+# Конфігурація
 
-* Один сервіс — одна відповідальність.
-* Мінімальна зв'язаність між модулями.
-* Відсутність блокуючих `delay()`.
-* Використання машин станів (State Machine).
-* Використання `constexpr` замість `#define`.
-* Єдиний стиль іменування.
-* Повторне використання компонентів.
-* Простота тестування окремих модулів.
+Конфігурація зберігається у LittleFS.
 
----
+Основні параметри:
 
-# Використані бібліотеки
-
-* ESP8266 Arduino Core
-* ArduinoJson
-* LittleFS
-
-У майбутньому:
-
-* ESP8266Ping
-* ESPAsyncWebServer (або альтернативний HTTP Server)
-* ArduinoOTA
+- Wi-Fi
+- Hostname
+- Target IP
+- Ping Interval
+- Retry Count
+- Restart Delay
+- Maximum Restarts Per Day
+- Tuya Device ID
+- Local Key
 
 ---
 
-# План розвитку
-
-## v0.1
-
-* Logger
-* Storage
-* Config
-
-## v0.2
-
-* SystemInfo
-
-## v0.3
-
-* WiFiService
-
-## v0.4
-
-* Timer
+# Roadmap
 
 ## v0.5
 
-* PingService
+- Tuya Packet
+- AES Encryption
 
 ## v0.6
 
-* PlugController
+- Tuya Protocol
 
 ## v0.7
 
-* WatchdogService
+- Tuya Service
 
 ## v0.8
 
-* WebServer
+- Web Configuration
 
 ## v0.9
 
-* OTA
+- OTA Update
 
 ## v1.0
 
-Перша стабільна версія.
+Перша production-ready версія.
+
+---
+
+# Документація
+
+Проєкт містить окрему технічну документацію:
+
+- Architecture.md
+- CodingStyle.md
+- Roadmap.md
+- ProjectStatus.md
+- Changelog.md
 
 ---
 
 # Ліцензія
 
-Проєкт розробляється як відкритий модульний watchdog для ESP8266.
+MIT License
 
 ---
 
 # Автор
 
-Vasyl Dotsenko
+**Vasyl Dotsenko**

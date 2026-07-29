@@ -1,227 +1,438 @@
 # ESP Watchdog
 
-ESP Watchdog — автономний мережевий watchdog на базі ESP8266, призначений для автоматичного відновлення роботи серверів, Home Assistant та іншого мережевого обладнання шляхом циклічного контролю доступності та дистанційного перезапуску живлення через Tuya Wi-Fi Smart Plug.
+**ESP Watchdog** — автономний мережевий watchdog на базі **ESP8266 / WeMos D1 mini** для контролю доступності обладнання та автоматичного перезапуску живлення через зовнішній Tuya LAN power controller.
 
-Проєкт розробляється як повністю незалежний пристрій і не потребує Home Assistant, MQTT або будь-якого зовнішнього сервера для роботи.
+Поточний інтеграційний стан:
+
+```text
+0.4.7-tuya-service
+```
+
+Production target:
+
+```text
+1.0.0
+```
+
+---
+
+## Призначення
+
+Пристрій періодично перевіряє доступність цільового вузла через ICMP Ping. Якщо вузол не відповідає задану кількість разів поспіль, watchdog ініціює power-cycle зовнішнього реле / Wi-Fi power controller.
+
+Цільовий hardware для power control:
+
+```text
+TCOGCZ16-A через Tuya LAN protocol
+```
+
+Типовий сценарій:
+
+```text
+Target Host
+    │
+    │ ICMP Ping
+    ▼
+ESP Watchdog
+    │
+    │ Tuya LAN
+    ▼
+TCOGCZ16-A
+    │
+    ▼
+Power Cycle
+```
 
 ---
 
 ## Поточний статус
 
-**Версія:** `v0.4.5-tuya-packet`
+Проєкт перебуває на етапі інтеграційної стабілізації.
 
-Статус:
+Вже підтверджено:
 
-> 🚧 Active Development
+- boot на ESP8266;
+- Logger;
+- LittleFS Storage;
+- Config loading;
+- WiFi connection;
+- ICMP HealthCheck;
+- HealthCheck `ONLINE`;
+- Watchdog decision-layer;
+- базовий Tuya LAN stack:
+  - `TuyaCrypto`;
+  - `TuyaPacket`;
+  - `TuyaProtocol`;
+  - `TuyaService`.
 
-Основний напрямок розробки:
+Ще не завершено:
 
-- Tuya LAN Protocol
-- Tuya AES Encryption
-- Packet Layer
-- Power Controller
-- Web Configuration
-- OTA Update
-
----
-
-# Основні можливості
-
-## Реалізовано
-
-- модульна сервісна архітектура;
-- неблокуючий runtime;
-- централізований Logger;
-- файлова система LittleFS;
-- JSON-конфігурація;
-- Wi-Fi Service;
-- System Information Service;
-- власний Timer;
-- власний ICMP Ping стек;
-- Health Check Service;
-- Watchdog Decision Engine;
-- захист від циклічних перезапусків;
-- Dependency Injection для Health Providers.
+- `PowerService`;
+- `IPowerController`;
+- `TuyaPowerController`;
+- зв'язка `WatchdogService -> PowerService -> TuyaService`;
+- hardware smoke-test із `TCOGCZ16-A`;
+- Web UI;
+- OTA.
 
 ---
 
-## У розробці
+## Основні можливості
 
-- Tuya LAN Protocol
-- Tuya Packet Layer
-- Tuya Crypto (AES)
-- Smart Plug Controller
-- Web UI
-- OTA Update
-- Event Log
+- неблокуюча сервісна архітектура;
+- централізований `Application` lifecycle;
+- конфігурація через LittleFS JSON;
+- стабільний `Logger` із `printf`-style API;
+- WiFi reconnect state machine;
+- ICMP HealthCheck через native ESP8266 SDK ping;
+- накопичення health statistics;
+- Watchdog decision-layer;
+- захист від restart-loop через `maxRestartPerDay`;
+- Tuya LAN crypto / packet / protocol / service layers;
+- підготовка до production power-cycle через `TCOGCZ16-A`.
 
 ---
 
-# Архітектура
+## Архітектура
 
-```
+```text
+main.cpp
+    │
+    ▼
 Application
-│
-├── Core
-│   ├── IService
-│   ├── Timer
-│   └── Logger
-│
-├── Models
-│
-├── Storage
-│
-├── Config
-│
-├── Network
-│   ├── IcmpSession
-│   ├── NetworkResult
-│   └── NetworkTypes
-│
-├── Services
-│   ├── WiFiService
-│   ├── SystemInfoService
-│   ├── HealthCheckService
-│   └── WatchdogService
-│
-└── Tuya (WIP)
-    ├── TuyaPacket
-    ├── TuyaCrypto
-    ├── TuyaProtocol
+    │
+    ├── Logger
+    ├── Storage
+    ├── Config
+    ├── WiFiService
+    ├── SystemInfo
+    ├── HealthCheckService
+    ├── WatchdogService
     └── TuyaService
 ```
 
----
+Планований production power-control layer:
 
-# Алгоритм роботи
-
-```
-              Ping
-                 │
-                 ▼
-        HealthCheck Service
-                 │
-         Server available?
-          │            │
-         Yes           No
-          │             │
-          │      Retry policy
-          │             │
-          │      Restart required?
-          │             │
-          │            Yes
-          │             │
-          ▼             ▼
-      Continue     Tuya Power OFF
-                        │
-                    Boot Delay
-                        │
-                  Tuya Power ON
-                        │
-                 Continue monitoring
+```text
+WatchdogService
+    │
+    ▼
+PowerService
+    │
+    ▼
+IPowerController
+    │
+    ▼
+TuyaPowerController
+    │
+    ▼
+TuyaService
+    │
+    ▼
+TCOGCZ16-A
 ```
 
 ---
 
-# Використані технології
+## HealthCheck
 
-- ESP8266
-- Arduino Framework
-- PlatformIO
-- LittleFS
-- ArduinoJson
-- lwIP Native Ping API
+```text
+HealthCheckService
+    │
+    ▼
+IHealthCheckProvider
+    │
+    ▼
+IcmpHealthCheckProvider
+    │
+    ▼
+IcmpSession
+    │
+    ▼
+ESP8266 SDK ping_start()
+```
+
+HealthCheck відповідає лише за:
+
+- запуск перевірок;
+- state machine;
+- статистику;
+- визначення `online/offline`.
+
+Провайдер відповідає за конкретний спосіб перевірки.
 
 ---
 
-# Структура проєкту
+## Tuya LAN stack
 
+```text
+TuyaService
+    │
+    ▼
+TuyaProtocol
+    │
+    ├── TuyaCrypto
+    │
+    └── TuyaPacket
 ```
+
+### TuyaCrypto
+
+Реалізовано:
+
+- AES-128-ECB;
+- PKCS#7 padding;
+- decrypt із padding validation;
+- MD5 helper;
+- hex encoder;
+- constant-time compare;
+- робота з 16-byte `localKey`.
+
+### TuyaPacket
+
+Реалізовано:
+
+- Tuya binary packet framing;
+- big-endian `uint32_t`;
+- `PREFIX = 0x000055AA`;
+- `SUFFIX = 0x0000AA55`;
+- packet length validation;
+- CRC32;
+- payload extraction.
+
+### TuyaProtocol
+
+Реалізовано для Tuya LAN `3.3`:
+
+- heartbeat packet;
+- status query packet;
+- DPS control packet;
+- encrypted JSON payload;
+- payload decrypt.
+
+### TuyaService
+
+Реалізовано:
+
+- TCP connection до Tuya device;
+- reconnect timer;
+- sequence counter;
+- `relaySet(true/false)`;
+- TCP receive buffer;
+- packet parser;
+- decrypt response payload;
+- оновлення `TuyaStatus.relayState`.
+
+Глобальний екземпляр:
+
+```cpp
+TuyaService TuyaLan;
+```
+
+Назва `TuyaLan` використовується навмисно, щоб не конфліктувати з namespace:
+
+```cpp
+namespace Tuya
+```
+
+---
+
+## Конфігурація
+
+Файл:
+
+```text
+/config.json
+```
+
+Основні секції:
+
+```json
+{
+  "version": 3,
+  "device": {
+    "hostname": "ESP-Watchdog"
+  },
+  "wifi": {
+    "ssid": "...",
+    "password": "...",
+    "reconnectInterval": 10000,
+    "connectTimeout": 15000
+  },
+  "watchdog": {
+    "targetHost": "192.168.10.50",
+    "targetPort": 80,
+    "pingInterval": 5000,
+    "pingTimeout": 1000,
+    "failCount": 5,
+    "bootDelay": 120000,
+    "powerOffTime": 10000,
+    "maxRestartPerDay": 20
+  },
+  "tuya": {
+    "ip": "192.168.10.xx",
+    "port": 6668,
+    "deviceId": "...",
+    "localKey": "...",
+    "version": 33,
+    "relayDps": 1
+  }
+}
+```
+
+Важливо:
+
+- `localKey` не логувати;
+- `localKey` не публікувати;
+- Tuya `3.4` поки не підтримується;
+- поточний стабільний напрямок — Tuya LAN `3.3`.
+
+---
+
+## Структура проєкту
+
+```text
 src/
-│
 ├── Core/
-├── Models/
-├── Network/
-├── Services/
-├── Storage/
-└── main.cpp
-
-docs/
+│   ├── Application.h
+│   ├── Application.cpp
+│   ├── IService.h
+│   ├── Timer.h
+│   ├── Timer.cpp
+│   ├── Version.h
+│   └── BuildInfo.h
 │
-├── Architecture.md
-├── CodingStyle.md
-├── Roadmap.md
-├── ProjectStatus.md
-└── Changelog.md
+├── Models/
+│   ├── Common.h
+│   ├── NetworkData.h
+│   ├── SystemData.h
+│   ├── HealthCheckData.h
+│   ├── WatchdogData.h
+│   └── RelayData.h
+│
+├── Network/
+│   ├── Common/
+│   │   ├── INetworkSession.h
+│   │   ├── NetworkResult.h
+│   │   └── NetworkTypes.h
+│   └── Icmp/
+│       ├── IcmpSession.h
+│       └── IcmpSession.cpp
+│
+└── Services/
+    ├── Config/
+    ├── HealthCheck/
+    ├── Logger/
+    ├── Storage/
+    ├── SystemInfo/
+    ├── Tuya/
+    ├── Watchdog/
+    └── WiFi/
 ```
 
 ---
 
-# Конфігурація
+## Залежності
 
-Конфігурація зберігається у LittleFS.
+PlatformIO:
 
-Основні параметри:
+```ini
+[env:d1_mini]
+platform = espressif8266
+board = d1_mini
+framework = arduino
 
-- Wi-Fi
-- Hostname
-- Target IP
-- Ping Interval
-- Retry Count
-- Restart Delay
-- Maximum Restarts Per Day
-- Tuya Device ID
-- Local Key
+monitor_speed = 74880
+upload_speed = 921600
 
----
+board_build.filesystem = littlefs
 
-# Roadmap
+lib_deps =
+    bblanchon/ArduinoJson
+```
 
-## v0.5
+Використовується:
 
-- Tuya Packet
-- AES Encryption
-
-## v0.6
-
-- Tuya Protocol
-
-## v0.7
-
-- Tuya Service
-
-## v0.8
-
-- Web Configuration
-
-## v0.9
-
-- OTA Update
-
-## v1.0
-
-Перша production-ready версія.
+- ESP8266 Arduino Core;
+- ArduinoJson;
+- LittleFS;
+- ESP8266 native SDK ping;
+- BearSSL із ESP8266 Arduino Core.
 
 ---
 
-# Документація
+## Збірка
 
-Проєкт містить окрему технічну документацію:
+```bash
+pio run
+```
 
-- Architecture.md
-- CodingStyle.md
-- Roadmap.md
-- ProjectStatus.md
-- Changelog.md
+Заливка прошивки:
+
+```bash
+pio run --target upload
+```
+
+Заливка LittleFS:
+
+```bash
+pio run --target uploadfs
+```
+
+Serial monitor:
+
+```bash
+pio device monitor -b 74880
+```
 
 ---
 
-# Ліцензія
+## Поточний roadmap
 
-MIT License
+### Наступний етап
+
+```text
+PowerController abstraction
+```
+
+Потрібно реалізувати:
+
+- `IPowerController`;
+- `TuyaPowerController`;
+- `PowerService`;
+- заміну старого GPIO `RelayService`;
+- інтеграцію `WatchdogService -> PowerService`;
+- hardware smoke-test із `TCOGCZ16-A`.
+
+### Далі
+
+- heartbeat/status polling у `TuyaService`;
+- Web API;
+- Web UI;
+- OTA;
+- diagnostics;
+- restart history;
+- average RTT;
+- availability history.
 
 ---
 
-# Автор
+## Поточні обмеження
 
-**Vasyl Dotsenko**
+- проєкт ще не є production `v1.0.0`;
+- Tuya LAN `3.4` ще не підтримується;
+- `WatchdogService` ще не керує Tuya-реле напряму;
+- GPIO `RelayService` залишився як проміжний модуль, але не є фінальним рішенням для `TCOGCZ16-A`;
+- потрібен hardware smoke-test із реальним Tuya device.
+
+---
+
+## Автор
+
+Vasyl Dotsenko
+
+---
+
+## Ліцензія
+
+Проєкт розробляється як відкритий модульний watchdog для ESP8266.

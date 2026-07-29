@@ -4,6 +4,8 @@
 
 #include "Core/IService.h"
 #include "Core/Timer.h"
+#include "TuyaPacket.h"
+#include "TuyaProtocol.h"
 
 struct TuyaStatus
 {
@@ -27,6 +29,7 @@ public:
     static constexpr uint32_t CONNECT_TIMEOUT_MS = 5000;
     static constexpr uint32_t RECONNECT_INTERVAL_MS = 10000;
     static constexpr uint32_t RECEIVE_TIMEOUT_MS = 3000;
+    static constexpr size_t RECEIVE_BUFFER_SIZE = Tuya::MAX_PACKET_SIZE;
 
     bool begin() override;
     void loop() override;
@@ -56,11 +59,22 @@ public:
 private:
     bool connect();
 
+    bool initializeProtocol();
+
+    uint32_t nextSequence();
+
     bool sendCommand(bool state);
 
     bool receivePacket();
 
-    void processPacket();
+    bool processReceiveBuffer();
+
+    bool processPacket(
+        const uint8_t* data,
+        size_t size);
+
+    void processJsonPayload(
+        const char* json);
 
     void updateConnection();
 
@@ -73,7 +87,14 @@ private:
     TuyaState m_state = TuyaState::Disconnected;
 
     TuyaStatus m_status;
+
+    Tuya::Protocol m_protocol;
+
+    uint8_t m_receiveBuffer[RECEIVE_BUFFER_SIZE] {};
+
+    size_t m_receiveLength = 0;
+
+    uint32_t m_sequence = 1;
 };
 
-extern TuyaService Tuya;
-
+extern TuyaService TuyaLan;

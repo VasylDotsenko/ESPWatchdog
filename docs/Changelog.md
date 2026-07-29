@@ -4,6 +4,102 @@
 
 ---
 
+## [0.4.7-tuya-service] - 30.07.2026
+
+### Статус
+
+Інтегровано `TuyaProtocol` у `TuyaService`.
+
+На цьому етапі `TuyaService` вже вміє підключатися до Tuya LAN пристрою, будувати relay command через protocol layer, відправляти binary packet у TCP socket і приймати відповіді через stream buffer.
+
+### Оновлено
+
+- `Services/Tuya/TuyaService.h`;
+- `Services/Tuya/TuyaService.cpp`.
+
+### TuyaService
+
+Додано:
+
+- `Tuya::Protocol m_protocol`;
+- receive buffer розміром `Tuya::MAX_PACKET_SIZE`;
+- sequence counter;
+- protocol initialization з `Config.data().tuya`;
+- TCP stream parser;
+- packet boundary detection;
+- packet size validation;
+- `processPacket(...)`;
+- encrypted payload decrypt через `TuyaProtocol`;
+- JSON payload parse;
+- оновлення `TuyaStatus.relayState` з DPS.
+- глобальний екземпляр сервісу зафіксовано як `TuyaLan`, щоб не конфліктувати з namespace `Tuya`.
+
+### Команди
+
+`relaySet(...)` тепер виконує реальну команду:
+
+```cpp
+TuyaProtocol::buildSetDps(...)
+WiFiClient::write(...)
+```
+
+та оновлює:
+
+```cpp
+commandCount
+relayState
+errorCount
+```
+
+### Connection lifecycle
+
+- `begin()` стартує reconnect timer.
+- `connect()` перевіряє Tuya config і protocol readiness.
+- `disconnect()` очищає receive buffer і запускає reconnect delay.
+- `loop()` обробляє reconnect, TCP state та receive stream.
+
+### Обмеження
+
+- `TuyaService` ще не підключений до `Application`;
+- `WatchdogService` ще не використовує `TuyaService`;
+- heartbeat/status query ще не викликаються періодично;
+- response parser поки обробляє тільки JSON payload із `dps`;
+- Tuya LAN `3.4` ще не підтримується.
+
+### Версія
+
+Поточна інтеграційна версія:
+
+```text
+0.4.7-tuya-service
+```
+
+Production target залишається:
+
+```text
+1.0.0
+```
+
+### Наступний етап
+
+Наступний модуль:
+
+```text
+PowerController abstraction
+```
+
+Потрібно замінити GPIO-based `RelayService` на абстракцію:
+
+```text
+WatchdogService
+    -> PowerService
+    -> IPowerController
+    -> TuyaPowerController
+    -> TuyaService
+```
+
+---
+
 ## [0.4.6-tuya-protocol] - 30.07.2026
 
 ### Статус

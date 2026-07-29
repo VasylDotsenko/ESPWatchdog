@@ -15,7 +15,7 @@
 - інтеграція `WatchdogService -> TuyaService`;
 - заміна GPIO-реле на мережевий Tuya power-controller.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.6-tuya-protocol`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.7-tuya-service`.
 
 ## Вже зроблено
 
@@ -154,10 +154,15 @@
 - реалізовано:
   - `TuyaProtocol.h`;
   - `TuyaProtocol.cpp`;
+- оновлено:
+  - `TuyaService.h`;
+  - `TuyaService.cpp`;
 - `TuyaCrypto` компілюється на ESP8266 `d1_mini`;
 - реалізовано AES-128-ECB + PKCS#7 як базу для Tuya LAN protocol `3.3/3.4`.
 - `TuyaPacket` реалізує binary framing, CRC32, prefix/suffix validation та payload extraction.
 - `TuyaProtocol` будує heartbeat, status query та DPS control payload для Tuya LAN `3.3`.
+- `TuyaService` використовує `TuyaProtocol` для `relaySet()` і має TCP receive buffer.
+- глобальний екземпляр Tuya-сервісу: `TuyaLan`.
 
 ## Поточні готові файли для інтеграції
 
@@ -200,7 +205,8 @@
 - повна збірка проєкту після копіювання всіх файлів ще потребує перевірки;
 - частина старих файлів може містити застарілі include-шляхи;
 - GPIO-based `RelayService` не відповідає реальному hardware `TCOGCZ16-A`;
-- Tuya LAN protocol ще не завершено;
+- Tuya LAN service ще не підключено до `Application`;
+- Watchdog ще не керує Tuya-реле;
 - Tuya protocol `3.4` поки не підтримується;
 - потрібні реальні `ip`, `deviceId`, `localKey`, `version`, `relayDps`;
 - `localKey` не можна логувати або дублювати у відкритих звітах;
@@ -211,8 +217,8 @@
 
 1. Скопіювати актуальні Tuya-файли з `outputs/` у проєкт.
 2. Запустити повну збірку PlatformIO.
-3. Інтегрувати `TuyaProtocol` у `TuyaService`.
-4. Реалізувати TCP receive buffer.
-5. Реалізувати розбір response payload і оновлення `TuyaStatus`.
-6. Підключити `WatchdogService` до `TuyaService`.
+3. Створити `IPowerController`.
+4. Створити `TuyaPowerController`.
+5. Створити або оновити `PowerService`.
+6. Підключити `WatchdogService` до `PowerService`.
 7. Провести hardware smoke-test із `TCOGCZ16-A`.

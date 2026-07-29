@@ -4,6 +4,109 @@
 
 ---
 
+## [0.4.6-tuya-protocol] - 30.07.2026
+
+### Статус
+
+Реалізовано перший рівень `TuyaProtocol` поверх `TuyaCrypto` та `TuyaPacket`.
+
+Це ще не повна інтеграція з `TuyaService`, але вже готовий protocol builder/parser для основних команд Tuya LAN `3.3`.
+
+### Додано
+
+- `Services/Tuya/TuyaProtocol.h`;
+- `Services/Tuya/TuyaProtocol.cpp`.
+
+### TuyaProtocol
+
+Реалізовано:
+
+- ініціалізацію через:
+
+```cpp
+begin(deviceId, localKey, protocolVersion)
+```
+
+- перевірку готовності `ready()`;
+- `buildHeartbeat(...)`;
+- `buildStatusQuery(...)`;
+- `buildSetDps(...)`;
+- `decryptPayload(...)`;
+- формування Tuya `3.3` version header;
+- AES-encrypted JSON payload через `TuyaCrypto`;
+- пакування результату в `Tuya::Packet`.
+
+### Підтримувана версія
+
+На цьому етапі явно підтримується:
+
+```text
+Tuya LAN protocol 3.3
+```
+
+`3.4` поки не реалізовано, тому що для нього потрібен окремий session-key handshake/HMAC flow. Його не додаємо як заглушку, щоб не створити фальшиве відчуття сумісності.
+
+### Команди
+
+Підготовлено побудову:
+
+- heartbeat;
+- status query;
+- DPS relay command:
+
+```json
+{
+  "devId": "...",
+  "uid": "...",
+  "t": "...",
+  "dps": {
+    "1": true
+  }
+}
+```
+
+Номер DPS береться з конфігурації як `relayDps`.
+
+### Обмеження
+
+- `TuyaService` ще не використовує `TuyaProtocol`;
+- receive buffer / stream parser ще не інтегровано;
+- статус relay ще не оновлюється з відповіді пристрою;
+- `WatchdogService` ще не підключений до `TuyaService`.
+
+### Версія
+
+Поточна інтеграційна версія:
+
+```text
+0.4.6-tuya-protocol
+```
+
+Production target залишається:
+
+```text
+1.0.0
+```
+
+### Наступний етап
+
+Наступний модуль:
+
+```text
+TuyaService integration
+```
+
+Потрібно реалізувати:
+
+- `TuyaService::sendCommand()` через `TuyaProtocol`;
+- TCP receive buffer;
+- parse packet;
+- decrypt response payload;
+- оновлення `TuyaStatus`;
+- інтеграцію `WatchdogService -> TuyaService`.
+
+---
+
 ## [0.4.5-tuya-packet] - 28.07.2026
 
 ### Статус

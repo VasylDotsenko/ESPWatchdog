@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     5
+#define FW_VERSION_PATCH     6
 
-#define FW_VERSION_STRING    "0.4.5"
-#define FW_VERSION_LABEL     "tuya-packet"
-#define FW_VERSION_FULL      "0.4.5-tuya-packet"
+#define FW_VERSION_STRING    "0.4.6"
+#define FW_VERSION_LABEL     "tuya-protocol"
+#define FW_VERSION_FULL      "0.4.6-tuya-protocol"
 
 //=============================================================================
 // Project

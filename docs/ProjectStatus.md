@@ -1,6 +1,6 @@
 # ESP Watchdog — Project Status
 
-Дата: 28.07.2026
+Дата: 30.07.2026
 
 ## Поточний статус
 
@@ -15,7 +15,7 @@
 - інтеграція `WatchdogService -> TuyaService`;
 - заміна GPIO-реле на мережевий Tuya power-controller.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.5-tuya-packet`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.6-tuya-protocol`.
 
 ## Вже зроблено
 
@@ -151,9 +151,13 @@
   - `TuyaCrypto.cpp`;
 - реалізовано:
   - `TuyaPacket.cpp`;
+- реалізовано:
+  - `TuyaProtocol.h`;
+  - `TuyaProtocol.cpp`;
 - `TuyaCrypto` компілюється на ESP8266 `d1_mini`;
 - реалізовано AES-128-ECB + PKCS#7 як базу для Tuya LAN protocol `3.3/3.4`.
 - `TuyaPacket` реалізує binary framing, CRC32, prefix/suffix validation та payload extraction.
+- `TuyaProtocol` будує heartbeat, status query та DPS control payload для Tuya LAN `3.3`.
 
 ## Поточні готові файли для інтеграції
 
@@ -186,6 +190,8 @@
 - `TuyaCrypto.cpp`;
 - `TuyaPacket.h`;
 - `TuyaPacket.cpp`;
+- `TuyaProtocol.h`;
+- `TuyaProtocol.cpp`;
 - `TuyaService.h`;
 - `TuyaService.cpp`.
 
@@ -195,6 +201,7 @@
 - частина старих файлів може містити застарілі include-шляхи;
 - GPIO-based `RelayService` не відповідає реальному hardware `TCOGCZ16-A`;
 - Tuya LAN protocol ще не завершено;
+- Tuya protocol `3.4` поки не підтримується;
 - потрібні реальні `ip`, `deviceId`, `localKey`, `version`, `relayDps`;
 - `localKey` не можна логувати або дублювати у відкритих звітах;
 - потрібно перевірити, що Serial Monitor і `Log.begin(...)` використовують однакову швидкість;
@@ -204,8 +211,8 @@
 
 1. Скопіювати актуальні Tuya-файли з `outputs/` у проєкт.
 2. Запустити повну збірку PlatformIO.
-3. Реалізувати `TuyaProtocol`.
-4. Реалізувати Tuya payload encryption/decryption.
-5. Реалізувати command для `relayDps`.
+3. Інтегрувати `TuyaProtocol` у `TuyaService`.
+4. Реалізувати TCP receive buffer.
+5. Реалізувати розбір response payload і оновлення `TuyaStatus`.
 6. Підключити `WatchdogService` до `TuyaService`.
 7. Провести hardware smoke-test із `TCOGCZ16-A`.

@@ -4,9 +4,11 @@
 #include "Services/HealthCheck/HealthCheckService.h"
 #include "Services/HealthCheck/IcmpHealthCheckProvider.h"
 #include "Services/Logger/Logger.h"
-#include "Services/Relay/RelayService.h"
+#include "Services/Power/PowerService.h"
+#include "Services/Power/TuyaPowerController.h"
 #include "Services/Storage/Storage.h"
 #include "Services/SystemInfo/SystemInfo.h"
+#include "Services/Tuya/TuyaService.h"
 #include "Services/Watchdog/WatchdogService.h"
 #include "Services/WiFi/WiFiService.h"
 
@@ -55,9 +57,17 @@ bool Application::begin()
         return false;
     }
 
-    if (!Relay.begin())
+    if (!TuyaLan.begin())
     {
-        Log.error("Application: Relay initialization failed");
+        Log.error("Application: Tuya initialization failed");
+        return false;
+    }
+
+    Power.setController(TuyaPower);
+
+    if (!Power.begin())
+    {
+        Log.error("Application: Power initialization failed");
         return false;
     }
 
@@ -90,6 +100,8 @@ void Application::loop()
 
     System.loop();
 
+    TuyaLan.loop();
+
     HealthCheck.loop();
 
     Watchdog.update(HealthCheck.info());
@@ -97,17 +109,17 @@ void Application::loop()
     Watchdog.loop();
 
     if (Watchdog.restartRequired() &&
-        !Relay.restartInProgress())
+        !Power.restartInProgress())
     {
-        Relay.restart(
+        Power.restart(
             Watchdog.data().configuration.powerOffTime);
     }
 
-    Relay.loop();
+    Power.loop();
 
-    if (Relay.restartCompleted())
+    if (Power.restartCompleted())
     {
-        Relay.clearRestartCompleted();
+        Power.clearRestartCompleted();
 
         Watchdog.restartCompleted();
     }

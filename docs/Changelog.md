@@ -4,6 +4,134 @@
 
 ---
 
+## [0.4.8-power-controller] - 30.07.2026
+
+### Статус
+
+Реалізовано production-шар керування живленням через абстракцію `PowerService`.
+
+Цей етап замінює пряму залежність `Application -> RelayService` на правильну архітектуру:
+
+```text
+WatchdogService
+    -> PowerService
+    -> IPowerController
+    -> TuyaPowerController
+    -> TuyaService
+```
+
+### Додано
+
+- `Models/PowerData.h`;
+- `Services/Power/IPowerController.h`;
+- `Services/Power/PowerService.h`;
+- `Services/Power/PowerService.cpp`;
+- `Services/Power/TuyaPowerController.h`;
+- `Services/Power/TuyaPowerController.cpp`.
+
+### PowerService
+
+Реалізовано:
+
+- `setController(...)`;
+- `restart(powerOffTime)`;
+- неблокуючий power-cycle;
+- `restartInProgress()`;
+- `restartCompleted()`;
+- `clearRestartCompleted()`;
+- статистику restart/error;
+- облік `lastPowerOn`, `lastPowerOff`, `lastRestart`, `lastError`;
+- стан `PowerState`.
+
+### TuyaPowerController
+
+Реалізовано adapter над `TuyaService`:
+
+```cpp
+powerOn()  -> TuyaLan.relayOn()
+powerOff() -> TuyaLan.relayOff()
+```
+
+Глобальний екземпляр:
+
+```cpp
+TuyaPowerController TuyaPower;
+```
+
+### Application
+
+Оновлено runtime flow:
+
+```cpp
+TuyaLan.begin();
+Power.setController(TuyaPower);
+Power.begin();
+```
+
+У `loop()`:
+
+```cpp
+TuyaLan.loop();
+Watchdog.update(HealthCheck.info());
+Watchdog.loop();
+
+if (Watchdog.restartRequired() && !Power.restartInProgress())
+{
+    Power.restart(Watchdog.data().configuration.powerOffTime);
+}
+
+Power.loop();
+
+if (Power.restartCompleted())
+{
+    Power.clearRestartCompleted();
+    Watchdog.restartCompleted();
+}
+```
+
+### RelayService
+
+`RelayService` залишається як legacy/promіжний GPIO-модуль, але більше не є production power-controller для `TCOGCZ16-A`.
+
+### Обмеження
+
+- `PowerService` залежить від доступності Tuya LAN device;
+- якщо `TuyaLan` не підключений, restart не буде виконано;
+- потрібен hardware smoke-test із реальним `TCOGCZ16-A`;
+- Tuya LAN `3.4` ще не підтримується.
+
+### Версія
+
+Поточна інтеграційна версія:
+
+```text
+0.4.8-power-controller
+```
+
+Production target залишається:
+
+```text
+1.0.0
+```
+
+### Наступний етап
+
+Наступний етап:
+
+```text
+Hardware smoke-test
+```
+
+Потрібно перевірити:
+
+- Tuya LAN connection;
+- `relayDps`;
+- `powerOff`;
+- `powerOn`;
+- повний `Watchdog -> PowerService -> TuyaPowerController -> TuyaLan` цикл.
+
+---
+
 ## [0.4.7-tuya-service] - 30.07.2026
 
 ### Статус

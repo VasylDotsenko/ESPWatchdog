@@ -4,7 +4,7 @@
 
 ## Поточний статус
 
-Проєкт знаходиться у стані інтеграційної стабілізації після завершення базового runtime, HealthCheck, Watchdog decision-layer та початку переходу на Tuya LAN керування зовнішнім реле `TCOGCZ16-A`.
+Проєкт знаходиться у стані інтеграційної стабілізації після завершення базового runtime, HealthCheck, Watchdog decision-layer та інтеграції PowerController abstraction для Tuya LAN керування зовнішнім реле `TCOGCZ16-A`.
 
 Основний напрямок роботи зараз:
 
@@ -12,10 +12,11 @@
 - реалізація `TuyaCrypto`;
 - реалізація `TuyaPacket`;
 - реалізація `TuyaProtocol`;
-- інтеграція `WatchdogService -> TuyaService`;
-- заміна GPIO-реле на мережевий Tuya power-controller.
+- інтеграція `WatchdogService -> PowerService -> TuyaPowerController -> TuyaService`;
+- hardware smoke-test із `TCOGCZ16-A`;
+- стабілізація Tuya LAN power-cycle.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.7-tuya-service`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.8-power-controller`.
 
 ## Вже зроблено
 
@@ -138,6 +139,16 @@
 - керування живленням потрібно виконувати через Tuya LAN protocol;
 - `RelayService` не вважається фінальним power-controller для цього проєкту.
 
+### PowerService
+
+- створено `Models/PowerData.h`;
+- створено `IPowerController`;
+- створено `PowerService`;
+- створено `TuyaPowerController`;
+- `Application` переведено з `RelayService` на `PowerService`;
+- `PowerService` виконує неблокуючий restart-cycle;
+- `TuyaPowerController` керує живленням через `TuyaLan.relayOn()` / `TuyaLan.relayOff()`.
+
 ### Tuya
 
 - у проєкті з'явився каталог `Services/Tuya`;
@@ -191,6 +202,12 @@
 - `RelayData.h`;
 - `RelayService.h`;
 - `RelayService.cpp`;
+- `PowerData.h`;
+- `IPowerController.h`;
+- `PowerService.h`;
+- `PowerService.cpp`;
+- `TuyaPowerController.h`;
+- `TuyaPowerController.cpp`;
 - `TuyaCrypto.h`;
 - `TuyaCrypto.cpp`;
 - `TuyaPacket.h`;
@@ -205,8 +222,8 @@
 - повна збірка проєкту після копіювання всіх файлів ще потребує перевірки;
 - частина старих файлів може містити застарілі include-шляхи;
 - GPIO-based `RelayService` не відповідає реальному hardware `TCOGCZ16-A`;
-- Tuya LAN service ще не підключено до `Application`;
-- Watchdog ще не керує Tuya-реле;
+- потрібна перевірка `PowerService` на реальному Tuya LAN пристрої;
+- якщо `TuyaLan` недоступний, restart не буде виконано;
 - Tuya protocol `3.4` поки не підтримується;
 - потрібні реальні `ip`, `deviceId`, `localKey`, `version`, `relayDps`;
 - `localKey` не можна логувати або дублювати у відкритих звітах;
@@ -217,8 +234,8 @@
 
 1. Скопіювати актуальні Tuya-файли з `outputs/` у проєкт.
 2. Запустити повну збірку PlatformIO.
-3. Створити `IPowerController`.
-4. Створити `TuyaPowerController`.
-5. Створити або оновити `PowerService`.
-6. Підключити `WatchdogService` до `PowerService`.
-7. Провести hardware smoke-test із `TCOGCZ16-A`.
+3. Заповнити реальні `tuya.ip`, `deviceId`, `localKey`, `relayDps`.
+4. Залити LittleFS config.
+5. Перевірити `TuyaLan` connection.
+6. Перевірити `PowerService` power-cycle.
+7. Провести повний hardware smoke-test із `TCOGCZ16-A`.

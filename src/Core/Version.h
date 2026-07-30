@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     7
+#define FW_VERSION_PATCH     8
 
-#define FW_VERSION_STRING    "0.4.7"
-#define FW_VERSION_LABEL     "tuya-service"
-#define FW_VERSION_FULL      "0.4.7-tuya-service"
+#define FW_VERSION_STRING    "0.4.8"
+#define FW_VERSION_LABEL     "power-controller"
+#define FW_VERSION_FULL      "0.4.8-power-controller"
 
 //=============================================================================
 // Project

@@ -32,6 +32,8 @@ bool PowerService::begin()
 
 void PowerService::loop()
 {
+    const uint64_t now = millis();
+
     if (!m_data.runtime.restartInProgress)
     {
         return;
@@ -47,15 +49,48 @@ void PowerService::loop()
         return;
     }
 
+    if (m_data.runtime.powerOnWaitStarted == 0)
+    {
+        m_data.runtime.powerOnWaitStarted = now;
+    }
+
+    if (!available())
+    {
+        if ((now - m_data.runtime.powerOnWaitStarted) >= POWER_ON_WAIT_TIMEOUT_MS)
+        {
+            fail("powerOn controller unavailable timeout");
+            return;
+        }
+
+        if (shouldAttemptPowerOn(now))
+        {
+            Log.warning(
+                "PowerService: waiting for controller before power ON");
+        }
+
+        return;
+    }
+
+    if (!shouldAttemptPowerOn(now))
+    {
+        return;
+    }
+
     if (!powerOn())
     {
-        fail("powerOn failed");
+        if ((now - m_data.runtime.powerOnWaitStarted) >= POWER_ON_WAIT_TIMEOUT_MS)
+        {
+            fail("powerOn failed");
+        }
+
         return;
     }
 
     m_data.runtime.restartInProgress = false;
     m_data.runtime.restartCompleted = true;
     m_data.runtime.lastOperationSucceeded = true;
+    m_data.runtime.lastPowerOnAttempt = 0;
+    m_data.runtime.powerOnWaitStarted = 0;
 
     ++m_data.statistics.restartCount;
 
@@ -73,6 +108,16 @@ void PowerService::setController(IPowerController& controller)
 
 bool PowerService::restart(uint32_t powerOffTime)
 {
+    const uint64_t now = millis();
+
+    if (m_data.runtime.lastRestartAttempt != 0 &&
+        (now - m_data.runtime.lastRestartAttempt) < RESTART_RETRY_INTERVAL_MS)
+    {
+        return false;
+    }
+
+    m_data.runtime.lastRestartAttempt = now;
+
     if (m_controller == nullptr)
     {
         fail("controller not configured");
@@ -86,13 +131,15 @@ bool PowerService::restart(uint32_t powerOffTime)
 
     if (!available())
     {
-        fail("controller unavailable");
+        Log.warning("PowerService: controller unavailable, restart delayed");
         return false;
     }
 
     m_data.runtime.restartCompleted = false;
     m_data.runtime.lastOperationSucceeded = false;
     m_data.runtime.powerOffTime = powerOffTime;
+    m_data.runtime.lastPowerOnAttempt = 0;
+    m_data.runtime.powerOnWaitStarted = 0;
 
     if (!powerOff())
     {
@@ -138,6 +185,19 @@ bool PowerService::available() const
 const PowerData& PowerService::data() const
 {
     return m_data;
+}
+
+bool PowerService::shouldAttemptPowerOn(uint64_t now)
+{
+    if (m_data.runtime.lastPowerOnAttempt != 0 &&
+        (now - m_data.runtime.lastPowerOnAttempt) < POWER_ON_RETRY_INTERVAL_MS)
+    {
+        return false;
+    }
+
+    m_data.runtime.lastPowerOnAttempt = now;
+
+    return true;
 }
 
 bool PowerService::powerOn()

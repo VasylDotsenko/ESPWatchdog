@@ -16,7 +16,7 @@
 - hardware smoke-test із `TCOGCZ16-A`;
 - стабілізація Tuya LAN power-cycle.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.8-power-controller`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.12-tuya-on-demand-command`.
 
 ## Вже зроблено
 
@@ -147,7 +147,12 @@
 - створено `TuyaPowerController`;
 - `Application` переведено з `RelayService` на `PowerService`;
 - `PowerService` виконує неблокуючий restart-cycle;
+- `PowerService` має throttling повторних restart-спроб при недоступному Tuya LAN controller;
+- `PowerService` чекає перепідключення Tuya LAN controller перед `powerOn`, замість негайного переходу в `Error`;
 - `TuyaPowerController` керує живленням через `TuyaLan.relayOn()` / `TuyaLan.relayOff()`.
+- `TuyaPowerController::available()` більше не залежить від поточного TCP socket стану;
+- `TuyaService::relaySet()` підключається до Tuya device on-demand перед відправкою relay-команди;
+- автоматичний status query після connect вимкнено, щоб не провокувати disconnect на Tuya LAN `3.5`.
 
 ### Tuya
 
@@ -174,6 +179,10 @@
 - `TuyaProtocol` будує heartbeat, status query та DPS control payload для Tuya LAN `3.3`.
 - `TuyaService` використовує `TuyaProtocol` для `relaySet()` і має TCP receive buffer.
 - глобальний екземпляр Tuya-сервісу: `TuyaLan`.
+- після TCP connect `TuyaService` відправляє heartbeat та status query;
+- додано діагностичні логи `seq`, `cmd`, `payload`, `dps`, `bytes` для перевірки реакції Tuya LAN device.
+- підтверджено, що цільова розетка використовує Tuya LAN `3.5`;
+- `3.5` поки явно позначено як unsupported у `TuyaProtocol`, щоб не маскувати проблему під timeout або неправильний DPS.
 
 ## Поточні готові файли для інтеграції
 
@@ -225,6 +234,7 @@
 - потрібна перевірка `PowerService` на реальному Tuya LAN пристрої;
 - якщо `TuyaLan` недоступний, restart не буде виконано;
 - Tuya protocol `3.4` поки не підтримується;
+- Tuya protocol `3.5` поки не підтримується;
 - потрібні реальні `ip`, `deviceId`, `localKey`, `version`, `relayDps`;
 - `localKey` не можна логувати або дублювати у відкритих звітах;
 - потрібно перевірити, що Serial Monitor і `Log.begin(...)` використовують однакову швидкість;

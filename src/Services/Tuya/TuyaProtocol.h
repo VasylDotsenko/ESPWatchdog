@@ -10,7 +10,10 @@ namespace Tuya
     class Protocol
     {
     public:
-        static constexpr uint8_t SUPPORTED_VERSION = 33;
+        static constexpr uint8_t SUPPORTED_VERSION_33 = 33;
+        static constexpr uint8_t UNSUPPORTED_VERSION_34 = 34;
+        static constexpr uint8_t UNSUPPORTED_VERSION_35 = 35;
+        static constexpr uint8_t SUPPORTED_VERSION = SUPPORTED_VERSION_33;
         static constexpr size_t VERSION_HEADER_SIZE = 15;
         static constexpr size_t MAX_JSON_SIZE = 512;
         static constexpr size_t MAX_ENCRYPTED_SIZE =
@@ -30,6 +33,19 @@ namespace Tuya
 
         [[nodiscard]]
         uint8_t protocolVersion() const;
+
+        [[nodiscard]]
+        static bool isSupportedVersion(uint8_t protocolVersion)
+        {
+            return protocolVersion == SUPPORTED_VERSION_33;
+        }
+
+        [[nodiscard]]
+        static bool isKnownUnsupportedVersion(uint8_t protocolVersion)
+        {
+            return protocolVersion == UNSUPPORTED_VERSION_34 ||
+                   protocolVersion == UNSUPPORTED_VERSION_35;
+        }
 
         bool buildHeartbeat(
             uint32_t sequence,

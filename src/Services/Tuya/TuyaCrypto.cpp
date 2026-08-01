@@ -2,8 +2,14 @@
 
 #include <cstring>
 
+#include <bearssl/bearssl_aead.h>
 #include <bearssl/bearssl_block.h>
 #include <bearssl/bearssl_hash.h>
+
+extern "C"
+{
+    #include <user_interface.h>
+}
 
 namespace
 {
@@ -217,6 +223,258 @@ namespace Tuya
         }
 
         outputLength = inputLength - padding;
+
+        return true;
+    }
+
+    bool TuyaCrypto::encryptGcm(
+        const uint8_t* input,
+        size_t inputLength,
+        const uint8_t iv[GCM_IV_SIZE],
+        const uint8_t* aad,
+        size_t aadLength,
+        uint8_t* output,
+        size_t outputCapacity,
+        size_t& outputLength,
+        uint8_t tag[GCM_TAG_SIZE]) const
+    {
+        outputLength = 0;
+
+        if (!m_ready ||
+            (input == nullptr && inputLength > 0) ||
+            iv == nullptr ||
+            output == nullptr ||
+            tag == nullptr)
+        {
+            return false;
+        }
+
+        if (outputCapacity < inputLength)
+        {
+            return false;
+        }
+
+        if (inputLength > 0)
+        {
+            memcpy(
+                output,
+                input,
+                inputLength);
+        }
+
+        br_aes_ct_ctr_keys aes;
+        br_aes_ct_ctr_init(
+            &aes,
+            m_key,
+            LOCAL_KEY_SIZE);
+
+        br_gcm_context gcm;
+        br_gcm_init(
+            &gcm,
+            reinterpret_cast<const br_block_ctr_class**>(&aes),
+            br_ghash_ctmul32);
+
+        br_gcm_reset(
+            &gcm,
+            iv,
+            GCM_IV_SIZE);
+
+        if (aad != nullptr &&
+            aadLength > 0)
+        {
+            br_gcm_aad_inject(
+                &gcm,
+                aad,
+                aadLength);
+        }
+
+        br_gcm_flip(&gcm);
+
+        if (inputLength > 0)
+        {
+            br_gcm_run(
+                &gcm,
+                1,
+                output,
+                inputLength);
+        }
+
+        br_gcm_get_tag(
+            &gcm,
+            tag);
+
+        outputLength = inputLength;
+
+        return true;
+    }
+
+    bool TuyaCrypto::decryptGcm(
+        const uint8_t* input,
+        size_t inputLength,
+        const uint8_t iv[GCM_IV_SIZE],
+        const uint8_t* aad,
+        size_t aadLength,
+        const uint8_t tag[GCM_TAG_SIZE],
+        uint8_t* output,
+        size_t outputCapacity,
+        size_t& outputLength) const
+    {
+        outputLength = 0;
+
+        if (!m_ready ||
+            (input == nullptr && inputLength > 0) ||
+            iv == nullptr ||
+            tag == nullptr ||
+            output == nullptr)
+        {
+            return false;
+        }
+
+        if (outputCapacity < inputLength)
+        {
+            return false;
+        }
+
+        if (inputLength > 0)
+        {
+            memcpy(
+                output,
+                input,
+                inputLength);
+        }
+
+        br_aes_ct_ctr_keys aes;
+        br_aes_ct_ctr_init(
+            &aes,
+            m_key,
+            LOCAL_KEY_SIZE);
+
+        br_gcm_context gcm;
+        br_gcm_init(
+            &gcm,
+            reinterpret_cast<const br_block_ctr_class**>(&aes),
+            br_ghash_ctmul32);
+
+        br_gcm_reset(
+            &gcm,
+            iv,
+            GCM_IV_SIZE);
+
+        if (aad != nullptr &&
+            aadLength > 0)
+        {
+            br_gcm_aad_inject(
+                &gcm,
+                aad,
+                aadLength);
+        }
+
+        br_gcm_flip(&gcm);
+
+        if (inputLength > 0)
+        {
+            br_gcm_run(
+                &gcm,
+                0,
+                output,
+                inputLength);
+        }
+
+        if (!br_gcm_check_tag(
+                &gcm,
+                tag))
+        {
+            memset(
+                output,
+                0,
+                inputLength);
+
+            return false;
+        }
+
+        outputLength = inputLength;
+
+        return true;
+    }
+
+    bool TuyaCrypto::deriveTuya35SessionKey(
+        const uint8_t localNonce[LOCAL_KEY_SIZE],
+        const uint8_t remoteNonce[LOCAL_KEY_SIZE],
+        uint8_t sessionKey[LOCAL_KEY_SIZE]) const
+    {
+        if (!m_ready ||
+            localNonce == nullptr ||
+            remoteNonce == nullptr ||
+            sessionKey == nullptr)
+        {
+            return false;
+        }
+
+        uint8_t mixed[LOCAL_KEY_SIZE] {};
+
+        for (size_t i = 0; i < LOCAL_KEY_SIZE; ++i)
+        {
+            mixed[i] = localNonce[i] ^ remoteNonce[i];
+        }
+
+        uint8_t encrypted[LOCAL_KEY_SIZE] {};
+        size_t encryptedLength = 0;
+        uint8_t tag[GCM_TAG_SIZE] {};
+
+        if (!encryptGcm(
+                mixed,
+                sizeof(mixed),
+                localNonce,
+                nullptr,
+                0,
+                encrypted,
+                sizeof(encrypted),
+                encryptedLength,
+                tag))
+        {
+            return false;
+        }
+
+        if (encryptedLength < LOCAL_KEY_SIZE)
+        {
+            return false;
+        }
+
+        memcpy(
+            sessionKey,
+            encrypted,
+            LOCAL_KEY_SIZE);
+
+        return true;
+    }
+
+    bool TuyaCrypto::randomBytes(
+        uint8_t* output,
+        size_t outputLength)
+    {
+        if (output == nullptr)
+        {
+            return false;
+        }
+
+        if (outputLength == 0)
+        {
+            return true;
+        }
+
+        if (os_get_random(
+                output,
+                outputLength) == 0)
+        {
+            return true;
+        }
+
+        for (size_t i = 0; i < outputLength; ++i)
+        {
+            output[i] =
+                static_cast<uint8_t>(
+                    ESP.random(0, 256));
+        }
 
         return true;
     }

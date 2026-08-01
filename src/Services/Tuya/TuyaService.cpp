@@ -101,6 +101,16 @@ bool TuyaService::connect()
 
     Log.info("Tuya connected");
 
+    if (!sendHeartbeat())
+    {
+        Log.warning("Tuya: heartbeat send failed");
+    }
+
+    if (!sendStatusQuery())
+    {
+        Log.warning("Tuya: status query send failed");
+    }
+
     return true;
 }
 
@@ -159,6 +169,99 @@ bool TuyaService::relayState() const
     return m_status.relayState;
 }
 
+bool TuyaService::queryStatus()
+{
+    if (!connected())
+    {
+        return false;
+    }
+
+    return sendStatusQuery();
+}
+
+bool TuyaService::sendHeartbeat()
+{
+    if (!connected())
+    {
+        return false;
+    }
+
+    Tuya::Packet packet;
+
+    const uint32_t sequence = nextSequence();
+
+    if (!m_protocol.buildHeartbeat(
+            sequence,
+            packet))
+    {
+        m_status.errorCount++;
+        return false;
+    }
+
+    const size_t written =
+        m_client.write(
+            packet.data(),
+            packet.size());
+
+    if (written != packet.size())
+    {
+        m_status.errorCount++;
+        return false;
+    }
+
+    Log.info(
+        "Tuya: heartbeat sent, seq=%lu bytes=%lu",
+        static_cast<unsigned long>(sequence),
+        static_cast<unsigned long>(packet.size()));
+
+    return true;
+}
+
+bool TuyaService::sendStatusQuery()
+{
+    if (!connected())
+    {
+        return false;
+    }
+
+    if (!m_protocol.ready() &&
+        !initializeProtocol())
+    {
+        m_status.errorCount++;
+        return false;
+    }
+
+    Tuya::Packet packet;
+
+    const uint32_t sequence = nextSequence();
+
+    if (!m_protocol.buildStatusQuery(
+            sequence,
+            packet))
+    {
+        m_status.errorCount++;
+        return false;
+    }
+
+    const size_t written =
+        m_client.write(
+            packet.data(),
+            packet.size());
+
+    if (written != packet.size())
+    {
+        m_status.errorCount++;
+        return false;
+    }
+
+    Log.info(
+        "Tuya: status query sent, seq=%lu bytes=%lu",
+        static_cast<unsigned long>(sequence),
+        static_cast<unsigned long>(packet.size()));
+
+    return true;
+}
+
 bool TuyaService::sendCommand(bool state)
 {
     if (!connected())
@@ -177,8 +280,10 @@ bool TuyaService::sendCommand(bool state)
 
     Tuya::Packet packet;
 
+    const uint32_t sequence = nextSequence();
+
     if (!m_protocol.buildSetDps(
-            nextSequence(),
+            sequence,
             cfg.relayDps,
             state,
             packet))
@@ -204,8 +309,11 @@ bool TuyaService::sendCommand(bool state)
     m_status.relayState = state;
 
     Log.info(
-        "Tuya: relay command sent, state=%u",
-        state ? 1 : 0);
+        "Tuya: relay command sent, seq=%lu dps=%u state=%u bytes=%lu",
+        static_cast<unsigned long>(sequence),
+        cfg.relayDps,
+        state ? 1 : 0,
+        static_cast<unsigned long>(packet.size()));
 
     return true;
 }
@@ -247,10 +355,30 @@ bool TuyaService::initializeProtocol()
 {
     const auto& cfg = Config.data().tuya;
 
-    return m_protocol.begin(
+    const bool initialized =
+        m_protocol.begin(
         cfg.deviceId,
         cfg.localKey,
         cfg.protocolVersion);
+
+    if (!initialized)
+    {
+        if (Tuya::Protocol::isKnownUnsupportedVersion(
+                cfg.protocolVersion))
+        {
+            Log.warning(
+                "Tuya: protocol 3.%u is detected but not supported yet",
+                cfg.protocolVersion % 10);
+        }
+        else
+        {
+            Log.warning(
+                "Tuya: protocol initialization failed, version=%u",
+                cfg.protocolVersion);
+        }
+    }
+
+    return initialized;
 }
 
 uint32_t TuyaService::nextSequence()
@@ -341,6 +469,13 @@ bool TuyaService::processPacket(
         return false;
     }
 
+    Log.info(
+        "Tuya: packet received, cmd=%lu seq=%lu payload=%lu",
+        static_cast<unsigned long>(
+            static_cast<uint32_t>(packet.command())),
+        static_cast<unsigned long>(packet.sequence()),
+        static_cast<unsigned long>(packet.payloadSize()));
+
     if (packet.payloadSize() == 0)
     {
         return true;
@@ -360,8 +495,18 @@ bool TuyaService::processPacket(
             sizeof(json),
             jsonLength))
     {
+        Log.warning(
+            "Tuya: unable to decrypt payload, cmd=%lu seq=%lu",
+            static_cast<unsigned long>(
+                static_cast<uint32_t>(packet.command())),
+            static_cast<unsigned long>(packet.sequence()));
+
         return true;
     }
+
+    Log.info(
+        "Tuya: JSON payload, length=%lu",
+        static_cast<unsigned long>(jsonLength));
 
     processJsonPayload(json);
 

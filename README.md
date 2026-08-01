@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.7-tuya-service
+0.4.12-tuya-on-demand-command
 ```
 
 Production target:
@@ -59,6 +59,16 @@ Power Cycle
 - ICMP HealthCheck;
 - HealthCheck `ONLINE`;
 - Watchdog decision-layer;
+- PowerService abstraction;
+- PowerService waits for Tuya LAN reconnect before `powerOn`;
+- Tuya relay commands connect on-demand;
+- automatic Tuya status query after connect disabled for unstable 3.5 devices;
+- IPowerController;
+- TuyaPowerController;
+- зв'язка `WatchdogService -> PowerService -> TuyaService`;
+- Tuya LAN command diagnostics;
+- automatic Tuya heartbeat/status query after connect;
+- explicit Tuya LAN `3.5` detection as unsupported;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;
@@ -67,10 +77,6 @@ Power Cycle
 
 Ще не завершено:
 
-- `PowerService`;
-- `IPowerController`;
-- `TuyaPowerController`;
-- зв'язка `WatchdogService -> PowerService -> TuyaService`;
 - hardware smoke-test із `TCOGCZ16-A`;
 - Web UI;
 - OTA.
@@ -88,8 +94,10 @@ Power Cycle
 - накопичення health statistics;
 - Watchdog decision-layer;
 - захист від restart-loop через `maxRestartPerDay`;
+- production power-control abstraction через `PowerService`;
+- Tuya LAN power controller adapter;
 - Tuya LAN crypto / packet / protocol / service layers;
-- підготовка до production power-cycle через `TCOGCZ16-A`.
+- підготовка до hardware smoke-test power-cycle через `TCOGCZ16-A`.
 
 ---
 
@@ -106,12 +114,13 @@ Application
     ├── Config
     ├── WiFiService
     ├── SystemInfo
+    ├── TuyaService
+    ├── PowerService
     ├── HealthCheckService
-    ├── WatchdogService
-    └── TuyaService
+    └── WatchdogService
 ```
 
-Планований production power-control layer:
+Production power-control layer:
 
 ```text
 WatchdogService
@@ -285,6 +294,7 @@ namespace Tuya
 - `localKey` не логувати;
 - `localKey` не публікувати;
 - Tuya `3.4` поки не підтримується;
+- Tuya `3.5` виявлено на `TCOGCZ16-A`, але ще не підтримується;
 - поточний стабільний напрямок — Tuya LAN `3.3`.
 
 ---
@@ -308,6 +318,7 @@ src/
 │   ├── SystemData.h
 │   ├── HealthCheckData.h
 │   ├── WatchdogData.h
+│   ├── PowerData.h
 │   └── RelayData.h
 │
 ├── Network/
@@ -323,6 +334,7 @@ src/
     ├── Config/
     ├── HealthCheck/
     ├── Logger/
+    ├── Power/
     ├── Storage/
     ├── SystemInfo/
     ├── Tuya/
@@ -392,16 +404,16 @@ pio device monitor -b 74880
 ### Наступний етап
 
 ```text
-PowerController abstraction
+Hardware smoke-test
 ```
 
-Потрібно реалізувати:
+Потрібно перевірити:
 
-- `IPowerController`;
-- `TuyaPowerController`;
-- `PowerService`;
-- заміну старого GPIO `RelayService`;
-- інтеграцію `WatchdogService -> PowerService`;
+- Tuya LAN connection;
+- правильність `relayDps`;
+- `TuyaLan.relayOff()`;
+- `TuyaLan.relayOn()`;
+- повний цикл `WatchdogService -> PowerService -> TuyaPowerController -> TuyaService`;
 - hardware smoke-test із `TCOGCZ16-A`.
 
 ### Далі

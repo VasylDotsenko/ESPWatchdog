@@ -147,7 +147,8 @@ bool ConfigService::validate() const
     }
 
     if (m_data.tuya.protocolVersion != 33 &&
-        m_data.tuya.protocolVersion != 34)
+        m_data.tuya.protocolVersion != 34 &&
+        m_data.tuya.protocolVersion != 35)
     {
         Log.error("Config: invalid tuya protocolVersion");
         return false;

@@ -53,6 +53,7 @@ public:
     bool relayOff();
     bool relaySet(bool state);
     bool relayState() const;
+    bool queryStatus();
 
     void disconnect();
 
@@ -62,6 +63,10 @@ private:
     bool initializeProtocol();
 
     uint32_t nextSequence();
+
+    bool sendHeartbeat();
+
+    bool sendStatusQuery();
 
     bool sendCommand(bool state);
 

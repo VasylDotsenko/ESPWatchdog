@@ -33,6 +33,13 @@ public:
     const PowerData& data() const;
 
 private:
+    static constexpr uint32_t RESTART_RETRY_INTERVAL_MS = 30000;
+    static constexpr uint32_t POWER_ON_RETRY_INTERVAL_MS = 2000;
+    static constexpr uint32_t POWER_ON_WAIT_TIMEOUT_MS = 60000;
+
+private:
+    bool shouldAttemptPowerOn(uint64_t now);
+
     bool powerOn();
 
     bool powerOff();

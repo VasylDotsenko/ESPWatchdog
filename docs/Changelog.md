@@ -4,6 +4,190 @@
 
 ---
 
+## [0.4.12-tuya-on-demand-command] - 01.08.2026
+
+### Статус
+
+Виправлено модель доступності Tuya power-controller.
+
+Раніше `TuyaPowerController::available()` означав, що TCP socket прямо зараз connected. Для Tuya LAN це нестабільно: пристрій може закривати socket після heartbeat/status query, але все одно бути доступним для нової on-demand команди.
+
+### Оновлено
+
+- `Services/Tuya/TuyaService.cpp`;
+- `Services/Power/TuyaPowerController.cpp`;
+- `Services/Power/PowerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`.
+
+### Змінено
+
+- `TuyaService::relaySet()` тепер сам виконує `connect()` перед командою, якщо socket не підключений;
+- `TuyaPowerController::available()` перевіряє WiFi та валідність Tuya config, а не поточний TCP socket;
+- `PowerService::restart()` більше не переходить в `Error`, якщо controller тимчасово unavailable;
+- автоматичний heartbeat/status query після Tuya connect вимкнено.
+
+### Навіщо
+
+На Tuya LAN `3.5` status query у форматі `3.3` провокує швидкий disconnect:
+
+```text
+Tuya connected
+Tuya: status query sent
+Tuya disconnected
+```
+
+Тепер сервіс не тримає socket як постійний стан готовності, а відкриває з'єднання безпосередньо перед relay-командою.
+
+### Версія
+
+```text
+0.4.12-tuya-on-demand-command
+```
+
+---
+
+## [0.4.11-power-reconnect-wait] - 01.08.2026
+
+### Статус
+
+Виправлено runtime-поведінку `PowerService` після `powerOff` через Tuya LAN.
+
+Після relay-команди Tuya TCP socket може тимчасово розірватися. Раніше `PowerService` рівно через `powerOffTime` намагався виконати `powerOn`, бачив `TuyaLan unavailable` і переходив у `Error`.
+
+### Оновлено
+
+- `Models/PowerData.h`;
+- `Services/Power/PowerService.h`;
+- `Services/Power/PowerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`.
+
+### Додано
+
+- очікування доступності power-controller перед `powerOn`;
+- retry `powerOn` кожні `2000 ms`;
+- timeout очікування `powerOn controller` — `60000 ms`;
+- лог:
+
+```text
+PowerService: waiting for controller before power ON
+```
+
+### Результат
+
+Тепер sequence має бути таким:
+
+```text
+PowerService: power OFF
+Tuya disconnected
+Tuya connected
+PowerService: power ON
+PowerService: restart completed
+```
+
+### Версія
+
+```text
+0.4.11-power-reconnect-wait
+```
+
+---
+
+## [0.4.10-tuya35-detected] - 01.08.2026
+
+### Статус
+
+Зафіксовано, що зовнішня розетка `TCOGCZ16-A` використовує Tuya LAN protocol `3.5`.
+
+Поточний `TuyaProtocol` підтримує тільки `3.3`, тому розетка може приймати TCP-з'єднання, але не реагувати на relay-команди.
+
+### Оновлено
+
+- `Services/Tuya/TuyaProtocol.h`;
+- `Services/Tuya/TuyaService.cpp`;
+- `Services/Config/ConfigDefaults.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`.
+
+### Додано
+
+- явне розпізнавання `3.4` та `3.5` як відомих, але ще не підтриманих версій;
+- лог:
+
+```text
+Tuya: protocol 3.5 is detected but not supported yet
+```
+
+- конфігурація тепер приймає `tuya.version = 35`, щоб пристрій не відхиляв валідну конфігурацію.
+
+### Висновок
+
+Проблема з відсутністю реакції розетки не в `relayDps` як першопричині, а в несумісності поточної реалізації `3.3` з реальною Tuya LAN версією `3.5`.
+
+Наступний етап — окрема реалізація Tuya LAN `3.5`.
+
+### Версія
+
+```text
+0.4.10-tuya35-detected
+```
+
+---
+
+## [0.4.9-tuya-diagnostics] - 01.08.2026
+
+### Статус
+
+Додано діагностику Tuya LAN команд, оскільки зовнішня розетка `TCOGCZ16-A` підключається, але не реагує на relay-команди.
+
+### Оновлено
+
+- `Services/Tuya/TuyaService.h`;
+- `Services/Tuya/TuyaService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`.
+
+### Додано
+
+- `TuyaService::queryStatus()`;
+- автоматичний heartbeat після TCP connect;
+- автоматичний status query після TCP connect;
+- логування relay-команд:
+  - `seq`;
+  - `dps`;
+  - `state`;
+  - `bytes`;
+- логування отриманих пакетів:
+  - `cmd`;
+  - `seq`;
+  - `payload size`;
+- логування помилки decrypt payload без виводу `localKey`.
+
+### Навіщо
+
+Цей етап дозволяє відрізнити три різні проблеми:
+
+- розетка не відповідає взагалі;
+- відповідь приходить, але payload не decrypt'иться через неправильний `localKey` або protocol version;
+- відповідь приходить, але керується інший DPS, не `relayDps`.
+
+### Версія
+
+```text
+0.4.9-tuya-diagnostics
+```
+
+---
+
 ## [0.4.8-power-controller] - 30.07.2026
 
 ### Статус
@@ -39,6 +223,7 @@ WatchdogService
 - `restartInProgress()`;
 - `restartCompleted()`;
 - `clearRestartCompleted()`;
+- throttling повторних restart-спроб при недоступному power-controller;
 - статистику restart/error;
 - облік `lastPowerOn`, `lastPowerOff`, `lastRestart`, `lastError`;
 - стан `PowerState`.

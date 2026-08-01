@@ -17,6 +17,9 @@ struct PowerRuntime
     bool restartCompleted = false;
     bool lastOperationSucceeded = false;
     uint32_t powerOffTime = 0;
+    uint64_t lastRestartAttempt = 0;
+    uint64_t lastPowerOnAttempt = 0;
+    uint64_t powerOnWaitStarted = 0;
 };
 
 struct PowerStatistics

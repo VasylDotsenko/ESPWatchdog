@@ -124,3 +124,20 @@ void Application::loop()
         Watchdog.restartCompleted();
     }
 }
+
+//=============================================================================
+// Status snapshot
+//=============================================================================
+
+ApiStatusData Application::status() const
+{
+    ApiStatusData status;
+
+    status.system = System.status();
+    status.network = Network.status();
+    status.health = HealthCheck.status();
+    status.watchdog = Watchdog.status();
+    status.power = Power.status();
+
+    return status;
+}

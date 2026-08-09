@@ -13,7 +13,7 @@
 - очищення runtime-логів;
 - підготовка до наступних production-модулів: Web API, diagnostics, restart history export.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.24-network-status-snapshot`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.25-api-status-snapshot`.
 
 ## Вже зроблено
 
@@ -151,6 +151,7 @@
 - `WatchdogService` надає API-ready `WatchdogStatusData` snapshot;
 - `SystemInfoService` надає API-ready `SystemStatusData` snapshot;
 - `WiFiService` надає API-ready `NetworkStatusData` snapshot;
+- `Application` надає агрегований API-ready `ApiStatusData` snapshot;
 - `PowerService` має throttling повторних restart-спроб при недоступному Tuya LAN controller;
 - `PowerService` чекає перепідключення Tuya LAN controller перед `powerOn`, замість негайного переходу в `Error`;
 - `TuyaPowerController` керує живленням через `TuyaLan.relayOn()` / `TuyaLan.relayOff()`.
@@ -249,7 +250,7 @@
 
 ## Наступні кроки
 
-1. Зафіксувати `v0.4.24-network-status-snapshot` як hardware-verified baseline.
+1. Зафіксувати `v0.4.25-api-status-snapshot` як hardware-verified baseline.
 2. Реалізувати Tuya status polling policy.
 3. Додати restart history Web/API export.
 4. Додати Web API для status/config/health/watchdog/power.

@@ -4,6 +4,55 @@
 
 ---
 
+## [0.4.25-api-status-snapshot] - 09.08.2026
+
+### Статус
+
+Додано агрегований API-ready status snapshot.
+
+Після створення окремих snapshot-моделей для System, Network, Health, Watchdog і Power додано єдину модель `ApiStatusData`, яка збирає весь runtime стан проєкту в один DTO для майбутнього `GET /api/status`.
+
+### Оновлено
+
+- `Models/ApiStatusData.h`;
+- `Core/Application.h`;
+- `Core/Application.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `ApiStatusData`;
+- `Application::status()`.
+
+### Містить
+
+- `SystemStatusData`;
+- `NetworkStatusData`;
+- `HealthStatusData`;
+- `WatchdogStatusData`;
+- `PowerStatusData`.
+
+### Призначення
+
+`ApiStatusData` стане джерелом для:
+
+- `/api/status`;
+- dashboard overview;
+- diagnostics summary;
+- майбутнього MQTT telemetry summary.
+
+### Версія
+
+```text
+0.4.25-api-status-snapshot
+```
+
+---
+
 ## [0.4.24-network-status-snapshot] - 09.08.2026
 
 ### Статус

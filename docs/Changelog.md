@@ -4,6 +4,128 @@
 
 ---
 
+## [0.4.49-web-api-config-split] - 09.08.2026
+
+### Статус
+
+Третій етап розділення `WebServerService.cpp`.
+
+### Оновлено
+
+- handler-и `/api/config` винесено з `WebServerService.cpp`;
+- додано окремі файли:
+  - `WebApiConfig.h`;
+  - `WebApiConfig.cpp`;
+- `WebServerService` залишає за собою routing та authorization;
+- `WebApiConfig` відповідає за:
+  - streaming `GET /api/config`;
+  - `POST /api/config`;
+  - маскування секретів для Web UI;
+  - формування JSON-відповідей конфігурації;
+- поведінка Web UI/API не змінювалась.
+
+### Чому
+
+`/api/config` є одним із найбільших Web API handler-ів. Винесення його в окремий модуль зменшує розмір `WebServerService.cpp` і робить подальше обслуговування сторінок налаштувань безпечнішим.
+
+### Версія
+
+```text
+0.4.49-web-api-config-split
+```
+
+---
+
+## [0.4.48-web-json-utils] - 09.08.2026
+
+### Статус
+
+Другий етап розділення `WebServerService.cpp`.
+
+### Оновлено
+
+- JSON escaping винесено з `WebServerService.cpp`;
+- додано окремі файли:
+  - `WebJsonUtils.h`;
+  - `WebJsonUtils.cpp`;
+- streaming endpoints `/api/config` та `/api/logs` тепер використовують:
+
+```cpp
+WebJsonUtils::sendEscaped(...)
+```
+
+- поведінка Web UI та API не змінювалась.
+
+### Чому
+
+`WebServerService` не повинен містити низькорівневі helper-и форматування JSON. Винесення `sendEscaped()` готує код до подальшого розділення на `WebApiConfig`, `WebApiLogs` і command handlers.
+
+### Версія
+
+```text
+0.4.48-web-json-utils
+```
+
+---
+
+## [0.4.47-web-pages-split] - 09.08.2026
+
+### Статус
+
+Перший етап розділення `WebServerService.cpp` після стабілізації Web UI.
+
+### Оновлено
+
+- вбудований HTML/JS Dashboard винесено з `WebServerService.cpp`;
+- додано окремі файли:
+  - `WebPages.h`;
+  - `WebPages.cpp`;
+- `WebServerService` тепер відповідає за маршрути та HTTP handlers, а не зберігає великий HTML-документ;
+- поведінка Web UI не змінювалась.
+
+### Чому
+
+`WebServerService.cpp` став занадто великим і складним для підтримки. Винесення сторінки в окремий модуль — безпечний перший крок до подальшого розділення Web API, сторінок і command handlers.
+
+### Версія
+
+```text
+0.4.47-web-pages-split
+```
+
+---
+
+## [0.4.46-dashboard-light] - 09.08.2026
+
+### Статус
+
+Оптимізація Web Dashboard після стабілізації сторінок конфігурації.
+
+### Оновлено
+
+- Dashboard більше не використовує великий агрегований endpoint `/api/status`;
+- Web UI завантажує статус окремими меншими запитами:
+  - `/api/system`;
+  - `/api/network`;
+  - `/api/health`;
+  - `/api/watchdog`;
+  - `/api/power`;
+  - `/api/config`;
+- запити виконуються послідовно, без одночасного навантаження на ESP8266 WebServer;
+- зменшено ризик heap/stack проблем під час регулярного оновлення Dashboard.
+
+### Чому
+
+`/api/status` формує великий агрегований JSON. Для ESP8266 стабільніше віддавати менші JSON-відповіді та не запускати кілька важких HTTP handler-ів одночасно.
+
+### Версія
+
+```text
+0.4.46-dashboard-light
+```
+
+---
+
 ## [0.4.45-config-pages-light] - 09.08.2026
 
 ### Статус

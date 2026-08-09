@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.4.40-web-api-auth
+0.4.49-web-api-config-split
 ```
 
 Production target:
@@ -16,27 +16,27 @@ Production target:
 
 ---
 
-## Поточний стан
+## Поточний статус
 
-Проєкт вже має робочий runtime для ESP8266 / WeMos D1 mini:
+ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini:
 
 - завантаження конфігурації з LittleFS;
-- WiFi connection;
+- first-boot WiFi setup portal;
 - TCP/SSH HealthCheck;
 - Watchdog decision-layer;
-- Tuya LAN `3.5` power-control для `TCOGCZ16-A`;
+- Tuya LAN `3.5` power-control для розетки `TCOGCZ16-A`;
 - restart history;
 - Web API;
-- lightweight Web Dashboard;
+- Web Dashboard;
 - Web configuration editor;
-- controlled Tuya status polling policy;
-- Web API token protection for state-changing commands.
+- runtime logs page;
+- API token protection для state-changing commands.
 
-Поточний етап — інтеграційна стабілізація перед production hardening.
+Поточний етап — **WebServer refactoring + stability hardening** перед переходом у `0.5.x`.
 
 ---
 
-## Завершено
+## Завершено у 0.4.x
 
 ### Core
 
@@ -47,37 +47,58 @@ Production target:
 - `BuildInfo.h`;
 - глобальні сервіси:
   - `Log`;
+  - `Storage`;
   - `Config`;
   - `Network`;
   - `System`;
+  - `TuyaLan`;
+  - `Power`;
   - `HealthCheck`;
   - `Watchdog`;
-  - `Power`;
-  - `TuyaLan`;
   - `WebServer`.
 
-### Config
+### Storage / Config
 
-- `config.json`;
-- `ConfigService`;
-- LittleFS load/save;
-- default config;
+- LittleFS mount;
+- `config.json` load/save;
+- default configuration;
 - validation;
+- `ConfigService::updateFromJson(...)`;
 - `GET /api/config`;
 - `POST /api/config`;
-- Web configuration editor.
+- streaming `GET /api/config`;
+- Web configuration editor;
+- окремі сторінки налаштувань:
+  - `/config/device`;
+  - `/config/wifi`;
+  - `/config/watchdog`;
+  - `/config/relay`;
+  - `/config/tuya`;
+  - `/config/security`.
 
-### Logger / Storage
+### Logger
 
 - printf-style logger;
 - рівні логування;
-- RAM/Flash string support;
-- Storage синхронізовано з Logger;
-- JSON read/write diagnostics.
+- підтримка RAM-рядків і Flash-рядків;
+- runtime ring-buffer;
+- `GET /api/logs`;
+- окрема сторінка `/logs`;
+- streaming JSON для `/api/logs`;
+- виправлено stack-heavy log serialization.
 
 ### WiFi / SystemInfo
 
 - `WiFiService`;
+- first-boot setup AP:
+
+```text
+SSID: ESP-Watchdog-Setup
+Password: 12345678
+URL: http://192.168.4.1/config/wifi
+```
+
+- setup mode без запуску Watchdog/Power-cycle;
 - `SystemInfoService`;
 - `NetworkStatusData`;
 - `SystemStatusData`;
@@ -86,20 +107,23 @@ Production target:
 ### HealthCheck
 
 - `HealthCheckService`;
-- `HealthCheckInfo`;
 - `HealthCheckResult`;
+- `HealthCheckInfo`;
 - `IHealthCheckProvider`;
 - `IcmpHealthCheckProvider`;
 - native ESP8266 SDK ICMP session;
-- TCP/SSH HealthCheck provider;
-- API-ready `HealthStatusData`.
+- `TcpHealthCheckProvider`;
+- активний production HealthCheck через TCP connect;
+- SSH-based перевірка через `watchdog.targetPort = 22`;
+- ICMP залишено як fallback/diagnostic provider.
 
 ### Watchdog
 
 - `WatchdogService`;
 - restart decision-layer;
-- cooldown через `bootDelay`;
-- restart limit через `maxRestartPerDay`;
+- `bootDelay` cooldown;
+- `maxRestartPerDay` limit;
+- restart completion callback;
 - API-ready `WatchdogStatusData`.
 
 ### Power / Tuya
@@ -112,143 +136,110 @@ Production target:
 - `TuyaPacket`;
 - `TuyaProtocol`;
 - Tuya LAN `3.5` session negotiation;
-- Tuya LAN `3.5` relay command path;
+- Tuya LAN `3.5` relay OFF/ON command path;
+- command ACK handling;
+- on-demand Tuya connect перед командою;
+- Tuya status polling policy:
+  - `tuya.statusPollingEnabled`;
+  - `tuya.statusPollingInterval`;
+  - polling disabled by default;
 - manual power API commands:
   - `POST /api/power/on`;
   - `POST /api/power/off`;
   - `POST /api/power/restart`;
-- dashboard power buttons.
+- dashboard power buttons;
+- restart history.
 
 ### Web API / Dashboard
 
 - `GET /`;
 - `GET /api`;
 - `GET /api/status`;
-- `GET /api/system`;
-- `GET /api/network`;
-- `GET /api/health`;
-- `GET /api/watchdog`;
-- `GET /api/power`;
-- `GET /api/config`;
-- `POST /api/config`;
-- `POST /api/power/on`;
-- `POST /api/power/off`;
-- `POST /api/power/restart`;
-- dashboard status cards;
-- dashboard command log;
-- dashboard restart history;
-- dashboard controlled host config;
-- dashboard Tuya socket config;
-- dashboard full config editor.
+- subsystem endpoints:
+  - `GET /api/system`;
+  - `GET /api/network`;
+  - `GET /api/health`;
+  - `GET /api/watchdog`;
+  - `GET /api/power`;
+- command endpoints:
+  - `POST /api/system/restart`;
+  - `POST /api/config`;
+  - `POST /api/power/on`;
+  - `POST /api/power/off`;
+  - `POST /api/power/restart`;
+- API token protection:
+  - `security.apiAuthEnabled`;
+  - `security.apiToken`;
+  - `Authorization: Bearer <token>`;
+  - fallback `?token=...`;
+- Web Dashboard lightweight mode;
+- config pages no longer call heavy `/api/status`;
+- dashboard no longer depends on aggregate `/api/status`;
+- Web UI split:
+  - `WebPages.h`;
+  - `WebPages.cpp`;
+- JSON helpers split:
+  - `WebJsonUtils.h`;
+  - `WebJsonUtils.cpp`;
+- config API split:
+  - `WebApiConfig.h`;
+  - `WebApiConfig.cpp`.
 
 ---
 
-## Наступний етап — 0.4.x Stabilization
+## Поточний етап — 0.4.x WebServer split
 
-### 0.4.35 — Config pages + System restart API
+Мета: зробити `WebServerService.cpp` читабельним, стабільним і дешевим по RAM/stack.
 
-Мета:
+### 0.4.50 — WebApiLogs split
 
-- винести налаштування кожної секції на окрему сторінку;
-- додати безпечний reboot ESP з Web API;
-- показувати після збереження конфігу повідомлення `Restart recommended`;
-- додати кнопку `Restart ESP` на dashboard.
+Статус: next.
 
-Planned endpoints:
+План:
 
-```text
-POST /api/system/restart
-```
+- винести `GET /api/logs` з `WebServerService.cpp`;
+- створити:
+  - `WebApiLogs.h`;
+  - `WebApiLogs.cpp`;
+- залишити streaming JSON;
+- не змінювати поведінку `/logs`.
 
-Статус: реалізовано.
+### 0.4.51 — WebApiPower split
 
-### 0.4.36 — Runtime log buffer
+План:
 
-Мета:
+- винести manual power endpoints:
+  - `POST /api/power/on`;
+  - `POST /api/power/off`;
+  - `POST /api/power/restart`;
+- залишити authorization у `WebServerService`;
+- централізувати JSON responses для command handlers.
 
-- додати ring-buffer для runtime logs;
-- вивести logs у Web API;
-- показати logs на dashboard.
+### 0.4.52 — WebApiStatus split
 
-Planned endpoints:
+План:
 
-```text
-GET /api/logs
-```
+- винести read-only subsystem endpoints:
+  - `/api/system`;
+  - `/api/network`;
+  - `/api/health`;
+  - `/api/watchdog`;
+  - `/api/power`;
+- оцінити потребу у streaming serializer для status endpoints;
+- залишити `/api/status` як compatibility endpoint.
 
-Статус: реалізовано.
+### 0.4.53 — WebServer route cleanup
 
-### 0.4.37 — First boot WiFi setup
+План:
 
-Мета:
-
-- якщо `wifi.ssid` порожній, автоматично підняти setup AP;
-- якщо підключення до домашньої мережі не вдалося, перейти в setup AP;
-- дозволити налаштувати WiFi через Web UI;
-- не запускати Watchdog/Power-cycle у setup mode.
-
-Setup AP:
-
-```text
-SSID: ESP-Watchdog-Setup
-Password: 12345678
-URL: http://192.168.4.1/config/wifi
-```
-
-Статус: реалізовано.
-
-### 0.4.38 — Tuya status polling policy
-
-Мета:
-
-- додати явні налаштування `tuya.statusPollingEnabled` і `tuya.statusPollingInterval`;
-- стабілізувати Tuya status polling;
-- не провокувати disconnect на Tuya LAN `3.5`;
-- не виконувати автоматичний `3.5` status query до реалізації окремого `6699 DPQuery`;
-- показувати реальний стан relay на dashboard.
-
-Статус: реалізовано як safe opt-in policy.
-
-### 0.4.39 — TCP/SSH HealthCheck
-
-Мета:
-
-- замінити нестабільний ICMP Ping на TCP connect перевірку;
-- використовувати `watchdog.targetPort`;
-- для SSH-based health check використовувати port `22`;
-- залишити ICMP provider як fallback.
-
-Статус: реалізовано.
-
-### 0.4.40 — Web API authentication
-
-Мета:
-
-- захистити state-changing endpoints;
-- додати API token у `X-API-Token`;
-- додати fallback `?token=...` для ручного тестування;
-- не дозволяти випадковий power-cycle без авторизації.
-
-Critical endpoints:
-
-```text
-POST /api/config
-POST /api/power/on
-POST /api/power/off
-POST /api/power/restart
-POST /api/system/restart
-```
-
-Статус: реалізовано.
-
-### 0.4.41 — Dashboard polish
-
-Мета:
-
-- покращити UX;
-- рознести Dashboard / Config / Logs;
-- додати зрозуміші статуси помилок;
-- додати reconnect/reload feedback.
+- зробити route registration компактнішим;
+- згрупувати routes:
+  - pages;
+  - read-only API;
+  - config API;
+  - command API;
+  - CORS/OPTIONS;
+- зменшити `WebServerService.cpp` до ролі coordinator-а.
 
 ---
 
@@ -258,31 +249,45 @@ POST /api/system/restart
 
 - harden Web API authentication;
 - safe defaults;
-- не показувати секрети;
-- document threat model для LAN-only deployment.
+- не показувати секрети у відкритому вигляді;
+- перевірити behavior при порожньому `security.apiToken`;
+- LAN-only threat model;
+- audit state-changing endpoints.
 
 ### 0.5.1 — Config apply policy
 
 - визначити, які налаштування застосовуються live;
 - визначити, які потребують reboot;
-- додати `requiresRestart` у `POST /api/config` response.
+- додати `restartRecommended`;
+- додати `requiresRestart`;
+- після зміни WiFi/Tuya/Watchdog config показувати зрозумілий UX.
 
 ### 0.5.2 — Diagnostics
 
 - heap diagnostics;
 - uptime diagnostics;
+- reset reason diagnostics;
+- WiFi reconnect diagnostics;
 - Tuya session diagnostics;
 - watchdog reason diagnostics;
-- export status snapshot.
+- export runtime snapshot.
 
 ### 0.5.3 — Recovery behavior
 
-- покращення поведінки при:
-  - WiFi reconnect;
-  - Tuya unavailable;
-  - config invalid;
-  - LittleFS write failure;
-  - repeated watchdog failures.
+- WiFi reconnect behavior;
+- Tuya unavailable behavior;
+- config invalid behavior;
+- LittleFS write failure behavior;
+- repeated watchdog failures behavior;
+- restart-loop protection review.
+
+### 0.5.4 — Memory / stack audit
+
+- audit `JsonDocument` usage;
+- audit stack buffers;
+- перевірити WebServer handlers під навантаженням;
+- прибрати зайві великі локальні буфери;
+- перевірити 24h heap stability.
 
 ---
 
@@ -292,21 +297,24 @@ POST /api/system/restart
 
 - заборона великих архітектурних змін;
 - тільки bugfix/stability;
-- оновлення документації;
-- перевірка повної збірки.
+- документація актуалізована;
+- повна збірка без warnings/error;
+- baseline config.json перевірений.
 
 ### 0.9.1 — Hardware verification
 
 Перевірити на реальному hardware:
 
 - cold boot;
+- first boot setup portal;
 - WiFi reconnect;
-- HealthCheck online/offline;
+- TCP/SSH HealthCheck online/offline;
 - Watchdog trigger;
 - Tuya power OFF;
 - Tuya power ON;
 - restart history;
 - Web config save;
+- ESP restart з Web UI;
 - reboot after config change.
 
 ### 0.9.2 — Long run test
@@ -315,7 +323,9 @@ POST /api/system/restart
 - memory stability;
 - no heap fragmentation symptoms;
 - no unexpected WDT reset;
-- Tuya LAN stability.
+- Tuya LAN stability;
+- Web UI stability;
+- no restart loop.
 
 ---
 
@@ -326,14 +336,17 @@ POST /api/system/restart
 - firmware стабільно стартує;
 - config створюється/читається/зберігається;
 - WiFi reconnect працює;
-- HealthCheck стабільний;
+- first boot setup працює;
+- TCP/SSH HealthCheck стабільний;
 - Watchdog не створює restart-loop;
 - Tuya LAN power-cycle hardware-verified;
+- restart history працює;
 - Web API захищений;
 - dashboard показує runtime state;
 - dashboard дозволяє змінювати config;
 - logs/diagnostics доступні;
-- документація актуальна.
+- документація актуальна;
+- 24h runtime test пройдено.
 
 ---
 
@@ -341,9 +354,10 @@ POST /api/system/restart
 
 Можливі напрями:
 
-- MQTT status publishing;
-- HTTP/TCP HealthCheck providers;
 - OTA update;
+- MQTT status publishing;
+- HTTP HealthCheck provider;
+- HTTPS HealthCheck provider;
 - Web UI assets у LittleFS;
 - backup/restore config;
 - multiple controlled hosts;

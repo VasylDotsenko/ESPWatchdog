@@ -68,11 +68,6 @@ private:
 
     uint32_t requestedPowerOffTime();
 
-    void maskSecret(
-        const char* source,
-        char* output,
-        size_t outputSize) const;
-
     bool tokenMatches(
         const char* received,
         const char* expected) const;

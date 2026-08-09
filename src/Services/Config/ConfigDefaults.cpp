@@ -30,6 +30,9 @@ namespace DefaultConfig
     constexpr uint8_t TUYA_RELAY_DPS = 1;
     constexpr bool TUYA_STATUS_POLLING_ENABLED = false;
     constexpr uint32_t TUYA_STATUS_POLLING_INTERVAL = 60000;
+
+    constexpr bool API_AUTH_ENABLED = false;
+    constexpr char API_TOKEN[] = "";
 }
 
 void ConfigService::setDefaults()
@@ -69,6 +72,10 @@ void ConfigService::setDefaults()
         DefaultConfig::TUYA_STATUS_POLLING_ENABLED;
     m_data.tuya.statusPollingInterval =
         DefaultConfig::TUYA_STATUS_POLLING_INTERVAL;
+
+    m_data.security.apiAuthEnabled =
+        DefaultConfig::API_AUTH_ENABLED;
+    copyString(m_data.security.apiToken, DefaultConfig::API_TOKEN);
 }
 
 bool ConfigService::validate() const
@@ -169,6 +176,13 @@ bool ConfigService::validate() const
     if (m_data.tuya.statusPollingInterval < 30000)
     {
         Log.error("Config: invalid tuya statusPollingInterval");
+        return false;
+    }
+
+    if (m_data.security.apiAuthEnabled &&
+        strlen(m_data.security.apiToken) < 8)
+    {
+        Log.error("Config: invalid apiToken");
         return false;
     }
 

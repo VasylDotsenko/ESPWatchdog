@@ -50,6 +50,10 @@ private:
 
     void handleApiOptions();
 
+    bool authorizeCommand();
+
+    void sendUnauthorized();
+
     void handleHealth();
 
     void handleConfigPage();
@@ -68,6 +72,10 @@ private:
         const char* source,
         char* output,
         size_t outputSize) const;
+
+    bool tokenMatches(
+        const char* received,
+        const char* expected) const;
 
 private:
     ESP8266WebServer m_server { DEFAULT_PORT };

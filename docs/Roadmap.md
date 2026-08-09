@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.4.39-tcp-ssh-healthcheck
+0.4.40-web-api-auth
 ```
 
 Production target:
@@ -29,7 +29,8 @@ Production target:
 - Web API;
 - lightweight Web Dashboard;
 - Web configuration editor;
-- controlled Tuya status polling policy.
+- controlled Tuya status polling policy;
+- Web API token protection for state-changing commands.
 
 Поточний етап — інтеграційна стабілізація перед production hardening.
 
@@ -219,12 +220,13 @@ URL: http://192.168.4.1/config/wifi
 
 Статус: реалізовано.
 
-### 0.4.40 — Web API protection
+### 0.4.40 — Web API authentication
 
 Мета:
 
 - захистити state-changing endpoints;
-- мінімальний варіант: API token або Basic Auth;
+- додати API token у `X-API-Token`;
+- додати fallback `?token=...` для ручного тестування;
 - не дозволяти випадковий power-cycle без авторизації.
 
 Critical endpoints:
@@ -236,6 +238,8 @@ POST /api/power/off
 POST /api/power/restart
 POST /api/system/restart
 ```
+
+Статус: реалізовано.
 
 ### 0.4.41 — Dashboard polish
 
@@ -252,7 +256,7 @@ POST /api/system/restart
 
 ### 0.5.0 — Security baseline
 
-- Web API authentication;
+- harden Web API authentication;
 - safe defaults;
 - не показувати секрети;
 - document threat model для LAN-only deployment.

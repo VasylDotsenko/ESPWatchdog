@@ -118,6 +118,15 @@ bool ConfigService::loadJson()
     m_data.tuya.statusPollingInterval =
         tuya["statusPollingInterval"] | 60000;
 
+    JsonObjectConst security = doc["security"];
+
+    m_data.security.apiAuthEnabled =
+        security["apiAuthEnabled"] | false;
+
+    copyString(
+        m_data.security.apiToken,
+        security["apiToken"] | "");
+
     Log.info("Configuration loaded");
 
     return true;
@@ -172,6 +181,13 @@ bool ConfigService::saveJson() const
         m_data.tuya.statusPollingEnabled;
     tuya["statusPollingInterval"] =
         m_data.tuya.statusPollingInterval;
+
+    JsonObject security = doc["security"].to<JsonObject>();
+
+    security["apiAuthEnabled"] =
+        m_data.security.apiAuthEnabled;
+    security["apiToken"] =
+        m_data.security.apiToken;
 
     return Storage.writeJson(CONFIG_FILE, doc);
 }
@@ -412,6 +428,25 @@ bool ConfigService::updateFromJson(
             m_data.tuya.statusPollingInterval =
                 tuya["statusPollingInterval"] |
                 m_data.tuya.statusPollingInterval;
+        }
+    }
+
+    JsonObjectConst security = doc["security"];
+
+    if (!security.isNull())
+    {
+        if (!security["apiAuthEnabled"].isNull())
+        {
+            m_data.security.apiAuthEnabled =
+                security["apiAuthEnabled"] |
+                m_data.security.apiAuthEnabled;
+        }
+
+        if (!security["apiToken"].isNull())
+        {
+            copyString(
+                m_data.security.apiToken,
+                security["apiToken"] | "");
         }
     }
 

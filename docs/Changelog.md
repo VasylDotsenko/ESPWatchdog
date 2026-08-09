@@ -4,6 +4,71 @@
 
 ---
 
+## [0.4.40-web-api-auth] - 09.08.2026
+
+### Статус
+
+Додано базовий захист state-changing Web API endpoints.
+
+Read-only endpoints залишаються відкритими для dashboard і diagnostics, а небезпечні `POST` команди можуть бути захищені API token.
+
+### Оновлено
+
+- `Services/Config/Config.h`;
+- `Services/Config/ConfigDefaults.cpp`;
+- `Services/Config/ConfigJson.cpp`;
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `config.json`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Roadmap.md`;
+- `Changelog.md`.
+
+### Додано
+
+- секцію конфігурації `security`;
+- `security.apiAuthEnabled`;
+- `security.apiToken`;
+- Web UI сторінку `/config/security`;
+- browser-local token storage через кнопку `api token`;
+- перевірку `X-API-Token`;
+- fallback `?token=...` для curl/manual testing;
+- `401 {"ok":false,"error":"unauthorized"}` для неавторизованих команд.
+
+### Захищені endpoints
+
+```text
+POST /api/config
+POST /api/system/restart
+POST /api/power/on
+POST /api/power/off
+POST /api/power/restart
+```
+
+### Поведінка за замовчуванням
+
+Auth вимкнений:
+
+```json
+"security": {
+  "apiAuthEnabled": false,
+  "apiToken": ""
+}
+```
+
+Це зберігає сумісність із first-boot setup portal і старими `/config.json`.
+
+### Версія
+
+```text
+0.4.40-web-api-auth
+```
+
+---
+
 ## [0.4.39-tcp-ssh-healthcheck] - 09.08.2026
 
 ### Статус

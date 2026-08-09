@@ -8,6 +8,7 @@ constexpr size_t HOSTNAME_LENGTH      = 32;
 constexpr size_t WIFI_SSID_LENGTH     = 32;
 constexpr size_t WIFI_PASSWORD_LENGTH = 64;
 constexpr size_t TARGET_HOST_LENGTH   = 64;
+constexpr size_t API_TOKEN_LENGTH     = 33;
 
 constexpr size_t TUYA_IP_LENGTH        = 16;
 constexpr size_t TUYA_DEVICE_ID_LENGTH = 24;
@@ -64,6 +65,13 @@ struct TuyaConfig
     uint32_t statusPollingInterval;
 };
 
+struct SecurityConfig
+{
+    bool apiAuthEnabled;
+
+    char apiToken[API_TOKEN_LENGTH];
+};
+
 struct AppConfig
 {
     DeviceConfig device;
@@ -71,6 +79,7 @@ struct AppConfig
     WatchdogConfig watchdog;
     RelayConfig relay;
     TuyaConfig tuya;
+    SecurityConfig security;
 };
 
 class ConfigService

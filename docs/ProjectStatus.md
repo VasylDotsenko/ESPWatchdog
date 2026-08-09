@@ -11,10 +11,9 @@
 - hardware verification поточного Web Dashboard;
 - перевірка `GET /api/config` і `POST /api/config` на реальній платі;
 - стабілізація Tuya LAN `3.5` runtime;
-- підготовка Web API authentication / basic protection;
 - production polish Web Dashboard.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.39-tcp-ssh-healthcheck`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.40-web-api-auth`.
 
 ## Вже зроблено
 
@@ -210,6 +209,13 @@
   - `tuya.statusPollingInterval`;
   - polling disabled by default;
   - `3.5` automatic polling пропускається до реалізації окремого `6699 DPQuery`.
+- додано Web API authentication для state-changing endpoints:
+  - `security.apiAuthEnabled`;
+  - `security.apiToken`;
+  - `X-API-Token`;
+  - fallback `?token=...`;
+  - `/config/security`;
+  - browser-local token storage.
 
 ### Tuya
 
@@ -313,12 +319,13 @@
 - потрібні реальні `ip`, `deviceId`, `localKey`, `version`, `relayDps`;
 - для Tuya LAN `3.5` status polling поки не виконує `6699 DPQuery`;
 - `localKey` не можна логувати або дублювати у відкритих звітах;
+- `security.apiToken` не можна логувати або дублювати у відкритих звітах;
 - потрібно перевірити, що Serial Monitor і `Log.begin(...)` використовують однакову швидкість;
 - потрібно поступово винести форматування в `Formatters/LogFormatter`.
 
 ## Наступні кроки
 
 1. Hardware-verify TCP/SSH HealthCheck на реальному контрольованому хості.
-2. Додати authentication / basic protection для Web API command endpoints.
-3. Реалізувати Tuya LAN `3.5` status DPQuery через `6699`.
-4. Підготувати production Web Dashboard polish.
+2. Реалізувати Tuya LAN `3.5` status DPQuery через `6699`.
+3. Підготувати production Web Dashboard polish.
+4. Поступово винести форматування в `Formatters/LogFormatter`.

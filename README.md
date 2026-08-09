@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.39-tcp-ssh-healthcheck
+0.4.40-web-api-auth
 ```
 
 Production target:
@@ -139,6 +139,7 @@ http://192.168.4.1/config/wifi
 - setup portal address `192.168.4.1`;
 - Watchdog/Power actions disabled while setup portal is active;
 - safe opt-in Tuya status polling policy;
+- Web API token protection for state-changing commands;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;
@@ -149,7 +150,6 @@ http://192.168.4.1/config/wifi
 
 - Tuya LAN `3.5` status DPQuery через `6699`;
 - Web UI production polish;
-- Web API authentication;
 - OTA.
 
 ---
@@ -389,6 +389,10 @@ namespace Tuya
     "relayDps": 1,
     "statusPollingEnabled": false,
     "statusPollingInterval": 60000
+  },
+  "security": {
+    "apiAuthEnabled": false,
+    "apiToken": ""
   }
 }
 ```
@@ -396,6 +400,44 @@ namespace Tuya
 Важливо:
 
 - `localKey` не логувати;
+- `security.apiToken` не логувати;
+
+---
+
+## Web API authentication
+
+State-changing endpoints можуть бути захищені API token:
+
+```text
+POST /api/config
+POST /api/system/restart
+POST /api/power/on
+POST /api/power/off
+POST /api/power/restart
+```
+
+Налаштування:
+
+```json
+"security": {
+  "apiAuthEnabled": true,
+  "apiToken": "change-this-token"
+}
+```
+
+Web UI передає токен через header:
+
+```text
+X-API-Token: change-this-token
+```
+
+Для ручного тесту також доступний fallback:
+
+```text
+POST /api/power/restart?token=change-this-token
+```
+
+За замовчуванням auth вимкнений, щоб не ламати first-boot setup portal.
 - `localKey` не публікувати;
 - Tuya `3.4` поки не підтримується;
 - Tuya `3.5` підтримується для `TCOGCZ16-A`;

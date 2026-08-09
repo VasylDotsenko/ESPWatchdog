@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     39
+#define FW_VERSION_PATCH     40
 
-#define FW_VERSION_STRING    "0.4.39"
-#define FW_VERSION_LABEL     "tcp-ssh-healthcheck"
-#define FW_VERSION_FULL      "0.4.39-tcp-ssh-healthcheck"
+#define FW_VERSION_STRING    "0.4.40"
+#define FW_VERSION_LABEL     "web-api-auth"
+#define FW_VERSION_FULL      "0.4.40-web-api-auth"
 
 //=============================================================================
 // Project

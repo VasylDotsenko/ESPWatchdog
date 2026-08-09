@@ -4,6 +4,61 @@
 
 ---
 
+## [0.4.20-power-status-snapshot] - 09.08.2026
+
+### Статус
+
+Додано API-ready snapshot модель для Power subsystem.
+
+Це підготовчий етап перед Web API: `PowerService` тепер може віддати повний, стабільний POD-знімок свого стану без прив'язки до JSON, WebServer або Logger.
+
+### Оновлено
+
+- `Models/PowerStatusData.h`;
+- `Services/Power/PowerService.h`;
+- `Services/Power/PowerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `PowerStatusSummary`;
+- `PowerStatusStatistics`;
+- `RestartHistoryStatus`;
+- `PowerStatusData`;
+- `PowerService::status()`.
+
+### Містить
+
+- поточний `PowerState`;
+- доступність power-controller;
+- restart runtime flags;
+- активний restart id;
+- power statistics;
+- restart history counters;
+- копію ring-buffer restart history entries.
+
+### Призначення
+
+`PowerStatusData` стане джерелом для:
+
+- `/api/power/status`;
+- `/api/power/history`;
+- diagnostics endpoint;
+- майбутнього MQTT telemetry;
+- Web Dashboard.
+
+### Версія
+
+```text
+0.4.20-power-status-snapshot
+```
+
+---
+
 ## [0.4.19-restart-history-log] - 09.08.2026
 
 ### Статус

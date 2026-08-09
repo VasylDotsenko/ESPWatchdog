@@ -6,6 +6,7 @@
 #include "Core/Timer.h"
 #include "IPowerController.h"
 #include "Models/PowerData.h"
+#include "Models/PowerStatusData.h"
 
 class PowerService final : public IService
 {
@@ -31,6 +32,8 @@ public:
 
     [[nodiscard]]
     const PowerData& data() const;
+
+    PowerStatusData status() const;
 
 private:
     static constexpr uint32_t RESTART_RETRY_INTERVAL_MS = 30000;

@@ -258,6 +258,64 @@ const PowerData& PowerService::data() const
     return m_data;
 }
 
+PowerStatusData PowerService::status() const
+{
+    PowerStatusData status;
+
+    status.summary.state = m_data.state;
+    status.summary.available = available();
+    status.summary.restartInProgress =
+        m_data.runtime.restartInProgress;
+    status.summary.restartCompleted =
+        m_data.runtime.restartCompleted;
+    status.summary.lastOperationSucceeded =
+        m_data.runtime.lastOperationSucceeded;
+    status.summary.activeRestartId =
+        m_data.runtime.activeRestartId;
+    status.summary.powerOffTime =
+        m_data.runtime.powerOffTime;
+
+    status.statistics.restartCount =
+        m_data.statistics.restartCount;
+    status.statistics.errorCount =
+        m_data.statistics.errorCount;
+    status.statistics.lastPowerOn =
+        m_data.statistics.lastPowerOn;
+    status.statistics.lastPowerOff =
+        m_data.statistics.lastPowerOff;
+    status.statistics.lastRestart =
+        m_data.statistics.lastRestart;
+    status.statistics.lastError =
+        m_data.statistics.lastError;
+
+    status.history.count =
+        m_data.restartHistory.count;
+    status.history.head =
+        m_data.restartHistory.head;
+    status.history.total =
+        m_data.restartHistory.total;
+    status.history.succeeded =
+        m_data.restartHistory.succeeded;
+    status.history.failed =
+        m_data.restartHistory.failed;
+    status.history.lastStartedAt =
+        m_data.restartHistory.lastStartedAt;
+    status.history.lastCompletedAt =
+        m_data.restartHistory.lastCompletedAt;
+    status.history.lastFailedAt =
+        m_data.restartHistory.lastFailedAt;
+
+    for (uint8_t i = 0;
+         i < RestartHistoryData::CAPACITY;
+         ++i)
+    {
+        status.history.entries[i] =
+            m_data.restartHistory.entries[i];
+    }
+
+    return status;
+}
+
 bool PowerService::shouldAttemptPowerOn(uint64_t now)
 {
     if (m_data.runtime.lastPowerOnAttempt != 0 &&

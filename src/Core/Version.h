@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     19
+#define FW_VERSION_PATCH     20
 
-#define FW_VERSION_STRING    "0.4.19"
-#define FW_VERSION_LABEL     "restart-history-log"
-#define FW_VERSION_FULL      "0.4.19-restart-history-log"
+#define FW_VERSION_STRING    "0.4.20"
+#define FW_VERSION_LABEL     "power-status-snapshot"
+#define FW_VERSION_FULL      "0.4.20-power-status-snapshot"
 
 //=============================================================================
 // Project

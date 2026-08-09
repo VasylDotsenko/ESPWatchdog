@@ -101,16 +101,6 @@ bool TuyaService::connect()
 
     Log.info("Tuya connected");
 
-    if (!sendHeartbeat())
-    {
-        Log.warning("Tuya: heartbeat send failed");
-    }
-
-    if (!sendStatusQuery())
-    {
-        Log.warning("Tuya: status query send failed");
-    }
-
     return true;
 }
 
@@ -159,7 +149,12 @@ bool TuyaService::relayOff()
 bool TuyaService::relaySet(bool state)
 {
     if (!connected())
-        return false;
+    {
+        if (!connect())
+        {
+            return false;
+        }
+    }
 
     return sendCommand(state);
 }
@@ -278,6 +273,11 @@ bool TuyaService::sendCommand(bool state)
 
     const auto& cfg = Config.data().tuya;
 
+    if (cfg.protocolVersion == Tuya::Protocol::SUPPORTED_VERSION_35)
+    {
+        return sendCommand35(state);
+    }
+
     Tuya::Packet packet;
 
     const uint32_t sequence = nextSequence();
@@ -316,6 +316,233 @@ bool TuyaService::sendCommand(bool state)
         static_cast<unsigned long>(packet.size()));
 
     return true;
+}
+
+bool TuyaService::sendCommand35(bool state)
+{
+    if (!ensureSession35())
+    {
+        m_status.errorCount++;
+        Log.warning("Tuya: 3.5 session negotiation failed");
+        return false;
+    }
+
+    const auto& cfg = Config.data().tuya;
+
+    Tuya::Packet6699 packet;
+
+    const uint32_t sequence = nextSequence();
+
+    if (!m_protocol.buildSetDps(
+            sequence,
+            cfg.relayDps,
+            state,
+            packet))
+    {
+        m_status.errorCount++;
+        Log.warning("Tuya: unable to build 3.5 relay command");
+        return false;
+    }
+
+    if (!writePacket(packet))
+    {
+        m_status.errorCount++;
+        Log.warning("Tuya: 3.5 command write failed");
+        return false;
+    }
+
+    m_status.commandCount++;
+    m_status.relayState = state;
+
+    Log.info(
+        "Tuya: 3.5 relay command sent, seq=%lu dps=%u state=%u bytes=%lu",
+        static_cast<unsigned long>(sequence),
+        cfg.relayDps,
+        state ? 1 : 0,
+        static_cast<unsigned long>(packet.size()));
+
+    return true;
+}
+
+bool TuyaService::ensureSession35()
+{
+    if (m_protocol.sessionReady())
+    {
+        return true;
+    }
+
+    Tuya::Packet6699 startPacket;
+
+    const uint32_t startSequence = nextSequence();
+
+    if (!m_protocol.buildSessionStart(
+            startSequence,
+            startPacket))
+    {
+        return false;
+    }
+
+    if (!writePacket(startPacket))
+    {
+        return false;
+    }
+
+    Log.info(
+        "Tuya: 3.5 session start sent, seq=%lu",
+        static_cast<unsigned long>(startSequence));
+
+    Tuya::Packet6699 responsePacket;
+
+    if (!readPacket6699(
+            responsePacket,
+            CONNECT_TIMEOUT_MS))
+    {
+        Log.warning("Tuya: 3.5 session response timeout");
+        return false;
+    }
+
+    if (!m_protocol.processSessionResponse(responsePacket))
+    {
+        Log.warning("Tuya: 3.5 session response invalid");
+        return false;
+    }
+
+    Tuya::Packet6699 finishPacket;
+
+    const uint32_t finishSequence = nextSequence();
+
+    if (!m_protocol.buildSessionFinish(
+            finishSequence,
+            finishPacket))
+    {
+        return false;
+    }
+
+    if (!writePacket(finishPacket))
+    {
+        return false;
+    }
+
+    Log.info(
+        "Tuya: 3.5 session established");
+
+    return true;
+}
+
+bool TuyaService::writePacket(
+    const Tuya::Packet6699& packet)
+{
+    const size_t written =
+        m_client.write(
+            packet.data(),
+            packet.size());
+
+    return written == packet.size();
+}
+
+bool TuyaService::readPacket6699(
+    Tuya::Packet6699& packet,
+    uint32_t timeoutMs)
+{
+    const uint64_t deadline =
+        millis() + timeoutMs;
+
+    while (millis() < deadline)
+    {
+        if (!m_client.connected())
+        {
+            disconnect();
+            return false;
+        }
+
+        while (m_client.available())
+        {
+            if (m_receiveLength >= RECEIVE_BUFFER_SIZE)
+            {
+                m_receiveLength = 0;
+                m_status.errorCount++;
+                return false;
+            }
+
+            const int value = m_client.read();
+
+            if (value < 0)
+            {
+                break;
+            }
+
+            m_receiveBuffer[m_receiveLength++] =
+                static_cast<uint8_t>(value);
+        }
+
+        while (m_receiveLength >= Tuya::HEADER_6699_SIZE)
+        {
+            if (readU32BE(m_receiveBuffer) != Tuya::PREFIX_6699)
+            {
+                memmove(
+                    m_receiveBuffer,
+                    m_receiveBuffer + 1,
+                    m_receiveLength - 1);
+
+                --m_receiveLength;
+
+                continue;
+            }
+
+            const uint32_t length =
+                readU32BE(m_receiveBuffer + 14);
+
+            const size_t packetSize =
+                Tuya::HEADER_6699_SIZE +
+                static_cast<size_t>(length) +
+                Tuya::FOOTER_6699_SIZE;
+
+            if (packetSize > Tuya::MAX_PACKET_6699_SIZE)
+            {
+                m_receiveLength = 0;
+                return false;
+            }
+
+            if (m_receiveLength < packetSize)
+            {
+                break;
+            }
+
+            if (!packet.parse(
+                    m_receiveBuffer,
+                    packetSize))
+            {
+                m_receiveLength = 0;
+                return false;
+            }
+
+            const size_t remaining =
+                m_receiveLength - packetSize;
+
+            if (remaining > 0)
+            {
+                memmove(
+                    m_receiveBuffer,
+                    m_receiveBuffer + packetSize,
+                    remaining);
+            }
+
+            m_receiveLength = remaining;
+
+            Log.info(
+                "Tuya: 3.5 packet received, cmd=%lu seq=%lu payload=%lu",
+                static_cast<unsigned long>(
+                    static_cast<uint32_t>(packet.command())),
+                static_cast<unsigned long>(packet.sequence()),
+                static_cast<unsigned long>(packet.encryptedPayloadSize()));
+
+            return true;
+        }
+
+        delay(1);
+    }
+
+    return false;
 }
 
 bool TuyaService::receivePacket()
@@ -392,7 +619,17 @@ bool TuyaService::processReceiveBuffer()
 
     while (m_receiveLength >= Tuya::HEADER_SIZE)
     {
-        if (readU32BE(m_receiveBuffer) != Tuya::PREFIX)
+        const uint32_t prefix =
+            readU32BE(m_receiveBuffer);
+
+        if (prefix == Tuya::PREFIX_6699 &&
+            m_receiveLength < Tuya::HEADER_6699_SIZE)
+        {
+            return processed;
+        }
+
+        if (prefix != Tuya::PREFIX &&
+            prefix != Tuya::PREFIX_6699)
         {
             memmove(
                 m_receiveBuffer,
@@ -404,10 +641,16 @@ bool TuyaService::processReceiveBuffer()
             continue;
         }
 
-        const uint32_t length =
-            readU32BE(m_receiveBuffer + 12);
+        const bool isPacket6699 =
+            prefix == Tuya::PREFIX_6699;
 
-        if (length < Tuya::FOOTER_SIZE)
+        const uint32_t length =
+            isPacket6699
+                ? readU32BE(m_receiveBuffer + 14)
+                : readU32BE(m_receiveBuffer + 12);
+
+        if (!isPacket6699 &&
+            length < Tuya::FOOTER_SIZE)
         {
             m_receiveLength = 0;
             m_status.errorCount++;
@@ -415,9 +658,14 @@ bool TuyaService::processReceiveBuffer()
         }
 
         const size_t packetSize =
-            Tuya::HEADER_SIZE + static_cast<size_t>(length);
+            isPacket6699
+                ? Tuya::HEADER_6699_SIZE +
+                  static_cast<size_t>(length) +
+                  Tuya::FOOTER_6699_SIZE
+                : Tuya::HEADER_SIZE +
+                  static_cast<size_t>(length);
 
-        if (packetSize > Tuya::MAX_PACKET_SIZE)
+        if (packetSize > RECEIVE_BUFFER_SIZE)
         {
             m_receiveLength = 0;
             m_status.errorCount++;
@@ -430,9 +678,16 @@ bool TuyaService::processReceiveBuffer()
             return processed;
         }
 
-        if (!processPacket(
-                m_receiveBuffer,
-                packetSize))
+        const bool ok =
+            isPacket6699
+                ? processPacket6699(
+                    m_receiveBuffer,
+                    packetSize)
+                : processPacket(
+                    m_receiveBuffer,
+                    packetSize);
+
+        if (!ok)
         {
             m_status.errorCount++;
         }
@@ -513,6 +768,50 @@ bool TuyaService::processPacket(
     return true;
 }
 
+bool TuyaService::processPacket6699(
+    const uint8_t* data,
+    size_t size)
+{
+    Tuya::Packet6699 packet;
+
+    if (!packet.parse(
+            data,
+            size))
+    {
+        Log.warning("Tuya: invalid 3.5 packet");
+        return false;
+    }
+
+    Log.info(
+        "Tuya: 3.5 packet received, cmd=%lu seq=%lu payload=%lu",
+        static_cast<unsigned long>(
+            static_cast<uint32_t>(packet.command())),
+        static_cast<unsigned long>(packet.sequence()),
+        static_cast<unsigned long>(packet.encryptedPayloadSize()));
+
+    if (!m_protocol.sessionReady())
+    {
+        return true;
+    }
+
+    char json[Tuya::Protocol::MAX_JSON_SIZE] {};
+    size_t jsonLength = 0;
+
+    if (!m_protocol.decryptPayload(
+            packet,
+            json,
+            sizeof(json),
+            jsonLength))
+    {
+        Log.warning("Tuya: unable to decrypt 3.5 payload");
+        return true;
+    }
+
+    processJsonPayload(json);
+
+    return true;
+}
+
 void TuyaService::processJsonPayload(const char* json)
 {
     if (json == nullptr ||
@@ -545,10 +844,17 @@ void TuyaService::processJsonPayload(const char* json)
         "%u",
         cfg.relayDps);
 
-    if (doc["dps"][dpsKey].is<bool>())
+    JsonVariant dpsValue = doc["dps"][dpsKey];
+
+    if (dpsValue.isNull())
+    {
+        dpsValue = doc["data"]["dps"][dpsKey];
+    }
+
+    if (dpsValue.is<bool>())
     {
         m_status.relayState =
-            doc["dps"][dpsKey].as<bool>();
+            dpsValue.as<bool>();
 
         Log.info(
             "Tuya: relay state=%u",

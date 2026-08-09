@@ -29,7 +29,7 @@ public:
     static constexpr uint32_t CONNECT_TIMEOUT_MS = 5000;
     static constexpr uint32_t RECONNECT_INTERVAL_MS = 10000;
     static constexpr uint32_t RECEIVE_TIMEOUT_MS = 3000;
-    static constexpr size_t RECEIVE_BUFFER_SIZE = Tuya::MAX_PACKET_SIZE;
+    static constexpr size_t RECEIVE_BUFFER_SIZE = Tuya::MAX_PACKET_6699_SIZE;
 
     bool begin() override;
     void loop() override;
@@ -70,11 +70,26 @@ private:
 
     bool sendCommand(bool state);
 
+    bool sendCommand35(bool state);
+
+    bool ensureSession35();
+
+    bool writePacket(
+        const Tuya::Packet6699& packet);
+
+    bool readPacket6699(
+        Tuya::Packet6699& packet,
+        uint32_t timeoutMs);
+
     bool receivePacket();
 
     bool processReceiveBuffer();
 
     bool processPacket(
+        const uint8_t* data,
+        size_t size);
+
+    bool processPacket6699(
         const uint8_t* data,
         size_t size);
 

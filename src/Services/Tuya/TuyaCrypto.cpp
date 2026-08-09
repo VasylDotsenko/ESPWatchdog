@@ -5,11 +5,7 @@
 #include <bearssl/bearssl_aead.h>
 #include <bearssl/bearssl_block.h>
 #include <bearssl/bearssl_hash.h>
-
-extern "C"
-{
-    #include <user_interface.h>
-}
+#include <bearssl/bearssl_hmac.h>
 
 namespace
 {
@@ -271,7 +267,7 @@ namespace Tuya
         br_gcm_context gcm;
         br_gcm_init(
             &gcm,
-            reinterpret_cast<const br_block_ctr_class**>(&aes),
+            &aes.vtable,
             br_ghash_ctmul32);
 
         br_gcm_reset(
@@ -352,7 +348,7 @@ namespace Tuya
         br_gcm_context gcm;
         br_gcm_init(
             &gcm,
-            reinterpret_cast<const br_block_ctr_class**>(&aes),
+            &aes.vtable,
             br_ghash_ctmul32);
 
         br_gcm_reset(
@@ -448,6 +444,47 @@ namespace Tuya
         return true;
     }
 
+    bool TuyaCrypto::hmacSha256(
+        const uint8_t* input,
+        size_t inputLength,
+        uint8_t output[SHA256_SIZE]) const
+    {
+        if (!m_ready ||
+            (input == nullptr && inputLength > 0) ||
+            output == nullptr)
+        {
+            return false;
+        }
+
+        br_hmac_key_context keyContext;
+        br_hmac_context hmacContext;
+
+        br_hmac_key_init(
+            &keyContext,
+            &br_sha256_vtable,
+            m_key,
+            LOCAL_KEY_SIZE);
+
+        br_hmac_init(
+            &hmacContext,
+            &keyContext,
+            0);
+
+        if (inputLength > 0)
+        {
+            br_hmac_update(
+                &hmacContext,
+                input,
+                inputLength);
+        }
+
+        br_hmac_out(
+            &hmacContext,
+            output);
+
+        return true;
+    }
+
     bool TuyaCrypto::randomBytes(
         uint8_t* output,
         size_t outputLength)
@@ -462,9 +499,9 @@ namespace Tuya
             return true;
         }
 
-        if (os_get_random(
+        if (ESP.random(
                 output,
-                outputLength) == 0)
+                outputLength) == output)
         {
             return true;
         }
@@ -473,7 +510,7 @@ namespace Tuya
         {
             output[i] =
                 static_cast<uint8_t>(
-                    ESP.random(0, 256));
+                    ESP.random() & 0xFF);
         }
 
         return true;

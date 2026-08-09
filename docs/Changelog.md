@@ -4,6 +4,68 @@
 
 ---
 
+## [0.4.13-tuya35-gcm-frame] - 09.08.2026
+
+### Статус
+
+Розпочато повноцінну реалізацію Tuya LAN protocol `3.5`.
+
+Цей етап додає новий транспортний кадр `6699`, AES-GCM crypto path, session-key negotiation і relay command path через `CONTROL_NEW`.
+
+### Оновлено
+
+- `Services/Tuya/TuyaCrypto.h`;
+- `Services/Tuya/TuyaCrypto.cpp`;
+- `Services/Tuya/TuyaPacket.h`;
+- `Services/Tuya/TuyaPacket.cpp`;
+- `Services/Tuya/TuyaProtocol.h`;
+- `Services/Tuya/TuyaProtocol.cpp`;
+- `Services/Tuya/TuyaService.h`;
+- `Services/Tuya/TuyaService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`.
+
+### Додано
+
+- AES-GCM encrypt/decrypt через BearSSL;
+- HMAC-SHA256 helper;
+- session-key derivation для Tuya LAN `3.5`;
+- `Packet6699`;
+- `PREFIX = 0x00006699`;
+- `SUFFIX = 0x00009966`;
+- AAD = header без prefix;
+- `length = IV + ciphertext + tag`;
+- `SESSION_KEY_START`;
+- `SESSION_KEY_RESP`;
+- `SESSION_KEY_FINISH`;
+- `CONTROL_NEW`;
+- on-demand session negotiation перед relay-командою.
+
+### Очікуваний runtime flow
+
+```text
+Connecting to Tuya ...
+Tuya connected
+Tuya: 3.5 session start sent
+Tuya: 3.5 packet received, cmd=4
+Tuya: 3.5 session established
+Tuya: 3.5 relay command sent, dps=1 state=0
+```
+
+### Обмеження
+
+Це перший інтеграційний етап `3.5`, тому потрібен hardware smoke-test із реальною розеткою `TCOGCZ16-A`.
+
+### Версія
+
+```text
+0.4.13-tuya35-gcm-frame
+```
+
+---
+
 ## [0.4.12-tuya-on-demand-command] - 01.08.2026
 
 ### Статус

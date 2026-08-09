@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.12-tuya-on-demand-command
+0.4.13-tuya35-gcm-frame
 ```
 
 Production target:
@@ -63,6 +63,9 @@ Power Cycle
 - PowerService waits for Tuya LAN reconnect before `powerOn`;
 - Tuya relay commands connect on-demand;
 - automatic Tuya status query after connect disabled for unstable 3.5 devices;
+- Tuya LAN `3.5` AES-GCM `6699` frame layer;
+- Tuya LAN `3.5` session-key negotiation;
+- Tuya LAN `3.5` `CONTROL_NEW` relay command path;
 - IPowerController;
 - TuyaPowerController;
 - зв'язка `WatchdogService -> PowerService -> TuyaService`;

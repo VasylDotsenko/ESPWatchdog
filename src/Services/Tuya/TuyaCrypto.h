@@ -11,6 +11,7 @@ namespace Tuya
         static constexpr size_t LOCAL_KEY_SIZE = 16;
         static constexpr size_t MD5_SIZE = 16;
         static constexpr size_t MD5_HEX_SIZE = 33;
+        static constexpr size_t SHA256_SIZE = 32;
         static constexpr size_t GCM_IV_SIZE = 12;
         static constexpr size_t GCM_TAG_SIZE = 16;
 
@@ -71,6 +72,11 @@ namespace Tuya
             const uint8_t localNonce[LOCAL_KEY_SIZE],
             const uint8_t remoteNonce[LOCAL_KEY_SIZE],
             uint8_t sessionKey[LOCAL_KEY_SIZE]) const;
+
+        bool hmacSha256(
+            const uint8_t* input,
+            size_t inputLength,
+            uint8_t output[SHA256_SIZE]) const;
 
         static bool randomBytes(
             uint8_t* output,

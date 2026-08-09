@@ -4,6 +4,52 @@
 
 ---
 
+## [0.4.19-restart-history-log] - 09.08.2026
+
+### Статус
+
+Додано runtime-логування restart history entries.
+
+Це проміжний observability-крок перед Web/API export: після кожного успішного або невдалого power-cycle firmware одразу друкує короткий запис історії в Serial log.
+
+### Оновлено
+
+- `Services/Power/PowerService.h`;
+- `Services/Power/PowerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- текстове представлення `RestartResult`;
+- текстове представлення `RestartReason`;
+- `PowerService::logRestartHistoryEntry()`;
+- компактний log рядок, сумісний із поточним `Logger::BUFFER_SIZE`.
+
+### Очікуваний runtime log
+
+```text
+PowerService: restart completed
+RestartHistory: id=1 success reason=watchdog_failure off=10000 ms dur=10002 ms
+```
+
+Для помилки:
+
+```text
+RestartHistory: id=2 failed reason=power_on_timeout off=10000 ms dur=60000 ms
+```
+
+### Версія
+
+```text
+0.4.19-restart-history-log
+```
+
+---
+
 ## [0.4.18-restart-history] - 09.08.2026
 
 ### Статус

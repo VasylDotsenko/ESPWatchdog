@@ -4,6 +4,53 @@
 
 PowerService Power;
 
+namespace
+{
+    const char* restartResultText(RestartResult result)
+    {
+        switch (result)
+        {
+            case RestartResult::InProgress:
+                return "in_progress";
+
+            case RestartResult::Success:
+                return "success";
+
+            case RestartResult::Failed:
+                return "failed";
+
+            case RestartResult::None:
+            default:
+                return "none";
+        }
+    }
+
+    const char* restartReasonText(RestartReason reason)
+    {
+        switch (reason)
+        {
+            case RestartReason::WatchdogFailure:
+                return "watchdog_failure";
+
+            case RestartReason::ControllerUnavailable:
+                return "controller_unavailable";
+
+            case RestartReason::PowerOffFailed:
+                return "power_off_failed";
+
+            case RestartReason::PowerOnFailed:
+                return "power_on_failed";
+
+            case RestartReason::PowerOnTimeout:
+                return "power_on_timeout";
+
+            case RestartReason::Unknown:
+            default:
+                return "unknown";
+        }
+    }
+}
+
 bool PowerService::begin()
 {
     if (m_controller == nullptr)
@@ -349,6 +396,8 @@ void PowerService::completeRestartHistory()
     ++m_data.restartHistory.succeeded;
     m_data.restartHistory.lastCompletedAt = now;
 
+    logRestartHistoryEntry(*entry);
+
     m_data.runtime.activeRestartId = 0;
 }
 
@@ -384,7 +433,21 @@ void PowerService::failRestartHistory(
     ++m_data.restartHistory.failed;
     m_data.restartHistory.lastFailedAt = now;
 
+    logRestartHistoryEntry(*entry);
+
     m_data.runtime.activeRestartId = 0;
+}
+
+void PowerService::logRestartHistoryEntry(
+    const RestartHistoryEntry& entry) const
+{
+    Log.info(
+        "RestartHistory: id=%lu %s reason=%s off=%lu ms dur=%lu ms",
+        static_cast<unsigned long>(entry.id),
+        restartResultText(entry.result),
+        restartReasonText(entry.reason),
+        static_cast<unsigned long>(entry.requestedPowerOffTime),
+        static_cast<unsigned long>(entry.actualDuration));
 }
 
 RestartHistoryEntry* PowerService::activeRestartEntry()

@@ -55,6 +55,9 @@ private:
     void failRestartHistory(
         RestartReason reason);
 
+    void logRestartHistoryEntry(
+        const RestartHistoryEntry& entry) const;
+
     RestartHistoryEntry* activeRestartEntry();
 
     RestartHistoryEntry* appendRestartEntry();

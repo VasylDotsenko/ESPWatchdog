@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.18-restart-history
+0.4.19-restart-history-log
 ```
 
 Production target:

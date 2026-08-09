@@ -13,7 +13,7 @@
 - очищення runtime-логів;
 - підготовка до наступних production-модулів: Web API, diagnostics, restart history export.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.29-api-subsystem-endpoints`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.30-api-index-dashboard-links`.
 
 ## Вже зроблено
 
@@ -156,6 +156,8 @@
 - додано `WebServerService` з endpoint `GET /api/status`;
 - додано lightweight Web Dashboard на `/`;
 - додано subsystem API endpoints;
+- додано API index endpoint `/api`;
+- dashboard отримав links до API endpoints;
 - `PowerService` має throttling повторних restart-спроб при недоступному Tuya LAN controller;
 - `PowerService` чекає перепідключення Tuya LAN controller перед `powerOn`, замість негайного переходу в `Error`;
 - `TuyaPowerController` керує живленням через `TuyaLan.relayOn()` / `TuyaLan.relayOff()`.
@@ -254,7 +256,7 @@
 
 ## Наступні кроки
 
-1. Зафіксувати `v0.4.29-api-subsystem-endpoints` як hardware-verified baseline.
+1. Зафіксувати `v0.4.30-api-index-dashboard-links` як hardware-verified baseline.
 2. Реалізувати Tuya status polling policy.
 3. Додати restart history Web/API export.
 4. Додати Web API для status/config/health/watchdog/power.

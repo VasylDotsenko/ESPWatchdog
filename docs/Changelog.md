@@ -4,6 +4,59 @@
 
 ---
 
+## [0.4.30-api-index-dashboard-links] - 09.08.2026
+
+### Статус
+
+Додано API index endpoint і навігаційні посилання на dashboard.
+
+Це невеликий polish-етап для зручності польового тестування: всі доступні API маршрути тепер можна побачити прямо з пристрою.
+
+### Оновлено
+
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `GET /api`;
+- JSON index доступних endpoints;
+- links у footer dashboard:
+  - `/api`;
+  - `/api/status`;
+  - `/api/system`;
+  - `/api/network`;
+  - `/api/health`;
+  - `/api/watchdog`;
+  - `/api/power`.
+
+### Endpoints
+
+```text
+GET /
+GET /api
+GET /api/status
+GET /api/system
+GET /api/network
+GET /api/health
+GET /api/watchdog
+GET /api/power
+GET /health
+```
+
+### Версія
+
+```text
+0.4.30-api-index-dashboard-links
+```
+
+---
+
 ## [0.4.29-api-subsystem-endpoints] - 09.08.2026
 
 ### Статус

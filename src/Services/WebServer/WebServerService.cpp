@@ -24,7 +24,7 @@ main{padding:16px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,mi
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 10px 28px #0004}
 .card h2{font-size:15px;margin:0 0 10px;color:#fff}.row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding:7px 0}
 .row:first-of-type{border-top:0}.k{color:var(--muted)}.v{text-align:right;word-break:break-word}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
-footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}
+footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff;text-decoration:none}a:hover{text-decoration:underline}.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -33,7 +33,18 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}
 <div class="sub">Live status · <span id="updated">loading...</span></div>
 </header>
 <main id="app"></main>
-<footer>API: <code>/api/status</code> · Health: <code>/health</code></footer>
+<footer>
+<div>API endpoints</div>
+<div class="links">
+<a href="/api">index</a>
+<a href="/api/status">status</a>
+<a href="/api/system">system</a>
+<a href="/api/network">network</a>
+<a href="/api/health">health</a>
+<a href="/api/watchdog">watchdog</a>
+<a href="/api/power">power</a>
+</div>
+</footer>
 <script>
 const app=document.getElementById('app'),updated=document.getElementById('updated');
 const ip=a=>a||'0.0.0.0';
@@ -98,6 +109,14 @@ void WebServerService::configureRoutes()
         [this]()
         {
             handleApiStatus();
+        });
+
+    m_server.on(
+        "/api",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiIndex();
         });
 
     m_server.on(
@@ -187,6 +206,27 @@ void WebServerService::handleApiStatus()
     sendJson(
         200,
         m_jsonBuffer);
+}
+
+void WebServerService::handleApiIndex()
+{
+    sendJson(
+        200,
+        "{"
+        "\"name\":\"ESP Watchdog API\","
+        "\"version\":1,"
+        "\"endpoints\":["
+        "{\"method\":\"GET\",\"path\":\"/\",\"description\":\"dashboard\"},"
+        "{\"method\":\"GET\",\"path\":\"/api\",\"description\":\"api index\"},"
+        "{\"method\":\"GET\",\"path\":\"/api/status\",\"description\":\"aggregate status\"},"
+        "{\"method\":\"GET\",\"path\":\"/api/system\",\"description\":\"system status\"},"
+        "{\"method\":\"GET\",\"path\":\"/api/network\",\"description\":\"network status\"},"
+        "{\"method\":\"GET\",\"path\":\"/api/health\",\"description\":\"health status\"},"
+        "{\"method\":\"GET\",\"path\":\"/api/watchdog\",\"description\":\"watchdog status\"},"
+        "{\"method\":\"GET\",\"path\":\"/api/power\",\"description\":\"power status\"},"
+        "{\"method\":\"GET\",\"path\":\"/health\",\"description\":\"liveness\"}"
+        "]"
+        "}");
 }
 
 void WebServerService::handleApiSystem()

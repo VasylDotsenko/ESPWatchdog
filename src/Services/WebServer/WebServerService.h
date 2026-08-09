@@ -22,6 +22,8 @@ private:
 
     void handleApiStatus();
 
+    void handleApiIndex();
+
     void handleApiSystem();
 
     void handleApiNetwork();

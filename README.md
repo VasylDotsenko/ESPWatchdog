@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.29-api-subsystem-endpoints
+0.4.30-api-index-dashboard-links
 ```
 
 Production target:
@@ -108,6 +108,8 @@ Power Cycle
 - WebServerService з `GET /api/status`;
 - lightweight Web Dashboard на `/`;
 - subsystem API endpoints;
+- API index endpoint `/api`;
+- dashboard links до API endpoints;
 - захист від restart-loop через `maxRestartPerDay`;
 - production power-control abstraction через `PowerService`;
 - Tuya LAN power controller adapter;

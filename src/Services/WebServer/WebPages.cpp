@@ -55,6 +55,7 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff
 <script>
 const app=document.getElementById('app'),updated=document.getElementById('updated');
 const commandLog=[];
+let configCache={},configLoadedAt=0,loading=false;
 const ip=a=>a||'0.0.0.0';
 const cls=b=>b?'ok':'bad';
 const ms=v=>v?`${v} ms`:'0 ms';
@@ -183,6 +184,7 @@ async function renderLogs(){
 async function getJson(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path}: HTTP ${r.status}`);return await r.json()}
 async function tryGetJson(path,fallback={}){try{return await getJson(path)}catch(e){return fallback}}
 async function loadDashboardStatus(){
+ try{return await getJson('/api/status')}catch(e){}
  const s={};
  s.system=await tryGetJson('/api/system');
  s.network=await tryGetJson('/api/network');
@@ -190,6 +192,13 @@ async function loadDashboardStatus(){
  s.watchdog=await tryGetJson('/api/watchdog');
  s.power=await tryGetJson('/api/power');
  return s;
+}
+async function loadDashboardConfig(force=false){
+ const now=Date.now();
+ if(!force&&configLoadedAt&&(now-configLoadedAt)<30000)return configCache;
+ configCache=await tryGetJson('/api/config',configCache);
+ configLoadedAt=now;
+ return configCache;
 }
 function render(s,c){
  if(currentPage()==='logs'){
@@ -224,8 +233,8 @@ function render(s,c){
  ].join('');
  updated.textContent=new Date().toLocaleTimeString();
 }
-async function load(){try{if(currentPage()==='logs'){await renderLogs();return}if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const section=currentSection();if(section){render({},await getJson('/api/config'));return}const s=await loadDashboardStatus();const c=await tryGetJson('/api/config');render(s,c)}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status',esc(e.message||'unable to load'),'bad')])}}
-load();setInterval(load,2000);
+async function load(){if(loading)return;loading=true;try{if(currentPage()==='logs'){await renderLogs();return}if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const section=currentSection();if(section){render({},await getJson('/api/config'));return}const s=await loadDashboardStatus();render(s,configCache);if(!configLoadedAt||Date.now()-configLoadedAt>30000){loadDashboardConfig().then(c=>{if(!currentPage()&&!currentSection())render(s,c)})}}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status',esc(e.message||'unable to load'),'bad')])}finally{loading=false}}
+load();setInterval(load,5000);
 </script>
 </body>
 </html>

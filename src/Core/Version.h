@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     53
+#define FW_VERSION_PATCH     54
 
-#define FW_VERSION_STRING    "0.4.53"
-#define FW_VERSION_LABEL     "dashboard-resilient"
-#define FW_VERSION_FULL      "0.4.53-dashboard-resilient"
+#define FW_VERSION_STRING    "0.4.54"
+#define FW_VERSION_LABEL     "dashboard-fast-load"
+#define FW_VERSION_FULL      "0.4.54-dashboard-fast-load"
 
 //=============================================================================
 // Project

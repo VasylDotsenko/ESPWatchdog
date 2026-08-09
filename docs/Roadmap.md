@@ -174,7 +174,7 @@ URL: http://192.168.4.1/config/wifi
   - fallback `?token=...`;
 - Web Dashboard lightweight mode;
 - config pages no longer call heavy `/api/status`;
-- dashboard no longer depends on aggregate `/api/status`;
+- dashboard can use aggregate `/api/status` as a fast path and falls back to subsystem endpoints;
 - Web UI split:
   - `WebPages.h`;
   - `WebPages.cpp`;
@@ -239,7 +239,20 @@ URL: http://192.168.4.1/config/wifi
 - дозволити Dashboard відкриватися при частковій недоступності API;
 - показувати конкретну помилку endpoint-а замість загального `unable to load`.
 
-### 0.4.54 — WebApiStatus split
+### 0.4.54 — Dashboard fast load
+
+Статус: реалізовано.
+
+План:
+
+- використовувати `/api/status` як fast path для Dashboard;
+- залишити split endpoints як fallback;
+- не блокувати перший render через `/api/config`;
+- кешувати конфігурацію для Dashboard;
+- зменшити частоту auto-refresh;
+- прибрати накладання одночасних browser fetch циклів.
+
+### 0.4.55 — WebApiStatus split
 
 Статус: next.
 
@@ -254,7 +267,7 @@ URL: http://192.168.4.1/config/wifi
 - оцінити потребу у streaming serializer для status endpoints;
 - залишити `/api/status` як compatibility endpoint.
 
-### 0.4.55 — WebServer route cleanup
+### 0.4.56 — WebServer route cleanup
 
 План:
 

@@ -4,6 +4,64 @@
 
 ---
 
+## [0.4.23-system-status-snapshot] - 09.08.2026
+
+### Статус
+
+Додано API-ready snapshot модель для System subsystem.
+
+Це четвертий базовий snapshot-шар після `PowerStatusData`, `HealthStatusData` і `WatchdogStatusData`. Тепер майбутній Web API зможе показати firmware/build/runtime/system diagnostics без прямого доступу до внутрішнього `SystemData`.
+
+### Оновлено
+
+- `Models/SystemStatusData.h`;
+- `Models/SystemData.h`;
+- `Services/SystemInfo/SystemInfo.h`;
+- `Services/SystemInfo/SystemInfo.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `SystemStatusFirmware`;
+- `SystemStatusUptime`;
+- `SystemStatusMemory`;
+- `SystemStatusCpu`;
+- `SystemStatusData`;
+- `SystemInfoService::status()`.
+
+### Містить
+
+- firmware version;
+- SDK/Core version;
+- build date/time;
+- reset reason;
+- uptime;
+- heap/flash/sketch statistics;
+- chip id;
+- CPU frequency.
+
+### Призначення
+
+`SystemStatusData` стане джерелом для:
+
+- `/api/system/status`;
+- `/api/status`;
+- diagnostics endpoint;
+- Web Dashboard;
+- майбутнього MQTT telemetry.
+
+### Версія
+
+```text
+0.4.23-system-status-snapshot
+```
+
+---
+
 ## [0.4.22-watchdog-status-snapshot] - 09.08.2026
 
 ### Статус

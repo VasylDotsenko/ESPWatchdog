@@ -55,6 +55,59 @@ const SystemData& SystemInfoService::data() const
     return m_data;
 }
 
+SystemStatusData SystemInfoService::status() const
+{
+    SystemStatusData status;
+
+    std::memcpy(
+        status.firmware.version,
+        m_data.firmware.version,
+        sizeof(status.firmware.version));
+
+    std::memcpy(
+        status.firmware.sdkVersion,
+        m_data.firmware.sdkVersion,
+        sizeof(status.firmware.sdkVersion));
+
+    std::memcpy(
+        status.firmware.coreVersion,
+        m_data.firmware.coreVersion,
+        sizeof(status.firmware.coreVersion));
+
+    std::memcpy(
+        status.firmware.buildDate,
+        m_data.firmware.buildDate,
+        sizeof(status.firmware.buildDate));
+
+    std::memcpy(
+        status.firmware.buildTime,
+        m_data.firmware.buildTime,
+        sizeof(status.firmware.buildTime));
+
+    std::memcpy(
+        status.firmware.resetReason,
+        m_data.firmware.resetReason,
+        sizeof(status.firmware.resetReason));
+
+    status.uptime.milliseconds = m_data.uptime.milliseconds;
+    status.uptime.seconds = m_data.uptime.seconds;
+    status.uptime.days = m_data.uptime.days;
+    status.uptime.hours = m_data.uptime.hours;
+    status.uptime.minutes = m_data.uptime.minutes;
+    status.uptime.secondsPart = m_data.uptime.secondsPart;
+
+    status.memory.freeHeap = m_data.memory.freeHeap;
+    status.memory.heapFragmentation = m_data.memory.heapFragmentation;
+    status.memory.sketchSize = m_data.memory.sketchSize;
+    status.memory.freeSketchSpace = m_data.memory.freeSketchSpace;
+    status.memory.flashChipSize = m_data.memory.flashChipSize;
+
+    status.cpu.chipId = m_data.cpu.chipId;
+    status.cpu.frequencyMHz = m_data.cpu.frequencyMHz;
+
+    return status;
+}
+
 void SystemInfoService::update()
 {
     updateUptime();

@@ -4,6 +4,7 @@
 
 #include "Core/Timer.h"
 #include "Models/SystemData.h"
+#include "Models/SystemStatusData.h"
 
 //=============================================================================
 // System Information Service
@@ -26,6 +27,8 @@ public:
     //---------------------------------------------------------------------
 
     const SystemData& data() const;
+
+    SystemStatusData status() const;
 
 private:
 

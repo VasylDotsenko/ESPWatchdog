@@ -4,6 +4,44 @@
 
 ---
 
+## [0.5.0-security-baseline] - 09.08.2026
+
+### Статус
+
+Перший production hardening етап для Web API security.
+
+### Оновлено
+
+- state-changing Web API endpoints залишаються відкритими тільки якщо `security.apiAuthEnabled=false`;
+- якщо `security.apiAuthEnabled=true`, команди приймають токен тільки через:
+
+```text
+Authorization: Bearer <token>
+```
+
+- видалено fallback авторизації через query parameter `?token=...`;
+- `WebServerService` явно збирає `Authorization` header через `collectHeaders(...)`;
+- якщо auth увімкнено, але `security.apiToken` порожній, state-changing commands блокуються з:
+
+```json
+{"ok":false,"error":"api_auth_misconfigured"}
+```
+
+- у setup portal mode авторизація не блокує первинне налаштування;
+- read-only endpoints залишаються відкритими для Dashboard/status/diagnostics.
+
+### Чому
+
+Token у URL може потрапляти в browser history, logs, reverse proxy logs або screenshots. Для production firmware безпечніше використовувати стандартний `Authorization` header і явно блокувати небезпечні команди, якщо auth увімкнено некоректно.
+
+### Версія
+
+```text
+0.5.0-security-baseline
+```
+
+---
+
 ## [0.4.61-web-config-route-fallback] - 09.08.2026
 
 ### Статус

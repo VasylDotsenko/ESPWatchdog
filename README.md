@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.61-web-config-route-fallback
+0.5.0-security-baseline
 ```
 
 Production target:
@@ -152,6 +152,11 @@ http://192.168.4.1/config/wifi
 - Watchdog/Power actions disabled while setup portal is active;
 - safe opt-in Tuya status polling policy;
 - Web API token protection for state-changing commands;
+- Web API security baseline:
+  - `Authorization: Bearer <token>`;
+  - no query-token fallback;
+  - misconfigured auth blocks dangerous commands;
+  - setup portal auth bypass for first boot;
 - centralized Web API response headers;
 - centralized Web API command authorization;
 - polished Web UI command messages;
@@ -457,13 +462,16 @@ Web UI передає токен через стандартний header:
 Authorization: Bearer change-this-token
 ```
 
-Для ручного тесту також доступний fallback:
+Для ручного тесту:
 
 ```text
-POST /api/power/restart?token=change-this-token
+curl -X POST http://192.168.10.44/api/power/restart \
+  -H "Authorization: Bearer change-this-token"
 ```
 
-За замовчуванням auth вимкнений, щоб не ламати first-boot setup portal.
+Query-token fallback `?token=...` не використовується, щоб токен не потрапляв у browser history або logs.
+
+За замовчуванням auth вимкнений, щоб не ламати first-boot setup portal. Якщо `apiAuthEnabled=true`, але `apiToken` порожній, небезпечні команди блокуються.
 - `localKey` не публікувати;
 - Tuya `3.4` поки не підтримується;
 - Tuya `3.5` підтримується для `TCOGCZ16-A`;
@@ -597,7 +605,7 @@ pio device monitor -b 74880
 ### Наступний етап
 
 ```text
-Security baseline
+Diagnostics baseline
 ```
 
 Поточний WebServer вже розділено на окремі модулі:
@@ -625,7 +633,7 @@ Responsive/mobile polish уже виконано для dashboard/config/logs:
 
 ### Далі
 
-- Security baseline для Web API;
+- diagnostics baseline;
 - Tuya LAN `3.5` status DPQuery через `6699`;
 - OTA;
 - diagnostics;

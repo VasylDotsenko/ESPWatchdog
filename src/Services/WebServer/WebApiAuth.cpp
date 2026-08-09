@@ -5,6 +5,7 @@
 
 #include "Services/Config/Config.h"
 #include "Services/Logger/Logger.h"
+#include "Services/WiFi/WiFiService.h"
 #include "WebApiResponse.h"
 
 namespace
@@ -50,13 +51,31 @@ namespace
 bool WebApiAuth::authorizeCommand(
     ESP8266WebServer& server)
 {
+    if (Network.setupMode())
+    {
+        return true;
+    }
+
     const auto& security =
         Config.data().security;
 
-    if (!security.apiAuthEnabled ||
-        security.apiToken[0] == '\0')
+    if (!security.apiAuthEnabled)
     {
         return true;
+    }
+
+    if (security.apiToken[0] == '\0')
+    {
+        Log.warning(
+            "WebServer: command blocked, api auth enabled without token, uri=%s",
+            server.uri().c_str());
+
+        WebApiResponse::sendJson(
+            server,
+            403,
+            "{\"ok\":false,\"error\":\"api_auth_misconfigured\"}");
+
+        return false;
     }
 
     String headerToken =
@@ -70,14 +89,6 @@ bool WebApiAuth::authorizeCommand(
 
     if (tokenMatches(
             headerToken.c_str(),
-            security.apiToken))
-    {
-        return true;
-    }
-
-    if (server.hasArg("token") &&
-        tokenMatches(
-            server.arg("token").c_str(),
             security.apiToken))
     {
         return true;

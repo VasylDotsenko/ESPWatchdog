@@ -17,10 +17,19 @@ namespace
 {
     constexpr uint32_t ESP_RESTART_DELAY_MS = 2000;
     constexpr uint32_t ESP_RESTART_SETTLE_MS = 50;
+
+    const char* AUTH_HEADER_KEYS[] =
+    {
+        "Authorization"
+    };
 }
 
 bool WebServerService::begin()
 {
+    m_server.collectHeaders(
+        AUTH_HEADER_KEYS,
+        sizeof(AUTH_HEADER_KEYS) / sizeof(AUTH_HEADER_KEYS[0]));
+
     configureRoutes();
 
     m_server.begin();

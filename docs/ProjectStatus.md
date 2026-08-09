@@ -9,11 +9,11 @@
 Основний напрямок роботи зараз:
 
 - перехід до production hardening `0.5.x`;
-- security baseline для Web API;
+- diagnostics baseline;
 - подальша стабілізація Tuya LAN `3.5` status/runtime;
 - підготовка OTA та діагностики.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.61-web-config-route-fallback`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.5.0-security-baseline`.
 
 ## Вже зроблено
 
@@ -179,6 +179,12 @@
 - Web UI buttons і navigation links адаптовано для touch UI;
 - footer API endpoints винесено в collapsible блок;
 - додано route fallback для Web UI сторінок `/config/...`, `/dashboard/...`, `/logs/...`;
+- Web API security baseline:
+  - state-changing commands підтримують `Authorization: Bearer <token>`;
+  - `WebServerService` явно збирає `Authorization` header;
+  - query-token fallback прибрано;
+  - misconfigured auth блокує небезпечні команди;
+  - setup portal не блокується auth-перевіркою;
 - додано read-only config endpoint `GET /api/config`;
 - dashboard показує налаштування контрольованого хоста;
 - dashboard показує налаштування Tuya socket з masked `localKey`;
@@ -216,8 +222,8 @@
 - додано Web API authentication для state-changing endpoints:
   - `security.apiAuthEnabled`;
   - `security.apiToken`;
-  - `X-API-Token`;
-  - fallback `?token=...`;
+  - `Authorization: Bearer <token>`;
+  - no query-token fallback;
   - `/config/security`;
   - browser-local token storage.
 

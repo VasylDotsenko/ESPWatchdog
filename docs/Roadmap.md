@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.4.61-web-config-route-fallback
+0.5.0-security-baseline
 ```
 
 Production target:
@@ -32,7 +32,8 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - runtime logs page;
 - API token protection для state-changing commands;
 - mobile-friendly Web UI для dashboard/config/logs;
-- route fallback для Web UI config pages.
+- route fallback для Web UI config pages;
+- Web API security baseline.
 
 Поточний етап — **перехід до production hardening `0.5.x`**.
 
@@ -173,7 +174,7 @@ URL: http://192.168.4.1/config/wifi
   - `security.apiAuthEnabled`;
   - `security.apiToken`;
   - `Authorization: Bearer <token>`;
-  - fallback `?token=...`;
+  - no query-token fallback;
 - Web Dashboard lightweight mode;
 - config pages no longer call heavy `/api/status`;
 - dashboard can use aggregate `/api/status` as a fast path and falls back to subsystem endpoints;
@@ -346,6 +347,8 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.5.0 — Security baseline
 
+Статус: реалізовано.
+
 - harden Web API authentication;
 - safe defaults;
 - не показувати секрети у відкритому вигляді;
@@ -353,15 +356,7 @@ URL: http://192.168.4.1/config/wifi
 - LAN-only threat model;
 - audit state-changing endpoints.
 
-### 0.5.1 — Config apply policy
-
-- визначити, які налаштування застосовуються live;
-- визначити, які потребують reboot;
-- додати `restartRecommended`;
-- додати `requiresRestart`;
-- після зміни WiFi/Tuya/Watchdog config показувати зрозумілий UX.
-
-### 0.5.2 — Diagnostics
+### 0.5.1 — Diagnostics baseline
 
 - heap diagnostics;
 - uptime diagnostics;
@@ -371,7 +366,7 @@ URL: http://192.168.4.1/config/wifi
 - watchdog reason diagnostics;
 - export runtime snapshot.
 
-### 0.5.3 — Recovery behavior
+### 0.5.2 — Recovery behavior
 
 - WiFi reconnect behavior;
 - Tuya unavailable behavior;
@@ -380,7 +375,7 @@ URL: http://192.168.4.1/config/wifi
 - repeated watchdog failures behavior;
 - restart-loop protection review.
 
-### 0.5.4 — Memory / stack audit
+### 0.5.3 — Memory / stack audit
 
 - audit `JsonDocument` usage;
 - audit stack buffers;

@@ -4,6 +4,7 @@
 
 #include "Services/Logger/Logger.h"
 #include "WebJsonUtils.h"
+#include "WebApiResponse.h"
 
 void WebApiLogs::handleGet(
     ESP8266WebServer& server)
@@ -12,6 +13,8 @@ void WebApiLogs::handleGet(
         Log.count();
 
     char chunk[96] {};
+
+    WebApiResponse::applyHeaders(server);
 
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
     server.send(

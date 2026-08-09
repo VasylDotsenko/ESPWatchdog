@@ -269,7 +269,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.4.56 — WebServer route cleanup
 
-Статус: next.
+Статус: реалізовано.
 
 План:
 
@@ -281,6 +281,30 @@ URL: http://192.168.4.1/config/wifi
   - command API;
   - CORS/OPTIONS;
 - зменшити `WebServerService.cpp` до ролі coordinator-а.
+
+### 0.4.57 — Web command/auth cleanup
+
+Статус: реалізовано.
+
+План:
+
+- винести command authorization helper-и з `WebServerService.cpp`;
+- централізувати CORS/JSON response helpers для Web API modules;
+- прибрати дублювання `sendJson()` між `WebServerService`, `WebApiStatus` і `WebApiIndex`;
+- підготувати базу для security hardening у `0.5.x`.
+
+### 0.4.58 — Web UI production polish
+
+Статус: next.
+
+План:
+
+- покращити UX config pages;
+- додати зрозумілі повідомлення після save config;
+- показувати `restartRecommended`;
+- підготувати UI до `requiresRestart` / live apply policy;
+- перевірити mobile layout;
+- мінімізувати HTML/JS без втрати читабельності.
 
 ---
 

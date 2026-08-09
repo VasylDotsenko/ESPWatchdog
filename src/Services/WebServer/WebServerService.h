@@ -18,6 +18,16 @@ public:
 private:
     void configureRoutes();
 
+    void configurePageRoutes();
+
+    void configureStatusApiRoutes();
+
+    void configureConfigApiRoutes();
+
+    void configureCommandApiRoutes();
+
+    void configureUtilityRoutes();
+
     void handleRoot();
 
     void handleApiStatus();
@@ -50,10 +60,6 @@ private:
 
     void handleApiOptions();
 
-    bool authorizeCommand();
-
-    void sendUnauthorized();
-
     void handleHealth();
 
     void handleConfigPage();
@@ -61,14 +67,6 @@ private:
     void handleLogsPage();
 
     void handleNotFound();
-
-    void sendJson(
-        int statusCode,
-        const char* json);
-
-    bool tokenMatches(
-        const char* received,
-        const char* expected) const;
 
 private:
     ESP8266WebServer m_server { DEFAULT_PORT };

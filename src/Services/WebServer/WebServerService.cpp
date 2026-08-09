@@ -1,14 +1,14 @@
 #include "WebServerService.h"
 
 #include "WebPages.h"
+#include "WebApiAuth.h"
+#include "WebApiIndex.h"
 #include "WebApiStatus.h"
 #include "WebApiConfig.h"
 #include "WebApiLogs.h"
 #include "WebApiPower.h"
+#include "WebApiResponse.h"
 
-#include <cstring>
-
-#include "Services/Config/Config.h"
 #include "Services/Logger/Logger.h"
 
 WebServerService WebServer;
@@ -49,6 +49,21 @@ void WebServerService::loop()
 
 void WebServerService::configureRoutes()
 {
+    configurePageRoutes();
+    configureStatusApiRoutes();
+    configureConfigApiRoutes();
+    configureCommandApiRoutes();
+    configureUtilityRoutes();
+
+    m_server.onNotFound(
+        [this]()
+        {
+            handleNotFound();
+        });
+}
+
+void WebServerService::configurePageRoutes()
+{
     m_server.on(
         "/",
         HTTP_GET,
@@ -63,110 +78,6 @@ void WebServerService::configureRoutes()
         [this]()
         {
             handleRoot();
-        });
-
-    m_server.on(
-        "/api/status",
-        HTTP_GET,
-        [this]()
-        {
-            handleApiStatus();
-        });
-
-    m_server.on(
-        "/api",
-        HTTP_GET,
-        [this]()
-        {
-            handleApiIndex();
-        });
-
-    m_server.on(
-        "/api/system",
-        HTTP_GET,
-        [this]()
-        {
-            handleApiSystem();
-        });
-
-    m_server.on(
-        "/api/system/restart",
-        HTTP_POST,
-        [this]()
-        {
-            handleApiSystemRestart();
-        });
-
-    m_server.on(
-        "/api/system/restart",
-        HTTP_OPTIONS,
-        [this]()
-        {
-            handleApiOptions();
-        });
-
-    m_server.on(
-        "/api/network",
-        HTTP_GET,
-        [this]()
-        {
-            handleApiNetwork();
-        });
-
-    m_server.on(
-        "/api/health",
-        HTTP_GET,
-        [this]()
-        {
-            handleApiHealth();
-        });
-
-    m_server.on(
-        "/api/watchdog",
-        HTTP_GET,
-        [this]()
-        {
-            handleApiWatchdog();
-        });
-
-    m_server.on(
-        "/api/power",
-        HTTP_GET,
-        [this]()
-        {
-            handleApiPower();
-        });
-
-    m_server.on(
-        "/api/config",
-        HTTP_GET,
-        [this]()
-        {
-            handleApiConfig();
-        });
-
-    m_server.on(
-        "/api/logs",
-        HTTP_GET,
-        [this]()
-        {
-            handleApiLogs();
-        });
-
-    m_server.on(
-        "/api/config",
-        HTTP_POST,
-        [this]()
-        {
-            handleApiConfigUpdate();
-        });
-
-    m_server.on(
-        "/api/config",
-        HTTP_OPTIONS,
-        [this]()
-        {
-            handleApiOptions();
         });
 
     m_server.on(
@@ -224,6 +135,111 @@ void WebServerService::configureRoutes()
         {
             handleLogsPage();
         });
+}
+
+void WebServerService::configureStatusApiRoutes()
+{
+    m_server.on(
+        "/api/status",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiStatus();
+        });
+
+    m_server.on(
+        "/api/system",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiSystem();
+        });
+
+    m_server.on(
+        "/api/network",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiNetwork();
+        });
+
+    m_server.on(
+        "/api/health",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiHealth();
+        });
+
+    m_server.on(
+        "/api/watchdog",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiWatchdog();
+        });
+
+    m_server.on(
+        "/api/power",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiPower();
+        });
+}
+
+void WebServerService::configureConfigApiRoutes()
+{
+    m_server.on(
+        "/api/config",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiConfig();
+        });
+
+    m_server.on(
+        "/api/logs",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiLogs();
+        });
+
+    m_server.on(
+        "/api/config",
+        HTTP_POST,
+        [this]()
+        {
+            handleApiConfigUpdate();
+        });
+
+    m_server.on(
+        "/api/config",
+        HTTP_OPTIONS,
+        [this]()
+        {
+            handleApiOptions();
+        });
+}
+
+void WebServerService::configureCommandApiRoutes()
+{
+    m_server.on(
+        "/api/system/restart",
+        HTTP_POST,
+        [this]()
+        {
+            handleApiSystemRestart();
+        });
+
+    m_server.on(
+        "/api/system/restart",
+        HTTP_OPTIONS,
+        [this]()
+        {
+            handleApiOptions();
+        });
 
     m_server.on(
         "/api/power/on",
@@ -272,6 +288,17 @@ void WebServerService::configureRoutes()
         {
             handleApiOptions();
         });
+}
+
+void WebServerService::configureUtilityRoutes()
+{
+    m_server.on(
+        "/api",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiIndex();
+        });
 
     m_server.on(
         "/health",
@@ -279,12 +306,6 @@ void WebServerService::configureRoutes()
         [this]()
         {
             handleHealth();
-        });
-
-    m_server.onNotFound(
-        [this]()
-        {
-            handleNotFound();
         });
 }
 
@@ -310,38 +331,7 @@ void WebServerService::handleApiStatus()
 
 void WebServerService::handleApiIndex()
 {
-    sendJson(
-        200,
-        "{"
-        "\"name\":\"ESP Watchdog API\","
-        "\"version\":1,"
-        "\"endpoints\":["
-        "{\"method\":\"GET\",\"path\":\"/\",\"description\":\"dashboard\"},"
-        "{\"method\":\"GET\",\"path\":\"/dashboard\",\"description\":\"dashboard\"},"
-        "{\"method\":\"GET\",\"path\":\"/api\",\"description\":\"api index\"},"
-        "{\"method\":\"GET\",\"path\":\"/api/status\",\"description\":\"aggregate status\"},"
-        "{\"method\":\"GET\",\"path\":\"/api/system\",\"description\":\"system status\"},"
-        "{\"method\":\"POST\",\"path\":\"/api/system/restart\",\"description\":\"restart ESP\"},"
-        "{\"method\":\"GET\",\"path\":\"/api/network\",\"description\":\"network status\"},"
-        "{\"method\":\"GET\",\"path\":\"/api/health\",\"description\":\"health status\"},"
-        "{\"method\":\"GET\",\"path\":\"/api/watchdog\",\"description\":\"watchdog status\"},"
-        "{\"method\":\"GET\",\"path\":\"/api/power\",\"description\":\"power status\"},"
-        "{\"method\":\"GET\",\"path\":\"/api/config\",\"description\":\"runtime configuration\"},"
-        "{\"method\":\"GET\",\"path\":\"/api/logs\",\"description\":\"runtime logs\"},"
-        "{\"method\":\"POST\",\"path\":\"/api/config\",\"description\":\"update configuration\"},"
-        "{\"method\":\"GET\",\"path\":\"/config/device\",\"description\":\"device configuration page\"},"
-        "{\"method\":\"GET\",\"path\":\"/config/wifi\",\"description\":\"wifi configuration page\"},"
-        "{\"method\":\"GET\",\"path\":\"/config/watchdog\",\"description\":\"watchdog configuration page\"},"
-        "{\"method\":\"GET\",\"path\":\"/config/relay\",\"description\":\"relay configuration page\"},"
-        "{\"method\":\"GET\",\"path\":\"/config/tuya\",\"description\":\"tuya configuration page\"},"
-        "{\"method\":\"GET\",\"path\":\"/config/security\",\"description\":\"security configuration page\"},"
-        "{\"method\":\"GET\",\"path\":\"/logs\",\"description\":\"runtime logs page\"},"
-        "{\"method\":\"POST\",\"path\":\"/api/power/on\",\"description\":\"turn power on\"},"
-        "{\"method\":\"POST\",\"path\":\"/api/power/off\",\"description\":\"turn power off\"},"
-        "{\"method\":\"POST\",\"path\":\"/api/power/restart\",\"description\":\"restart power output\"},"
-        "{\"method\":\"GET\",\"path\":\"/health\",\"description\":\"liveness\"}"
-        "]"
-        "}");
+    WebApiIndex::handleGet(m_server);
 }
 
 void WebServerService::handleApiSystem()
@@ -354,7 +344,7 @@ void WebServerService::handleApiSystem()
 
 void WebServerService::handleApiSystemRestart()
 {
-    if (!authorizeCommand())
+    if (!WebApiAuth::authorizeCommand(m_server))
     {
         return;
     }
@@ -375,7 +365,10 @@ void WebServerService::handleApiSystemRestart()
         "{\"ok\":true,\"command\":\"esp_restart\",\"delayMs\":%lu}",
         static_cast<unsigned long>(ESP_RESTART_DELAY_MS));
 
-    sendJson(202, m_jsonBuffer);
+    WebApiResponse::sendJson(
+        m_server,
+        202,
+        m_jsonBuffer);
 }
 
 void WebServerService::handleApiNetwork()
@@ -417,7 +410,7 @@ void WebServerService::handleApiConfig()
 
 void WebServerService::handleApiConfigUpdate()
 {
-    if (!authorizeCommand())
+    if (!WebApiAuth::authorizeCommand(m_server))
     {
         return;
     }
@@ -435,7 +428,7 @@ void WebServerService::handleApiLogs()
 
 void WebServerService::handleApiPowerOn()
 {
-    if (!authorizeCommand())
+    if (!WebApiAuth::authorizeCommand(m_server))
     {
         return;
     }
@@ -445,7 +438,7 @@ void WebServerService::handleApiPowerOn()
 
 void WebServerService::handleApiPowerOff()
 {
-    if (!authorizeCommand())
+    if (!WebApiAuth::authorizeCommand(m_server))
     {
         return;
     }
@@ -455,7 +448,7 @@ void WebServerService::handleApiPowerOff()
 
 void WebServerService::handleApiPowerRestart()
 {
-    if (!authorizeCommand())
+    if (!WebApiAuth::authorizeCommand(m_server))
     {
         return;
     }
@@ -468,65 +461,13 @@ void WebServerService::handleApiPowerRestart()
 
 void WebServerService::handleApiOptions()
 {
-    sendJson(
-        204,
-        "");
-}
-
-bool WebServerService::authorizeCommand()
-{
-    const auto& security =
-        Config.data().security;
-
-    if (!security.apiAuthEnabled ||
-        security.apiToken[0] == '\0')
-    {
-        return true;
-    }
-
-    String headerToken =
-        m_server.header("Authorization");
-
-    if (headerToken.startsWith("Bearer "))
-    {
-        headerToken =
-            headerToken.substring(7);
-    }
-
-    if (tokenMatches(
-            headerToken.c_str(),
-            security.apiToken))
-    {
-        return true;
-    }
-
-    if (m_server.hasArg("token") &&
-        tokenMatches(
-            m_server.arg("token").c_str(),
-            security.apiToken))
-    {
-        return true;
-    }
-
-    Log.warning(
-        "WebServer: unauthorized command, uri=%s",
-        m_server.uri().c_str());
-
-    sendUnauthorized();
-
-    return false;
-}
-
-void WebServerService::sendUnauthorized()
-{
-    sendJson(
-        401,
-        "{\"ok\":false,\"error\":\"unauthorized\"}");
+    WebApiResponse::sendNoContent(m_server);
 }
 
 void WebServerService::handleHealth()
 {
-    sendJson(
+    WebApiResponse::sendJson(
+        m_server,
         200,
         "{\"status\":\"ok\"}");
 }
@@ -543,70 +484,8 @@ void WebServerService::handleLogsPage()
 
 void WebServerService::handleNotFound()
 {
-    sendJson(
+    WebApiResponse::sendJson(
+        m_server,
         404,
         "{\"error\":\"not_found\"}");
-}
-
-void WebServerService::sendJson(
-    int statusCode,
-    const char* json)
-{
-    m_server.sendHeader(
-        "Access-Control-Allow-Origin",
-        "*");
-
-    m_server.sendHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, OPTIONS");
-
-    m_server.sendHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization");
-
-    m_server.sendHeader(
-        "Cache-Control",
-        "no-store");
-
-    m_server.send(
-        statusCode,
-        "application/json",
-        json != nullptr ? json : "{}");
-}
-
-bool WebServerService::tokenMatches(
-    const char* received,
-    const char* expected) const
-{
-    if (received == nullptr ||
-        expected == nullptr ||
-        received[0] == '\0' ||
-        expected[0] == '\0')
-    {
-        return false;
-    }
-
-    const size_t receivedLength =
-        strlen(received);
-
-    const size_t expectedLength =
-        strlen(expected);
-
-    if (receivedLength != expectedLength ||
-        receivedLength >= API_TOKEN_LENGTH)
-    {
-        return false;
-    }
-
-    uint8_t diff = 0;
-
-    for (size_t i = 0; i < expectedLength; ++i)
-    {
-        const char a = received[i];
-        const char b = expected[i];
-
-        diff |= static_cast<uint8_t>(a ^ b);
-    }
-
-    return diff == 0;
 }

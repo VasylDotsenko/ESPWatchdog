@@ -4,6 +4,71 @@
 
 ---
 
+## [0.4.57-web-command-auth-cleanup] - 09.08.2026
+
+### Статус
+
+Восьмий етап розділення `WebServerService.cpp`.
+
+### Оновлено
+
+- додано спільний Web API response helper:
+  - `WebApiResponse.h`;
+  - `WebApiResponse.cpp`;
+- додано окремий command authorization helper:
+  - `WebApiAuth.h`;
+  - `WebApiAuth.cpp`;
+- CORS/cache/JSON headers централізовано в `WebApiResponse`;
+- command authorization винесено з `WebServerService.cpp`;
+- `tokenMatches()` перенесено в `WebApiAuth`;
+- `WebApiStatus`, `WebApiIndex`, `WebApiConfig`, `WebApiPower`, `WebApiLogs` синхронізовано зі спільними response helpers;
+- `WebServerService.cpp` зменшено приблизно до `491` рядка.
+
+### Чому
+
+Після розділення Web API модулів однакова логіка відповіді (`sendJson`, CORS headers, cache headers) почала дублюватися в кількох файлах. Централізація response/auth helpers зменшує ризик різної поведінки між endpoints і готує Web layer до security hardening у `0.5.x`.
+
+### Версія
+
+```text
+0.4.57-web-command-auth-cleanup
+```
+
+---
+
+## [0.4.56-webserver-route-cleanup] - 09.08.2026
+
+### Статус
+
+Сьомий етап розділення `WebServerService.cpp`.
+
+### Оновлено
+
+- route registration згруповано за відповідальністю:
+  - page routes;
+  - read-only status API routes;
+  - config/logs API routes;
+  - command API routes;
+  - utility routes;
+- додано окремі файли:
+  - `WebApiIndex.h`;
+  - `WebApiIndex.cpp`;
+- handler `GET /api` винесено з `WebServerService.cpp`;
+- `WebServerService::configureRoutes()` тепер є коротким coordinator-методом;
+- `WebServerService.cpp` став читабельнішим і ближчим до ролі route coordinator-а.
+
+### Чому
+
+Після винесення сторінок, config API, logs API, power commands і status API найбільшим джерелом шуму залишався великий блок реєстрації routes. Групування routes робить файл простішим для ревʼю і зменшує ризик помилок під час додавання нових endpoints.
+
+### Версія
+
+```text
+0.4.56-webserver-route-cleanup
+```
+
+---
+
 ## [0.4.55-web-api-status-split] - 09.08.2026
 
 ### Статус

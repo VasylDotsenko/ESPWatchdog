@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     55
+#define FW_VERSION_PATCH     57
 
-#define FW_VERSION_STRING    "0.4.55"
-#define FW_VERSION_LABEL     "web-api-status-split"
-#define FW_VERSION_FULL      "0.4.55-web-api-status-split"
+#define FW_VERSION_STRING    "0.4.57"
+#define FW_VERSION_LABEL     "web-command-auth-cleanup"
+#define FW_VERSION_FULL      "0.4.57-web-command-auth-cleanup"
 
 //=============================================================================
 // Project

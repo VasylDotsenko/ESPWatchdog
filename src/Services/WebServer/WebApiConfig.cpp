@@ -4,6 +4,7 @@
 
 #include "Services/Config/Config.h"
 #include "WebJsonUtils.h"
+#include "WebApiResponse.h"
 
 namespace
 {
@@ -52,25 +53,6 @@ namespace
         output[copyLength] =
             '\0';
     }
-
-    void sendJson(
-        ESP8266WebServer& server,
-        int statusCode,
-        const char* json)
-    {
-        server.sendHeader(
-            "Cache-Control",
-            "no-store");
-
-        server.sendHeader(
-            "Access-Control-Allow-Origin",
-            "*");
-
-        server.send(
-            statusCode,
-            "application/json",
-            json != nullptr ? json : "{}");
-    }
 }
 
 void WebApiConfig::handleGet(
@@ -92,6 +74,8 @@ void WebApiConfig::handleGet(
         config.tuya.localKey,
         maskedLocalKey,
         sizeof(maskedLocalKey));
+
+    WebApiResponse::applyHeaders(server);
 
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
     server.send(
@@ -215,7 +199,7 @@ void WebApiConfig::handleUpdate(
 {
     if (!server.hasArg("plain"))
     {
-        sendJson(
+        WebApiResponse::sendJson(
             server,
             400,
             "{\"ok\":false,\"error\":\"empty_body\"}");
@@ -225,7 +209,7 @@ void WebApiConfig::handleUpdate(
     if (jsonBuffer == nullptr ||
         jsonBufferSize == 0)
     {
-        sendJson(
+        WebApiResponse::sendJson(
             server,
             500,
             "{\"ok\":false,\"error\":\"internal_buffer_unavailable\"}");
@@ -249,7 +233,7 @@ void WebApiConfig::handleUpdate(
             "{\"ok\":false,\"error\":\"%s\"}",
             error[0] != '\0' ? error : "update_failed");
 
-        sendJson(
+        WebApiResponse::sendJson(
             server,
             400,
             jsonBuffer);
@@ -261,7 +245,7 @@ void WebApiConfig::handleUpdate(
         jsonBufferSize,
         "{\"ok\":true,\"message\":\"configuration_updated\",\"restartRecommended\":true}");
 
-    sendJson(
+    WebApiResponse::sendJson(
         server,
         200,
         jsonBuffer);

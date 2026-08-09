@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.41-web-api-auth-stack-fix
+0.4.57-web-command-auth-cleanup
 ```
 
 Production target:
@@ -134,12 +134,26 @@ http://192.168.4.1/config/wifi
 - runtime log ring-buffer in `Logger`;
 - `GET /api/logs`;
 - separate logs page `/logs`;
+- fast Dashboard load via `/api/status` with split endpoint fallback;
+- resilient Dashboard loading when `/api/config` or one status endpoint is temporarily unavailable;
+- WebServerService split into smaller Web API modules:
+  - `WebPages`;
+  - `WebJsonUtils`;
+  - `WebApiResponse`;
+  - `WebApiAuth`;
+  - `WebApiIndex`;
+  - `WebApiConfig`;
+  - `WebApiLogs`;
+  - `WebApiPower`;
+  - `WebApiStatus`;
 - first-boot WiFi setup portal;
 - fallback AP mode `ESP-Watchdog-Setup`;
 - setup portal address `192.168.4.1`;
 - Watchdog/Power actions disabled while setup portal is active;
 - safe opt-in Tuya status polling policy;
 - Web API token protection for state-changing commands;
+- centralized Web API response headers;
+- centralized Web API command authorization;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;
@@ -173,8 +187,9 @@ http://192.168.4.1/config/wifi
 - API-ready network status snapshot;
 - aggregate API status snapshot;
 - JSON serializer для aggregate API status;
-- WebServerService з `GET /api/status`;
+- Web API status module for `/api/status` and subsystem status endpoints;
 - lightweight Web Dashboard на `/`;
+- fast Dashboard load with cached configuration data;
 - subsystem API endpoints;
 - API index endpoint `/api`;
 - dashboard links до API endpoints;
@@ -484,6 +499,27 @@ src/
     ├── Storage/
     ├── SystemInfo/
     ├── Tuya/
+    ├── WebServer/
+    │   ├── WebServerService.h
+    │   ├── WebServerService.cpp
+    │   ├── WebPages.h
+    │   ├── WebPages.cpp
+    │   ├── WebJsonUtils.h
+    │   ├── WebJsonUtils.cpp
+    │   ├── WebApiResponse.h
+    │   ├── WebApiResponse.cpp
+    │   ├── WebApiAuth.h
+    │   ├── WebApiAuth.cpp
+    │   ├── WebApiIndex.h
+    │   ├── WebApiIndex.cpp
+    │   ├── WebApiConfig.h
+    │   ├── WebApiConfig.cpp
+    │   ├── WebApiLogs.h
+    │   ├── WebApiLogs.cpp
+    │   ├── WebApiPower.h
+    │   ├── WebApiPower.cpp
+    │   ├── WebApiStatus.h
+    │   └── WebApiStatus.cpp
     ├── Watchdog/
     └── WiFi/
 ```
@@ -550,23 +586,36 @@ pio device monitor -b 74880
 ### Наступний етап
 
 ```text
-Hardware smoke-test
+Web UI production polish
 ```
 
-Перевірено:
+Поточний WebServer вже розділено на окремі модулі:
 
-- Tuya LAN connection;
-- правильність `relayDps`;
-- `TuyaLan.relayOff()`;
-- `TuyaLan.relayOn()`;
-- повний цикл `WatchdogService -> PowerService -> TuyaPowerController -> TuyaService`;
-- hardware smoke-test із `TCOGCZ16-A`.
+- `WebPages`;
+- `WebJsonUtils`;
+- `WebApiResponse`;
+- `WebApiAuth`;
+- `WebApiIndex`;
+- `WebApiConfig`;
+- `WebApiLogs`;
+- `WebApiPower`;
+- `WebApiStatus`.
+
+Route registration уже згруповано в `WebServerService`.
+Response/auth helpers уже винесено з `WebServerService`.
+
+Далі потрібно довести Web UI до production-рівня:
+
+- покращити UX config pages;
+- показувати `restartRecommended`;
+- підготувати UI до live apply / requires restart policy;
+- перевірити mobile layout;
+- зменшити вагу HTML/JS там, де це безпечно.
 
 ### Далі
 
 - Tuya LAN `3.5` status DPQuery через `6699`;
-- Web API;
-- Web UI;
+- Web UI production polish;
 - OTA;
 - diagnostics;
 - restart history Web/API export;

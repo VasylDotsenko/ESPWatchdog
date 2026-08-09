@@ -2,32 +2,7 @@
 
 #include "Core/Application.h"
 #include "Serializers/JsonStatusSerializer.h"
-
-namespace
-{
-    void sendJson(
-        ESP8266WebServer& server,
-        int statusCode,
-        const char* json)
-    {
-        server.sendHeader(
-            "Access-Control-Allow-Origin",
-            "*");
-
-        server.sendHeader(
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS");
-
-        server.sendHeader(
-            "Access-Control-Allow-Headers",
-            "Content-Type, Authorization");
-
-        server.send(
-            statusCode,
-            "application/json",
-            json);
-    }
-}
+#include "WebApiResponse.h"
 
 void WebApiStatus::handleStatus(
     ESP8266WebServer& server,
@@ -42,7 +17,7 @@ void WebApiStatus::handleStatus(
             jsonBufferSize,
             jsonLength))
     {
-        sendJson(
+        WebApiResponse::sendJson(
             server,
             500,
             "{\"error\":\"status_serialization_failed\"}");
@@ -50,7 +25,7 @@ void WebApiStatus::handleStatus(
         return;
     }
 
-    sendJson(
+    WebApiResponse::sendJson(
         server,
         200,
         jsonBuffer);
@@ -69,7 +44,7 @@ void WebApiStatus::handleSystem(
             jsonBufferSize,
             jsonLength))
     {
-        sendJson(
+        WebApiResponse::sendJson(
             server,
             500,
             "{\"error\":\"system_serialization_failed\"}");
@@ -77,7 +52,7 @@ void WebApiStatus::handleSystem(
         return;
     }
 
-    sendJson(
+    WebApiResponse::sendJson(
         server,
         200,
         jsonBuffer);
@@ -96,7 +71,7 @@ void WebApiStatus::handleNetwork(
             jsonBufferSize,
             jsonLength))
     {
-        sendJson(
+        WebApiResponse::sendJson(
             server,
             500,
             "{\"error\":\"network_serialization_failed\"}");
@@ -104,7 +79,7 @@ void WebApiStatus::handleNetwork(
         return;
     }
 
-    sendJson(
+    WebApiResponse::sendJson(
         server,
         200,
         jsonBuffer);
@@ -123,7 +98,7 @@ void WebApiStatus::handleHealth(
             jsonBufferSize,
             jsonLength))
     {
-        sendJson(
+        WebApiResponse::sendJson(
             server,
             500,
             "{\"error\":\"health_serialization_failed\"}");
@@ -131,7 +106,7 @@ void WebApiStatus::handleHealth(
         return;
     }
 
-    sendJson(
+    WebApiResponse::sendJson(
         server,
         200,
         jsonBuffer);
@@ -150,7 +125,7 @@ void WebApiStatus::handleWatchdog(
             jsonBufferSize,
             jsonLength))
     {
-        sendJson(
+        WebApiResponse::sendJson(
             server,
             500,
             "{\"error\":\"watchdog_serialization_failed\"}");
@@ -158,7 +133,7 @@ void WebApiStatus::handleWatchdog(
         return;
     }
 
-    sendJson(
+    WebApiResponse::sendJson(
         server,
         200,
         jsonBuffer);
@@ -177,7 +152,7 @@ void WebApiStatus::handlePower(
             jsonBufferSize,
             jsonLength))
     {
-        sendJson(
+        WebApiResponse::sendJson(
             server,
             500,
             "{\"error\":\"power_serialization_failed\"}");
@@ -185,7 +160,7 @@ void WebApiStatus::handlePower(
         return;
     }
 
-    sendJson(
+    WebApiResponse::sendJson(
         server,
         200,
         jsonBuffer);

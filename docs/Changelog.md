@@ -4,6 +4,117 @@
 
 ---
 
+## [0.4.28-web-dashboard-lite] - 09.08.2026
+
+### Статус
+
+Додано перший читабельний Web Dashboard.
+
+`WebServerService` тепер віддає не лише JSON API, а й легку HTML-сторінку на `/`, яка автоматично читає `/api/status` і показує основний runtime стан у картках.
+
+### Оновлено
+
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- route `/`;
+- embedded HTML dashboard у firmware;
+- auto-refresh кожні 2 секунди;
+- картки:
+  - System;
+  - Network;
+  - Health;
+  - Watchdog;
+  - Power;
+- посилання на `/api/status` та `/health`;
+- `Cache-Control: no-store` для HTML.
+
+### Runtime
+
+Після WiFi connect:
+
+```text
+http://<device-ip>/
+```
+
+Для поточної плати:
+
+```text
+http://192.168.10.44/
+```
+
+JSON API лишається:
+
+```text
+http://192.168.10.44/api/status
+```
+
+### Версія
+
+```text
+0.4.28-web-dashboard-lite
+```
+
+---
+
+## [0.4.27-webserver-api-status] - 09.08.2026
+
+### Статус
+
+Додано перший Web API endpoint.
+
+`WebServerService` запускає стандартний `ESP8266WebServer` на порту `80` і віддає агрегований runtime status через `GET /api/status`.
+
+### Оновлено
+
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Application.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `WebServerService`;
+- `GET /api/status`;
+- `GET /health`;
+- JSON 404 response;
+- CORS header `Access-Control-Allow-Origin: *`;
+- `Cache-Control: no-store`;
+- використання `JsonStatusSerializer` для `App.status()`.
+
+### Runtime
+
+Очікуваний лог:
+
+```text
+WebServer: started, port=80
+```
+
+Після WiFi connect endpoint буде доступний:
+
+```text
+http://<device-ip>/api/status
+```
+
+### Версія
+
+```text
+0.4.27-webserver-api-status
+```
+
+---
+
 ## [0.4.26-json-status-serializer] - 09.08.2026
 
 ### Статус

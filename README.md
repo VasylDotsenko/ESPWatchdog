@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.26-json-status-serializer
+0.4.28-web-dashboard-lite
 ```
 
 Production target:
@@ -105,6 +105,8 @@ Power Cycle
 - API-ready network status snapshot;
 - aggregate API status snapshot;
 - JSON serializer для aggregate API status;
+- WebServerService з `GET /api/status`;
+- lightweight Web Dashboard на `/`;
 - захист від restart-loop через `maxRestartPerDay`;
 - production power-control abstraction через `PowerService`;
 - Tuya LAN power controller adapter;

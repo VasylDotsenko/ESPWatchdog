@@ -10,6 +10,7 @@
 #include "Services/SystemInfo/SystemInfo.h"
 #include "Services/Tuya/TuyaService.h"
 #include "Services/Watchdog/WatchdogService.h"
+#include "Services/WebServer/WebServerService.h"
 #include "Services/WiFi/WiFiService.h"
 
 //=============================================================================
@@ -85,6 +86,12 @@ bool Application::begin()
         return false;
     }
 
+    if (!WebServer.begin())
+    {
+        Log.error("Application: WebServer initialization failed");
+        return false;
+    }
+
     Log.info("Application: started");
 
     return true;
@@ -123,6 +130,8 @@ void Application::loop()
 
         Watchdog.restartCompleted();
     }
+
+    WebServer.loop();
 }
 
 //=============================================================================

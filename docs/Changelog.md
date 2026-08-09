@@ -4,6 +4,68 @@
 
 ---
 
+## [0.4.26-json-status-serializer] - 09.08.2026
+
+### Статус
+
+Додано JSON serializer для агрегованого runtime status snapshot.
+
+Після створення `ApiStatusData` додано перший presentation-layer компонент, який перетворює clean POD snapshot у JSON для майбутнього `GET /api/status`.
+
+### Оновлено
+
+- `Serializers/JsonStatusSerializer.h`;
+- `Serializers/JsonStatusSerializer.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `JsonStatusSerializer`;
+- `JsonStatusSerializer::serialize()`;
+- JSON blocks:
+  - `system`;
+  - `network`;
+  - `health`;
+  - `watchdog`;
+  - `power`;
+- enum text mapping для status/state/reason/result;
+- IPv4 formatting;
+- restart history JSON array.
+
+### Приклад використання
+
+```cpp
+char json[4096] {};
+size_t jsonLength = 0;
+
+JsonStatusSerializer::serialize(
+    App.status(),
+    json,
+    sizeof(json),
+    jsonLength);
+```
+
+### Призначення
+
+`JsonStatusSerializer` стане основою для:
+
+- `GET /api/status`;
+- diagnostics JSON endpoint;
+- Web Dashboard;
+- майбутнього MQTT telemetry payload.
+
+### Версія
+
+```text
+0.4.26-json-status-serializer
+```
+
+---
+
 ## [0.4.25-api-status-snapshot] - 09.08.2026
 
 ### Статус

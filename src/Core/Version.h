@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     25
+#define FW_VERSION_PATCH     26
 
-#define FW_VERSION_STRING    "0.4.25"
-#define FW_VERSION_LABEL     "api-status-snapshot"
-#define FW_VERSION_FULL      "0.4.25-api-status-snapshot"
+#define FW_VERSION_STRING    "0.4.26"
+#define FW_VERSION_LABEL     "json-status-serializer"
+#define FW_VERSION_FULL      "0.4.26-json-status-serializer"
 
 //=============================================================================
 // Project

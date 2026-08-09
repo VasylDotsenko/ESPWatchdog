@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.4.49-web-api-config-split
+0.4.61-web-config-route-fallback
 ```
 
 Production target:
@@ -30,9 +30,11 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - Web Dashboard;
 - Web configuration editor;
 - runtime logs page;
-- API token protection для state-changing commands.
+- API token protection для state-changing commands;
+- mobile-friendly Web UI для dashboard/config/logs;
+- route fallback для Web UI config pages.
 
-Поточний етап — **WebServer refactoring + stability hardening** перед переходом у `0.5.x`.
+Поточний етап — **перехід до production hardening `0.5.x`**.
 
 ---
 
@@ -308,7 +310,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.4.59 — Config apply policy
 
-Статус: next.
+Статус: реалізовано.
 
 План:
 
@@ -323,6 +325,20 @@ URL: http://192.168.4.1/config/wifi
   - tuya;
   - security;
 - синхронізувати Web UI з цією політикою.
+
+### 0.4.60 — Web UI mobile polish
+
+Статус: реалізовано.
+
+Реалізовано:
+
+- покращити spacing для малих екранів;
+- зробити action buttons зручнішими на touch UI;
+- зменшити візуальний шум у footer API links;
+- перевірити довгі Tuya/device values на overflow.
+- приховати API endpoint links у collapsible footer;
+- збільшити `input` / `button` touch targets;
+- оптимізувати logs view для mobile.
 
 ---
 

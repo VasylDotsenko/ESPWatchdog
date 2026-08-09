@@ -8,17 +8,18 @@ const char WEB_INDEX_HTML[] PROGMEM = R"HTML(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ESP Watchdog</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1020;--card:#151b2e;--text:#e8edf7;--muted:#8e9bb4;--ok:#2ee59d;--warn:#ffd166;--bad:#ff5d73;--line:#26314d}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
-header{padding:22px 18px;border-bottom:1px solid var(--line);background:#0f1628;position:sticky;top:0}
+:root{color-scheme:dark;--bg:#0b1020;--header:#0f1628;--card:#151b2e;--text:#e8edf7;--muted:#8e9bb4;--ok:#2ee59d;--warn:#ffd166;--bad:#ff5d73;--line:#26314d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;-webkit-text-size-adjust:100%}
+header{padding:18px 16px;border-bottom:1px solid var(--line);background:var(--header);position:sticky;top:0;z-index:5}
 h1{margin:0;font-size:22px}.sub{color:var(--muted);margin-top:4px}
-main{padding:16px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+main{padding:14px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 10px 28px #0004}
 .card h2{font-size:15px;margin:0 0 10px;color:#fff}.row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding:7px 0}
 .row:first-of-type{border-top:0}.k{color:var(--muted)}.v{text-align:right;word-break:break-word}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
-button{border:0;border-radius:10px;padding:10px 12px;background:#33415f;color:#fff;font-weight:700;cursor:pointer}button:hover{filter:brightness(1.1)}button:disabled{opacity:.45;cursor:not-allowed}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.danger{background:#8f2635}.warnBtn{background:#8b6822}.okBtn{background:#16724e}.notice{border:1px solid var(--warn);background:#2c2413;color:var(--warn);border-radius:10px;padding:10px;margin:10px 0}.log{max-height:180px;overflow:auto;background:#0a0f1d;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.log div{padding:2px 0;color:#cdd7ee}.log .warn{color:var(--warn)}.log .bad{color:var(--bad)}.log .ok{color:var(--ok)}
-input{width:100%;margin-top:4px;border:1px solid var(--line);border-radius:9px;background:#0a0f1d;color:var(--text);padding:8px}.field{margin:8px 0}.field label{display:block;color:var(--muted);font-size:12px}.wide{grid-column:1/-1}.formGrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
-footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff;text-decoration:none}a:hover{text-decoration:underline}.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+button{border:0;border-radius:10px;min-height:42px;padding:11px 14px;background:#33415f;color:#fff;font-weight:700;cursor:pointer}button:hover{filter:brightness(1.1)}button:disabled{opacity:.45;cursor:not-allowed}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.danger{background:#8f2635}.warnBtn{background:#8b6822}.okBtn{background:#16724e}.notice{border:1px solid var(--warn);background:#2c2413;color:var(--warn);border-radius:10px;padding:10px;margin:10px 0}.log{max-height:190px;overflow:auto;background:#0a0f1d;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.log div{padding:2px 0;color:#cdd7ee}.log .warn{color:var(--warn)}.log .bad{color:var(--bad)}.log .ok{color:var(--ok)}
+input{width:100%;min-height:42px;margin-top:4px;border:1px solid var(--line);border-radius:9px;background:#0a0f1d;color:var(--text);padding:10px;font-size:16px}.field{margin:8px 0}.field label{display:block;color:var(--muted);font-size:12px}.wide{grid-column:1/-1}.formGrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+footer{padding:0 16px 16px;color:var(--muted)}summary{cursor:pointer;padding:8px 0}code{color:#c6d3ff}a{color:#9db7ff;text-decoration:none}a:hover{text-decoration:underline}.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.links a{display:inline-flex;align-items:center;min-height:34px;padding:6px 9px;border:1px solid var(--line);border-radius:999px;background:#11182a}.apiLinks a{opacity:.86}
+@media(max-width:560px){body{font-size:13px}header{padding:14px 12px;position:static}h1{font-size:20px}main{padding:10px;gap:10px;grid-template-columns:1fr}.card{padding:12px;border-radius:12px}.row{display:block;padding:8px 0}.v{text-align:left;display:block;margin-top:2px}.links{gap:7px}.links a{font-size:13px;min-height:36px}.btns{display:grid;grid-template-columns:1fr;gap:8px}button{width:100%}.formGrid{grid-template-columns:1fr}.log{max-height:260px}footer{padding:0 12px 14px}}
 </style>
 </head>
 <body>
@@ -39,8 +40,9 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff
 </header>
 <main id="app"></main>
 <footer>
-<div>API endpoints</div>
-<div class="links">
+<details>
+<summary>API endpoints</summary>
+<div class="links apiLinks">
 <a href="/api">index</a>
 <a href="/api/status">status</a>
 <a href="/api/system">system</a>
@@ -51,11 +53,12 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff
 <a href="/api/config">config</a>
 <a href="/api/logs">logs</a>
 </div>
+</details>
 </footer>
 <script>
 const app=document.getElementById('app'),updated=document.getElementById('updated');
 const commandLog=[];
-let configCache={},configLoadedAt=0,loading=false,restartRecommended=false;
+let configCache={},configLoadedAt=0,loading=false,restartRecommended=false,restartRequired=false,lastApplyMode='';
 const ip=a=>a||'0.0.0.0';
 const cls=b=>b?'ok':'bad';
 const ms=v=>v?`${v} ms`:'0 ms';
@@ -158,7 +161,7 @@ function sectionEditor(section,c){
  if(section==='relay'){title='Relay settings';fields=check('cfg_relay_enabled','relay.enabled',r.enabled)+field('cfg_relay_pin','relay.pin',r.pin||0,'number')+check('cfg_relay_active','relay.activeHigh',r.activeHigh)}
  if(section==='tuya'){title='Tuya socket settings';fields=field('cfg_tuya_ip','tuya.ip',tu.ip||'')+field('cfg_tuya_port','tuya.port',tu.port||0,'number')+field('cfg_tuya_device','tuya.deviceId',tu.deviceId||'')+secretField('cfg_tuya_key','tuya.localKey',tu.localKeyMasked||'leave empty to keep')+field('cfg_tuya_ver','tuya.version',tu.version||35,'number')+field('cfg_tuya_dps','tuya.relayDps',tu.relayDps||1,'number')+check('cfg_tuya_poll_enabled','tuya.statusPollingEnabled',tu.statusPollingEnabled)+field('cfg_tuya_poll_interval','tuya.statusPollingInterval',tu.statusPollingInterval||60000,'number')}
  if(section==='security'){title='Web API security';fields=check('cfg_sec_enabled','security.apiAuthEnabled',sec.apiAuthEnabled)+secretField('cfg_sec_token','security.apiToken',sec.apiTokenMasked||'leave empty to keep current token')}
- const note=restartRecommended?'<div class="notice">Configuration saved. Restart ESP is recommended to apply all changes.</div>':'';
+ const note=restartRequired?'<div class="notice">Configuration saved. Restart ESP is required to apply this section.</div>':(restartRecommended?'<div class="notice">Configuration saved. Restart ESP is recommended to apply all changes.</div>':'');
  return `<section class="card wide"><h2>${title}</h2>${note}<div class="formGrid">${fields}</div><div class="btns"><button class="okBtn" onclick="saveSection('${section}')">SAVE ${section.toUpperCase()}</button><button class="warnBtn" onclick="restartEsp()">RESTART ESP</button></div></section>`;
 }
 function sectionBody(section){
@@ -179,8 +182,10 @@ async function saveSection(section){
   const res=await apiResult(r);
   if(res.ok){
    restartRecommended=!!res.data.restartRecommended;
+   restartRequired=!!res.data.requiresRestart;
+   lastApplyMode=res.data.applyMode||'';
    await loadDashboardConfig(true);
-   addLog(`Config ${section}: saved${restartRecommended?' · restart recommended':''}`,'ok');
+   addLog(`Config ${res.data.section||section}: saved · ${restartRequired?'restart required':(lastApplyMode==='live'?'live applied':'restart recommended')}`,restartRequired?'warn':'ok');
    load();
   }else{
    addLog(apiSummary('Config',res),'bad');

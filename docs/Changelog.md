@@ -4,6 +4,96 @@
 
 ---
 
+## [0.4.61-web-config-route-fallback] - 09.08.2026
+
+### Статус
+
+Hotfix для відкриття Web UI config routes.
+
+### Оновлено
+
+- додано fallback у `WebServerService::handleNotFound()` для:
+  - `/config`;
+  - `/config/...`;
+  - `/dashboard/...`;
+  - `/logs/...`;
+- `/config/tuya` та майбутні config routes тепер повинні віддавати SPA-сторінку навіть якщо URL має trailing slash або route не був явно зареєстрований;
+- API routes зберігають JSON `404`.
+
+### Чому
+
+Після переходу на окремі Web UI сторінки config route має поводитись як SPA entrypoint. Це прибирає крихкість exact-match routes на ESP8266WebServer і робить сторінки налаштувань стабільнішими.
+
+### Версія
+
+```text
+0.4.61-web-config-route-fallback
+```
+
+---
+
+## [0.4.60-web-ui-mobile-polish] - 09.08.2026
+
+### Статус
+
+Завершено responsive/mobile polish для Web UI.
+
+### Оновлено
+
+- dashboard, config pages і logs адаптовано для вузьких екранів;
+- збільшено touch targets для кнопок і navigation links;
+- кнопки дій на mobile тепер займають повну ширину;
+- `input` поля отримали `font-size: 16px`, щоб уникнути автоматичного zoom на iOS;
+- покращено spacing cards/rows на малих екранах;
+- довгі значення у рядках статусу краще переносяться;
+- `API endpoints` у footer винесено в collapsible `details/summary`;
+- log panel отримав більшу висоту на mobile;
+- Web UI залишився lightweight, без додаткових залежностей.
+
+### Чому
+
+Після появи окремих сторінок конфігурації та runtime logs інтерфейс став використовуватись не лише з desktop, а й з телефону під час налаштування WeMos у локальній мережі. Цей реліз робить базові дії зручнішими на touch UI без збільшення складності фронтенду.
+
+### Версія
+
+```text
+0.4.60-web-ui-mobile-polish
+```
+
+---
+
+## [0.4.59-config-apply-policy] - 09.08.2026
+
+### Статус
+
+Додано базову policy застосування конфігурації.
+
+### Оновлено
+
+- `POST /api/config` тепер повертає:
+  - `section`;
+  - `applyMode`;
+  - `requiresRestart`;
+  - `restartRecommended`;
+- додано section-level policy:
+  - `security` застосовується live;
+  - `device`, `wifi`, `watchdog`, `relay`, `tuya` потребують restart ESP;
+- Web UI показує `restart required` для секцій, які не застосовуються live;
+- Web UI показує `live applied` для security config;
+- command log тепер відображає apply result замість загального повідомлення.
+
+### Чому
+
+Після появи Web UI config editor потрібно чітко розрізняти зміни, які застосовуються одразу, і зміни, які потребують reboot. Це зменшує неоднозначність у польовій експлуатації й готує основу для майбутнього live apply окремих секцій.
+
+### Версія
+
+```text
+0.4.59-config-apply-policy
+```
+
+---
+
 ## [0.4.58-web-ui-production-polish] - 09.08.2026
 
 ### Статус

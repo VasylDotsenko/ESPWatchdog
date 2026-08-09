@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.58-web-ui-production-polish
+0.4.61-web-config-route-fallback
 ```
 
 Production target:
@@ -156,6 +156,12 @@ http://192.168.4.1/config/wifi
 - centralized Web API command authorization;
 - polished Web UI command messages;
 - visible `restartRecommended` warning after config save;
+- config apply policy in `POST /api/config`;
+- section-level `requiresRestart` / `applyMode`;
+- mobile-friendly Web UI layout;
+- touch-friendly dashboard/config controls;
+- collapsible API endpoint footer;
+- Web UI route fallback для `/config/...`, `/dashboard/...`, `/logs/...`;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;
@@ -165,7 +171,7 @@ http://192.168.4.1/config/wifi
 Ще не завершено:
 
 - Tuya LAN `3.5` status DPQuery через `6699`;
-- Config apply policy;
+- security hardening baseline;
 - OTA.
 
 ---
@@ -199,6 +205,9 @@ http://192.168.4.1/config/wifi
 - dashboard command log;
 - dashboard restart history;
 - dashboard configuration viewer/editor;
+- mobile-friendly dashboard/config/logs layout;
+- touch-friendly config/action buttons;
+- collapsible footer with API endpoint links;
 - `GET /api/config`;
 - `POST /api/config`;
 - захист від restart-loop через `maxRestartPerDay`;
@@ -588,7 +597,7 @@ pio device monitor -b 74880
 ### Наступний етап
 
 ```text
-Config apply policy
+Security baseline
 ```
 
 Поточний WebServer вже розділено на окремі модулі:
@@ -606,18 +615,18 @@ Config apply policy
 Route registration уже згруповано в `WebServerService`.
 Response/auth helpers уже винесено з `WebServerService`.
 Web UI command messages і restart recommendation вже приведені до читабельного вигляду.
+Config apply policy уже повертає `section`, `applyMode`, `requiresRestart` і `restartRecommended`.
+Responsive/mobile polish уже виконано для dashboard/config/logs:
 
-Далі потрібно формалізувати config apply policy:
-
-- визначити live/restart behavior для кожної секції config;
-- додати `requiresRestart`;
-- показувати section-level apply result у Web UI;
-- підготувати безпечне live apply для параметрів, які можна змінювати без reboot.
+- покращити spacing і touch targets;
+- зменшити шум footer API links;
+- перевірити overflow для довгих значень.
+- приховати API endpoint links у collapsible footer.
 
 ### Далі
 
+- Security baseline для Web API;
 - Tuya LAN `3.5` status DPQuery через `6699`;
-- Web UI production polish;
 - OTA;
 - diagnostics;
 - restart history Web/API export;

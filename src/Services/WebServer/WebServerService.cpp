@@ -484,6 +484,19 @@ void WebServerService::handleLogsPage()
 
 void WebServerService::handleNotFound()
 {
+    const String uri = m_server.uri();
+
+    if (uri == "/config" ||
+        uri.startsWith("/config/") ||
+        uri == "/dashboard" ||
+        uri.startsWith("/dashboard/") ||
+        uri == "/logs/" ||
+        uri.startsWith("/logs/"))
+    {
+        handleRoot();
+        return;
+    }
+
     WebApiResponse::sendJson(
         m_server,
         404,

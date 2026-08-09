@@ -8,6 +8,83 @@
 
 namespace
 {
+    struct ConfigApplyPolicy
+    {
+        const char* section = "unknown";
+
+        const char* applyMode = "restart";
+
+        bool requiresRestart = true;
+
+        bool restartRecommended = true;
+    };
+
+    ConfigApplyPolicy detectApplyPolicy(
+        const String& body)
+    {
+        if (body.indexOf("\"security\"") >= 0)
+        {
+            return {
+                "security",
+                "live",
+                false,
+                false
+            };
+        }
+
+        if (body.indexOf("\"device\"") >= 0)
+        {
+            return {
+                "device",
+                "restart",
+                true,
+                true
+            };
+        }
+
+        if (body.indexOf("\"wifi\"") >= 0)
+        {
+            return {
+                "wifi",
+                "restart",
+                true,
+                true
+            };
+        }
+
+        if (body.indexOf("\"watchdog\"") >= 0)
+        {
+            return {
+                "watchdog",
+                "restart",
+                true,
+                true
+            };
+        }
+
+        if (body.indexOf("\"relay\"") >= 0)
+        {
+            return {
+                "relay",
+                "restart",
+                true,
+                true
+            };
+        }
+
+        if (body.indexOf("\"tuya\"") >= 0)
+        {
+            return {
+                "tuya",
+                "restart",
+                true,
+                true
+            };
+        }
+
+        return {};
+    }
+
     void maskSecret(
         const char* source,
         char* output,
@@ -219,6 +296,9 @@ void WebApiConfig::handleUpdate(
     const String body =
         server.arg("plain");
 
+    const ConfigApplyPolicy policy =
+        detectApplyPolicy(body);
+
     char error[48] {};
 
     if (!Config.updateFromJson(
@@ -243,7 +323,13 @@ void WebApiConfig::handleUpdate(
     snprintf(
         jsonBuffer,
         jsonBufferSize,
-        "{\"ok\":true,\"message\":\"configuration_updated\",\"restartRecommended\":true}");
+        "{\"ok\":true,\"message\":\"configuration_updated\","
+        "\"section\":\"%s\",\"applyMode\":\"%s\","
+        "\"requiresRestart\":%s,\"restartRecommended\":%s}",
+        policy.section,
+        policy.applyMode,
+        policy.requiresRestart ? "true" : "false",
+        policy.restartRecommended ? "true" : "false");
 
     WebApiResponse::sendJson(
         server,

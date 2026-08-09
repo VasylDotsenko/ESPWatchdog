@@ -8,12 +8,12 @@
 
 Основний напрямок роботи зараз:
 
-- hardware verification поточного Web Dashboard;
-- перевірка `GET /api/config` і `POST /api/config` на реальній платі;
-- стабілізація Tuya LAN `3.5` runtime;
-- production polish Web Dashboard.
+- перехід до production hardening `0.5.x`;
+- security baseline для Web API;
+- подальша стабілізація Tuya LAN `3.5` status/runtime;
+- підготовка OTA та діагностики.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.40-web-api-auth`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.61-web-config-route-fallback`.
 
 ## Вже зроблено
 
@@ -175,6 +175,10 @@
   - `RESTART`;
 - dashboard отримав command log;
 - dashboard отримав restart history log;
+- dashboard/config/logs отримали mobile-friendly layout;
+- Web UI buttons і navigation links адаптовано для touch UI;
+- footer API endpoints винесено в collapsible блок;
+- додано route fallback для Web UI сторінок `/config/...`, `/dashboard/...`, `/logs/...`;
 - додано read-only config endpoint `GET /api/config`;
 - dashboard показує налаштування контрольованого хоста;
 - dashboard показує налаштування Tuya socket з masked `localKey`;

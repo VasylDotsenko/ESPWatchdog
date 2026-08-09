@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     58
+#define FW_VERSION_PATCH     61
 
-#define FW_VERSION_STRING    "0.4.58"
-#define FW_VERSION_LABEL     "web-ui-production-polish"
-#define FW_VERSION_FULL      "0.4.58-web-ui-production-polish"
+#define FW_VERSION_STRING    "0.4.61"
+#define FW_VERSION_LABEL     "web-config-route-fallback"
+#define FW_VERSION_FULL      "0.4.61-web-config-route-fallback"
 
 //=============================================================================
 // Project

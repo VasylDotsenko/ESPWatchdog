@@ -4,6 +4,38 @@
 
 ---
 
+## [0.4.51-web-api-power-split] - 09.08.2026
+
+### Статус
+
+П'ятий етап розділення `WebServerService.cpp`.
+
+### Оновлено
+
+- manual power command handlers винесено з `WebServerService.cpp`;
+- додано окремі файли:
+  - `WebApiPower.h`;
+  - `WebApiPower.cpp`;
+- `WebServerService` залишає за собою authorization;
+- `WebApiPower` відповідає за:
+  - `POST /api/power/on`;
+  - `POST /api/power/off`;
+  - `POST /api/power/restart`;
+  - parsing `powerOffTime`;
+  - JSON responses для power commands.
+
+### Чому
+
+Power command logic є окремою відповідальністю. Після винесення `WebServerService` стає ближчим до ролі route coordinator-а, а manual power control легше тестувати й підтримувати.
+
+### Версія
+
+```text
+0.4.51-web-api-power-split
+```
+
+---
+
 ## [0.4.50-web-api-logs-split] - 09.08.2026
 
 ### Статус

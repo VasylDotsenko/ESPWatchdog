@@ -66,8 +66,6 @@ private:
         int statusCode,
         const char* json);
 
-    uint32_t requestedPowerOffTime();
-
     bool tokenMatches(
         const char* received,
         const char* expected) const;

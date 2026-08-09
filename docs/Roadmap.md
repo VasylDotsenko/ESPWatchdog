@@ -206,7 +206,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.4.51 — WebApiPower split
 
-Статус: next.
+Статус: реалізовано.
 
 План:
 
@@ -218,6 +218,8 @@ URL: http://192.168.4.1/config/wifi
 - централізувати JSON responses для command handlers.
 
 ### 0.4.52 — WebApiStatus split
+
+Статус: next.
 
 План:
 

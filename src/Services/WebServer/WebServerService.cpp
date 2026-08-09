@@ -3,6 +3,7 @@
 #include "WebPages.h"
 #include "WebApiConfig.h"
 #include "WebApiLogs.h"
+#include "WebApiPower.h"
 
 #include <ArduinoJson.h>
 #include <cstring>
@@ -476,33 +477,7 @@ void WebServerService::handleApiPowerOn()
         return;
     }
 
-    if (Power.restartInProgress())
-    {
-        sendJson(
-            409,
-            "{\"ok\":false,\"error\":\"restart_in_progress\"}");
-        return;
-    }
-
-    if (!Power.available())
-    {
-        sendJson(
-            503,
-            "{\"ok\":false,\"error\":\"power_controller_unavailable\"}");
-        return;
-    }
-
-    if (!Power.powerOn())
-    {
-        sendJson(
-            500,
-            "{\"ok\":false,\"error\":\"power_on_failed\"}");
-        return;
-    }
-
-    sendJson(
-        200,
-        "{\"ok\":true,\"command\":\"power_on\"}");
+    WebApiPower::handleOn(m_server);
 }
 
 void WebServerService::handleApiPowerOff()
@@ -512,33 +487,7 @@ void WebServerService::handleApiPowerOff()
         return;
     }
 
-    if (Power.restartInProgress())
-    {
-        sendJson(
-            409,
-            "{\"ok\":false,\"error\":\"restart_in_progress\"}");
-        return;
-    }
-
-    if (!Power.available())
-    {
-        sendJson(
-            503,
-            "{\"ok\":false,\"error\":\"power_controller_unavailable\"}");
-        return;
-    }
-
-    if (!Power.powerOff())
-    {
-        sendJson(
-            500,
-            "{\"ok\":false,\"error\":\"power_off_failed\"}");
-        return;
-    }
-
-    sendJson(
-        200,
-        "{\"ok\":true,\"command\":\"power_off\"}");
+    WebApiPower::handleOff(m_server);
 }
 
 void WebServerService::handleApiPowerRestart()
@@ -548,35 +497,10 @@ void WebServerService::handleApiPowerRestart()
         return;
     }
 
-    if (Power.restartInProgress())
-    {
-        sendJson(
-            409,
-            "{\"ok\":false,\"error\":\"restart_in_progress\"}");
-        return;
-    }
-
-    const uint32_t powerOffTime = requestedPowerOffTime();
-
-    if (!Power.restart(
-            powerOffTime,
-            RestartReason::ManualCommand))
-    {
-        sendJson(
-            503,
-            "{\"ok\":false,\"error\":\"restart_not_started\"}");
-        return;
-    }
-
-    snprintf(
+    WebApiPower::handleRestart(
+        m_server,
         m_jsonBuffer,
-        sizeof(m_jsonBuffer),
-        "{\"ok\":true,\"command\":\"restart\",\"powerOffTime\":%lu}",
-        static_cast<unsigned long>(powerOffTime));
-
-    sendJson(
-        202,
-        m_jsonBuffer);
+        sizeof(m_jsonBuffer));
 }
 
 void WebServerService::handleApiOptions()
@@ -685,27 +609,6 @@ void WebServerService::sendJson(
         statusCode,
         "application/json",
         json != nullptr ? json : "{}");
-}
-
-uint32_t WebServerService::requestedPowerOffTime()
-{
-    uint32_t powerOffTime =
-        Config.data().watchdog.powerOffTime;
-
-    if (m_server.hasArg("powerOffTime"))
-    {
-        const uint32_t requested =
-            static_cast<uint32_t>(
-                m_server.arg("powerOffTime").toInt());
-
-        if (requested >= 1000 &&
-            requested <= 60000)
-        {
-            powerOffTime = requested;
-        }
-    }
-
-    return powerOffTime;
 }
 
 bool WebServerService::tokenMatches(

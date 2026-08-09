@@ -38,6 +38,8 @@ private:
 
     void handleApiConfigUpdate();
 
+    void handleApiSystemRestart();
+
     void handleApiPowerOn();
 
     void handleApiPowerOff();
@@ -47,6 +49,8 @@ private:
     void handleApiOptions();
 
     void handleHealth();
+
+    void handleConfigPage();
 
     void handleNotFound();
 
@@ -65,6 +69,10 @@ private:
     ESP8266WebServer m_server { DEFAULT_PORT };
 
     char m_jsonBuffer[JSON_BUFFER_SIZE] {};
+
+    bool m_restartRequested = false;
+
+    uint32_t m_restartAt = 0;
 };
 
 extern WebServerService WebServer;

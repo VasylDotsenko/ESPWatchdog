@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.4.34-web-config-editor
+0.4.35-web-config-pages-esp-restart
 ```
 
 Production target:
@@ -142,10 +142,11 @@ Production target:
 
 ## Наступний етап — 0.4.x Stabilization
 
-### 0.4.35 — System restart API
+### 0.4.35 — Config pages + System restart API
 
 Мета:
 
+- винести налаштування кожної секції на окрему сторінку;
 - додати безпечний reboot ESP з Web API;
 - показувати після збереження конфігу повідомлення `Restart recommended`;
 - додати кнопку `Restart ESP` на dashboard.
@@ -155,6 +156,8 @@ Planned endpoints:
 ```text
 POST /api/system/restart
 ```
+
+Статус: реалізовано.
 
 ### 0.4.36 — Runtime log buffer
 

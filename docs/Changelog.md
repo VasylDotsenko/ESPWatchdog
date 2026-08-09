@@ -4,6 +4,54 @@
 
 ---
 
+## [0.4.35-web-config-pages-esp-restart] - 09.08.2026
+
+### Статус
+
+Налаштування винесено з dashboard на окремі Web-сторінки за розділами `config.json`, додано кнопку та API для перезапуску ESP.
+
+Dashboard більше не містить одну велику config-форму. Натомість кожна секція редагується окремо, а `POST /api/config` використовує часткове оновлення JSON.
+
+### Оновлено
+
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Roadmap.md`;
+- `Changelog.md`.
+
+### Додано
+
+- окремі сторінки налаштувань:
+  - `GET /config/device`;
+  - `GET /config/wifi`;
+  - `GET /config/watchdog`;
+  - `GET /config/relay`;
+  - `GET /config/tuya`;
+- section-based config editor;
+- partial JSON save для кожної секції;
+- `POST /api/system/restart`;
+- кнопка `Restart ESP` на dashboard;
+- кнопка `Restart ESP` на config-сторінках;
+- неблокуючий delayed restart після HTTP-відповіді.
+
+### API
+
+```text
+POST /api/system/restart
+```
+
+### Версія
+
+```text
+0.4.35-web-config-pages-esp-restart
+```
+
+---
+
 ## [0.4.34-web-config-editor] - 09.08.2026
 
 ### Статус

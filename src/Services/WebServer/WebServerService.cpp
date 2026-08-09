@@ -38,6 +38,14 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff
 <header>
 <h1>ESP Watchdog</h1>
 <div class="sub">Live status · <span id="updated">loading...</span></div>
+<div class="links">
+<a href="/">dashboard</a>
+<a href="/config/device">device</a>
+<a href="/config/wifi">wifi</a>
+<a href="/config/watchdog">watchdog</a>
+<a href="/config/relay">relay</a>
+<a href="/config/tuya">tuya</a>
+</div>
 </header>
 <main id="app"></main>
 <footer>
@@ -111,55 +119,76 @@ function check(id,label,value){return `<div class="field"><label for="${id}">${l
 function n(id){return Number(document.getElementById(id).value||0)}
 function s(id){return document.getElementById(id).value}
 function b(id){return document.getElementById(id).checked}
-function configEditor(c){
- const d=(c&&c.device)||{}, wf=(c&&c.wifi)||{}, wd=(c&&c.watchdog)||{}, r=(c&&c.relay)||{}, tu=(c&&c.tuya)||{};
- return `<section class="card wide"><h2>Configuration editor</h2><div class="formGrid">
- ${field('cfg_device_hostname','device.hostname',d.hostname||'')}
- ${field('cfg_wifi_ssid','wifi.ssid',wf.ssid||'')}
- ${secretField('cfg_wifi_password','wifi.password',wf.passwordMasked||'leave empty to keep')}
- ${field('cfg_wifi_reconnect','wifi.reconnectInterval',wf.reconnectInterval||0,'number')}
- ${field('cfg_wifi_timeout','wifi.connectTimeout',wf.connectTimeout||0,'number')}
- ${field('cfg_wd_host','watchdog.targetHost',wd.targetHost||'')}
- ${field('cfg_wd_port','watchdog.targetPort',wd.targetPort||0,'number')}
- ${field('cfg_wd_interval','watchdog.pingInterval',wd.pingInterval||0,'number')}
- ${field('cfg_wd_timeout','watchdog.pingTimeout',wd.pingTimeout||0,'number')}
- ${field('cfg_wd_fail','watchdog.failCount',wd.failCount||0,'number')}
- ${field('cfg_wd_boot','watchdog.bootDelay',wd.bootDelay||0,'number')}
- ${field('cfg_wd_off','watchdog.powerOffTime',wd.powerOffTime||0,'number')}
- ${field('cfg_wd_max','watchdog.maxRestartPerDay',wd.maxRestartPerDay||0,'number')}
- ${check('cfg_relay_enabled','relay.enabled',r.enabled)}
- ${field('cfg_relay_pin','relay.pin',r.pin||0,'number')}
- ${check('cfg_relay_active','relay.activeHigh',r.activeHigh)}
- ${field('cfg_tuya_ip','tuya.ip',tu.ip||'')}
- ${field('cfg_tuya_port','tuya.port',tu.port||0,'number')}
- ${field('cfg_tuya_device','tuya.deviceId',tu.deviceId||'')}
- ${secretField('cfg_tuya_key','tuya.localKey',tu.localKeyMasked||'leave empty to keep')}
- ${field('cfg_tuya_ver','tuya.version',tu.version||35,'number')}
- ${field('cfg_tuya_dps','tuya.relayDps',tu.relayDps||1,'number')}
- </div><div class="btns"><button class="okBtn" onclick="saveConfig()">SAVE CONFIG</button></div></section>`;
+function currentSection(){
+ const p=location.pathname;
+ if(p==='/config/device')return 'device';
+ if(p==='/config/wifi')return 'wifi';
+ if(p==='/config/watchdog')return 'watchdog';
+ if(p==='/config/relay')return 'relay';
+ if(p==='/config/tuya')return 'tuya';
+ return '';
 }
-async function saveConfig(){
- const wfPass=s('cfg_wifi_password'), tuKey=s('cfg_tuya_key');
- const body={version:3,device:{hostname:s('cfg_device_hostname')},wifi:{ssid:s('cfg_wifi_ssid'),reconnectInterval:n('cfg_wifi_reconnect'),connectTimeout:n('cfg_wifi_timeout')},watchdog:{targetHost:s('cfg_wd_host'),targetPort:n('cfg_wd_port'),pingInterval:n('cfg_wd_interval'),pingTimeout:n('cfg_wd_timeout'),failCount:n('cfg_wd_fail'),bootDelay:n('cfg_wd_boot'),powerOffTime:n('cfg_wd_off'),maxRestartPerDay:n('cfg_wd_max')},relay:{enabled:b('cfg_relay_enabled'),pin:n('cfg_relay_pin'),activeHigh:b('cfg_relay_active')},tuya:{ip:s('cfg_tuya_ip'),port:n('cfg_tuya_port'),deviceId:s('cfg_tuya_device'),version:n('cfg_tuya_ver'),relayDps:n('cfg_tuya_dps')}};
- if(wfPass)body.wifi.password=wfPass;
- if(tuKey)body.tuya.localKey=tuKey;
- addLog('Config: saving','warn');
+function configNav(){
+ return `<section class="card wide"><h2>Configuration</h2><div class="links">
+  <a href="/config/device">Device</a>
+  <a href="/config/wifi">WiFi</a>
+  <a href="/config/watchdog">Watchdog</a>
+  <a href="/config/relay">Relay</a>
+  <a href="/config/tuya">Tuya</a>
+ </div></section>`;
+}
+function sectionEditor(section,c){
+ const d=(c&&c.device)||{}, wf=(c&&c.wifi)||{}, wd=(c&&c.watchdog)||{}, r=(c&&c.relay)||{}, tu=(c&&c.tuya)||{};
+ let title='Configuration', fields='';
+ if(section==='device'){title='Device settings';fields=field('cfg_device_hostname','device.hostname',d.hostname||'')}
+ if(section==='wifi'){title='WiFi settings';fields=field('cfg_wifi_ssid','wifi.ssid',wf.ssid||'')+secretField('cfg_wifi_password','wifi.password',wf.passwordMasked||'leave empty to keep')+field('cfg_wifi_reconnect','wifi.reconnectInterval',wf.reconnectInterval||0,'number')+field('cfg_wifi_timeout','wifi.connectTimeout',wf.connectTimeout||0,'number')}
+ if(section==='watchdog'){title='Controlled host / Watchdog settings';fields=field('cfg_wd_host','watchdog.targetHost',wd.targetHost||'')+field('cfg_wd_port','watchdog.targetPort',wd.targetPort||0,'number')+field('cfg_wd_interval','watchdog.pingInterval',wd.pingInterval||0,'number')+field('cfg_wd_timeout','watchdog.pingTimeout',wd.pingTimeout||0,'number')+field('cfg_wd_fail','watchdog.failCount',wd.failCount||0,'number')+field('cfg_wd_boot','watchdog.bootDelay',wd.bootDelay||0,'number')+field('cfg_wd_off','watchdog.powerOffTime',wd.powerOffTime||0,'number')+field('cfg_wd_max','watchdog.maxRestartPerDay',wd.maxRestartPerDay||0,'number')}
+ if(section==='relay'){title='Relay settings';fields=check('cfg_relay_enabled','relay.enabled',r.enabled)+field('cfg_relay_pin','relay.pin',r.pin||0,'number')+check('cfg_relay_active','relay.activeHigh',r.activeHigh)}
+ if(section==='tuya'){title='Tuya socket settings';fields=field('cfg_tuya_ip','tuya.ip',tu.ip||'')+field('cfg_tuya_port','tuya.port',tu.port||0,'number')+field('cfg_tuya_device','tuya.deviceId',tu.deviceId||'')+secretField('cfg_tuya_key','tuya.localKey',tu.localKeyMasked||'leave empty to keep')+field('cfg_tuya_ver','tuya.version',tu.version||35,'number')+field('cfg_tuya_dps','tuya.relayDps',tu.relayDps||1,'number')}
+ return `<section class="card wide"><h2>${title}</h2><div class="formGrid">${fields}</div><div class="btns"><button class="okBtn" onclick="saveSection('${section}')">SAVE ${section.toUpperCase()}</button><button class="warnBtn" onclick="restartEsp()">RESTART ESP</button></div></section>`;
+}
+function sectionBody(section){
+ const body={version:3};
+ if(section==='device')body.device={hostname:s('cfg_device_hostname')};
+ if(section==='wifi'){body.wifi={ssid:s('cfg_wifi_ssid'),reconnectInterval:n('cfg_wifi_reconnect'),connectTimeout:n('cfg_wifi_timeout')};const p=s('cfg_wifi_password');if(p)body.wifi.password=p}
+ if(section==='watchdog')body.watchdog={targetHost:s('cfg_wd_host'),targetPort:n('cfg_wd_port'),pingInterval:n('cfg_wd_interval'),pingTimeout:n('cfg_wd_timeout'),failCount:n('cfg_wd_fail'),bootDelay:n('cfg_wd_boot'),powerOffTime:n('cfg_wd_off'),maxRestartPerDay:n('cfg_wd_max')};
+ if(section==='relay')body.relay={enabled:b('cfg_relay_enabled'),pin:n('cfg_relay_pin'),activeHigh:b('cfg_relay_active')};
+ if(section==='tuya'){body.tuya={ip:s('cfg_tuya_ip'),port:n('cfg_tuya_port'),deviceId:s('cfg_tuya_device'),version:n('cfg_tuya_ver'),relayDps:n('cfg_tuya_dps')};const k=s('cfg_tuya_key');if(k)body.tuya.localKey=k}
+ return body;
+}
+async function saveSection(section){
+ addLog(`Config ${section}: saving`,'warn');
+ const body=sectionBody(section);
  try{const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const txt=await r.text();addLog(`Config: HTTP ${r.status} ${txt}`,r.ok?'ok':'bad')}catch(e){addLog(`Config: ${e.message||'failed'}`,'bad')}
 }
+async function restartEsp(){
+ if(!confirm('Restart ESP now?'))return;
+ addLog('ESP restart: sending','warn');
+ try{const r=await fetch('/api/system/restart',{method:'POST',cache:'no-store'});const txt=await r.text();addLog(`ESP restart: HTTP ${r.status} ${txt}`,r.ok?'ok':'bad')}catch(e){addLog(`ESP restart: ${e.message||'failed'}`,'bad')}
+}
 function render(s,c){
+ const section=currentSection();
+ if(section){
+  app.innerHTML=[
+   configNav(),
+   sectionEditor(section,c),
+   commandLogCard()
+  ].join('');
+  updated.textContent=new Date().toLocaleTimeString();
+  return;
+ }
  const sys=s.system||{}, fw=sys.firmware||{}, up=sys.uptime||{}, mem=sys.memory||{}, cpu=sys.cpu||{};
  const net=s.network||{}, ns=net.summary||{}, nc=net.configuration||{}, na=net.address||{}, sig=net.signal||{};
  const h=s.health||{}, hs=h.summary||{}, hst=h.statistics||{};
  const w=s.watchdog||{}, ws=w.summary||{}, wc=w.configuration||{}, wst=w.statistics||{};
  const p=s.power||{}, ps=p.summary||{}, pst=p.statistics||{}, ph=p.history||{};
  app.innerHTML=[
-  card('System',[row('Version',fw.version||'-'),row('Build',`${fw.buildDate||''} ${fw.buildTime||''}`),row('Uptime',`${up.days||0}d ${up.hours||0}h ${up.minutes||0}m`),row('Heap',mem.freeHeap||0),row('CPU',`${cpu.frequencyMHz||0} MHz`)]),
+  card('System',[row('Version',fw.version||'-'),row('Build',`${fw.buildDate||''} ${fw.buildTime||''}`),row('Uptime',`${up.days||0}d ${up.hours||0}h ${up.minutes||0}m`),row('Heap',mem.freeHeap||0),row('CPU',`${cpu.frequencyMHz||0} MHz`),'<div class="btns"><button class="warnBtn" onclick="restartEsp()">RESTART ESP</button></div>']),
   card('Network',[row('State',ns.stateText||'-',cls(ns.connected)),row('IP',ip(na.ip)),row('SSID',nc.ssid||'-'),row('RSSI',`${sig.rssi||0} dBm`),row('Quality',`${sig.quality||0}%`)]),
   card('Health',[row('Available',hs.available?'online':'offline',cls(hs.available)),row('Last status',hs.lastStatusText||'-'),row('RTT',ms(hs.responseTime)),row('Sent',hst.sent||0),row('Lost',hst.lost||0),row('Fails',hst.consecutiveFails||0)]),
   card('Watchdog',[row('State',ws.stateText||'-',ws.lockedOut?'bad':ws.cooldown?'warn':'ok'),row('Enabled',ws.enabled?'yes':'no',cls(ws.enabled)),row('Failures',`${ws.consecutiveFailures||0}/${wc.failureThreshold||0}`),row('Restarts',wst.restartCount||0),row('Power off',ms(wc.powerOffTime))]),
   card('Power',[row('State',ps.stateText||'-',ps.available?'ok':'warn'),row('Controller',ps.available?'available':'unavailable',cls(ps.available)),row('Restarting',ps.restartInProgress?'yes':'no',ps.restartInProgress?'warn':''),row('Restarts',pst.restartCount||0),row('Errors',pst.errorCount||0),row('History',`${ph.succeeded||0} ok / ${ph.failed||0} failed`)]),
   ...configCards(c),
-  configEditor(c),
   controls(ps,wc),
   restartHistory(ph),
   commandLogCard()
@@ -190,6 +219,14 @@ bool WebServerService::begin()
 void WebServerService::loop()
 {
     m_server.handleClient();
+
+    if (m_restartRequested &&
+        static_cast<int32_t>(millis() - m_restartAt) >= 0)
+    {
+        Log.warning("WebServer: ESP restart requested");
+
+        ESP.restart();
+    }
 }
 
 void WebServerService::configureRoutes()
@@ -224,6 +261,22 @@ void WebServerService::configureRoutes()
         [this]()
         {
             handleApiSystem();
+        });
+
+    m_server.on(
+        "/api/system/restart",
+        HTTP_POST,
+        [this]()
+        {
+            handleApiSystemRestart();
+        });
+
+    m_server.on(
+        "/api/system/restart",
+        HTTP_OPTIONS,
+        [this]()
+        {
+            handleApiOptions();
         });
 
     m_server.on(
@@ -280,6 +333,46 @@ void WebServerService::configureRoutes()
         [this]()
         {
             handleApiOptions();
+        });
+
+    m_server.on(
+        "/config/device",
+        HTTP_GET,
+        [this]()
+        {
+            handleConfigPage();
+        });
+
+    m_server.on(
+        "/config/wifi",
+        HTTP_GET,
+        [this]()
+        {
+            handleConfigPage();
+        });
+
+    m_server.on(
+        "/config/watchdog",
+        HTTP_GET,
+        [this]()
+        {
+            handleConfigPage();
+        });
+
+    m_server.on(
+        "/config/relay",
+        HTTP_GET,
+        [this]()
+        {
+            handleConfigPage();
+        });
+
+    m_server.on(
+        "/config/tuya",
+        HTTP_GET,
+        [this]()
+        {
+            handleConfigPage();
         });
 
     m_server.on(
@@ -391,12 +484,18 @@ void WebServerService::handleApiIndex()
         "{\"method\":\"GET\",\"path\":\"/api\",\"description\":\"api index\"},"
         "{\"method\":\"GET\",\"path\":\"/api/status\",\"description\":\"aggregate status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/system\",\"description\":\"system status\"},"
+        "{\"method\":\"POST\",\"path\":\"/api/system/restart\",\"description\":\"restart ESP\"},"
         "{\"method\":\"GET\",\"path\":\"/api/network\",\"description\":\"network status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/health\",\"description\":\"health status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/watchdog\",\"description\":\"watchdog status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/power\",\"description\":\"power status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/config\",\"description\":\"runtime configuration\"},"
         "{\"method\":\"POST\",\"path\":\"/api/config\",\"description\":\"update configuration\"},"
+        "{\"method\":\"GET\",\"path\":\"/config/device\",\"description\":\"device configuration page\"},"
+        "{\"method\":\"GET\",\"path\":\"/config/wifi\",\"description\":\"wifi configuration page\"},"
+        "{\"method\":\"GET\",\"path\":\"/config/watchdog\",\"description\":\"watchdog configuration page\"},"
+        "{\"method\":\"GET\",\"path\":\"/config/relay\",\"description\":\"relay configuration page\"},"
+        "{\"method\":\"GET\",\"path\":\"/config/tuya\",\"description\":\"tuya configuration page\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/on\",\"description\":\"turn power on\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/off\",\"description\":\"turn power off\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/restart\",\"description\":\"restart power output\"},"
@@ -420,6 +519,19 @@ void WebServerService::handleApiSystem()
     }
 
     sendJson(200, m_jsonBuffer);
+}
+
+void WebServerService::handleApiSystemRestart()
+{
+    if (!m_restartRequested)
+    {
+        m_restartRequested = true;
+        m_restartAt = millis() + 500;
+    }
+
+    sendJson(
+        202,
+        "{\"ok\":true,\"command\":\"esp_restart\",\"delayMs\":500}");
 }
 
 void WebServerService::handleApiNetwork()
@@ -750,6 +862,11 @@ void WebServerService::handleHealth()
     sendJson(
         200,
         "{\"status\":\"ok\"}");
+}
+
+void WebServerService::handleConfigPage()
+{
+    handleRoot();
 }
 
 void WebServerService::handleNotFound()

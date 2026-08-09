@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.34-web-config-editor
+0.4.35-web-config-pages-esp-restart
 ```
 
 Production target:
@@ -88,6 +88,14 @@ Power Cycle
 - `GET /api/config`;
 - `POST /api/config`;
 - dashboard configuration editor for all `config.json` sections;
+- separate configuration pages:
+  - `/config/device`;
+  - `/config/wifi`;
+  - `/config/watchdog`;
+  - `/config/relay`;
+  - `/config/tuya`;
+- `POST /api/system/restart`;
+- dashboard `Restart ESP` button;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;

@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.35-web-config-pages-esp-restart
+0.4.36-web-logs-page-runtime-buffer
 ```
 
 Production target:
@@ -96,6 +96,9 @@ Power Cycle
   - `/config/tuya`;
 - `POST /api/system/restart`;
 - dashboard `Restart ESP` button;
+- runtime log ring-buffer in `Logger`;
+- `GET /api/logs`;
+- separate logs page `/logs`;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;
@@ -106,9 +109,7 @@ Power Cycle
 
 - Tuya status polling policy;
 - Web UI production polish;
-- runtime logs endpoint;
 - Web API authentication;
-- ESP restart command after configuration changes;
 - OTA.
 
 ---

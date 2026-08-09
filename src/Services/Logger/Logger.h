@@ -1,131 +1,55 @@
 #pragma once
 
 #include <Arduino.h>
-#include <Print.h>
 #include <stdarg.h>
 
 #include "LogLevel.h"
 
-//=============================================================================
-// Logger
-//=============================================================================
-//
-// Production Logger
-//
-// Features
-// --------
-// • Error
-// • Warning
-// • Info
-// • Debug
-// • Verbose
-//
-// Supports:
-//
-//   Log.info("Text");
-//   Log.info(F("Text"));
-//
-// Output:
-//
-//   [000001234][INFO ] WiFi connected
-//
-//=============================================================================
+struct LogEntry
+{
+    static constexpr size_t MESSAGE_LENGTH = 120;
+
+    uint32_t timestamp = 0;
+    LogLevel level = LogLevel::Info;
+    char levelText[8] {};
+    char message[MESSAGE_LENGTH] {};
+};
 
 class Logger
 {
 public:
-
-    static constexpr size_t BUFFER_SIZE = 128;
-
-public:
-
-    Logger() = default;
-
-    //---------------------------------------------------------------------
-    // Initialization
-    //---------------------------------------------------------------------
+    static constexpr uint8_t LOG_CAPACITY = 32;
 
     bool begin(
         uint32_t baudRate = 115200,
         LogLevel level = LogLevel::Info);
 
-    //---------------------------------------------------------------------
-    // Configuration
-    //---------------------------------------------------------------------
-
     void setLevel(LogLevel level);
 
-    [[nodiscard]]
     LogLevel level() const;
 
-    //---------------------------------------------------------------------
-    // Output
-    //---------------------------------------------------------------------
+    void error(const char* format, ...);
+    void error(const __FlashStringHelper* format, ...);
 
-    void setOutput(Print& output);
+    void warning(const char* format, ...);
+    void warning(const __FlashStringHelper* format, ...);
 
-    //---------------------------------------------------------------------
-    // Error
-    //---------------------------------------------------------------------
+    void info(const char* format, ...);
+    void info(const __FlashStringHelper* format, ...);
 
-    void error(
-        const char* format,
-        ...);
+    void debug(const char* format, ...);
+    void debug(const __FlashStringHelper* format, ...);
 
-    void error(
-        const __FlashStringHelper* format,
-        ...);
+    void verbose(const char* format, ...);
+    void verbose(const __FlashStringHelper* format, ...);
 
-    //---------------------------------------------------------------------
-    // Warning
-    //---------------------------------------------------------------------
+    uint8_t entries(
+        LogEntry* output,
+        uint8_t capacity) const;
 
-    void warning(
-        const char* format,
-        ...);
-
-    void warning(
-        const __FlashStringHelper* format,
-        ...);
-
-    //---------------------------------------------------------------------
-    // Info
-    //---------------------------------------------------------------------
-
-    void info(
-        const char* format,
-        ...);
-
-    void info(
-        const __FlashStringHelper* format,
-        ...);
-
-    //---------------------------------------------------------------------
-    // Debug
-    //---------------------------------------------------------------------
-
-    void debug(
-        const char* format,
-        ...);
-
-    void debug(
-        const __FlashStringHelper* format,
-        ...);
-
-    //---------------------------------------------------------------------
-    // Verbose
-    //---------------------------------------------------------------------
-
-    void verbose(
-        const char* format,
-        ...);
-
-    void verbose(
-        const __FlashStringHelper* format,
-        ...);
+    void clear();
 
 private:
-
     void print(
         LogLevel level,
         const char* prefix,
@@ -138,13 +62,24 @@ private:
         const __FlashStringHelper* format,
         va_list args);
 
+    void writeLine(
+        LogLevel level,
+        const char* prefix,
+        const char* message);
+
+    void append(
+        LogLevel level,
+        const char* prefix,
+        const char* message);
+
 private:
-
-    Print* m_output = nullptr;
-
     LogLevel m_level = LogLevel::Info;
-};
 
-//=============================================================================
+    LogEntry m_entries[LOG_CAPACITY] {};
+
+    uint8_t m_head = 0;
+
+    uint8_t m_count = 0;
+};
 
 extern Logger Log;

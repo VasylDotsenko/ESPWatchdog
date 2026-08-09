@@ -14,7 +14,7 @@
 - підготовка diagnostics/log endpoints;
 - підготовка до ESP restart command та безпечного застосування змінених налаштувань.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.35-web-config-pages-esp-restart`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.36-web-logs-page-runtime-buffer`.
 
 ## Вже зроблено
 
@@ -184,6 +184,9 @@
   - `/config/tuya`;
 - додано `POST /api/system/restart`;
 - dashboard отримав кнопку `Restart ESP`;
+- `Logger` отримав runtime ring-buffer на останні 32 записи;
+- додано `GET /api/logs`;
+- додано окрему сторінку `/logs`;
 - `PowerService` має throttling повторних restart-спроб при недоступному Tuya LAN controller;
 - `PowerService` чекає перепідключення Tuya LAN controller перед `powerOn`, замість негайного переходу в `Error`;
 - `TuyaPowerController` керує живленням через `TuyaLan.relayOn()` / `TuyaLan.relayOff()`.
@@ -296,11 +299,7 @@
 
 ## Наступні кроки
 
-1. Зафіксувати `v0.4.35-web-config-pages-esp-restart` як hardware-verified baseline.
-2. Додати diagnostics/log endpoint:
-   - runtime log ring-buffer;
-   - `GET /api/logs`;
-   - вивід логів на dashboard.
-3. Реалізувати Tuya status polling policy без провокування disconnect на protocol `3.5`.
-4. Додати authentication / basic protection для Web API command endpoints.
-5. Підготувати production Web Dashboard polish.
+1. Зафіксувати `v0.4.36-web-logs-page-runtime-buffer` як hardware-verified baseline.
+2. Реалізувати Tuya status polling policy без провокування disconnect на protocol `3.5`.
+3. Додати authentication / basic protection для Web API command endpoints.
+4. Підготувати production Web Dashboard polish.

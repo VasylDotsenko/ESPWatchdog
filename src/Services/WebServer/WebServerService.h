@@ -38,6 +38,8 @@ private:
 
     void handleApiConfigUpdate();
 
+    void handleApiLogs();
+
     void handleApiSystemRestart();
 
     void handleApiPowerOn();
@@ -51,6 +53,8 @@ private:
     void handleHealth();
 
     void handleConfigPage();
+
+    void handleLogsPage();
 
     void handleNotFound();
 

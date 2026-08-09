@@ -4,6 +4,63 @@
 
 ---
 
+## [0.4.36-web-logs-page-runtime-buffer] - 09.08.2026
+
+### Статус
+
+Додано runtime log ring-buffer у `Logger`, Web API endpoint для логів і окрему сторінку `/logs`.
+
+Це переводить логування з Serial-only діагностики у Web-visible diagnostics layer. Тепер останні runtime logs можна переглядати з браузера без підключення Serial Monitor.
+
+### Оновлено
+
+- `Services/Logger/LogLevel.h`;
+- `Services/Logger/Logger.h`;
+- `Services/Logger/Logger.cpp`;
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Roadmap.md`;
+- `Changelog.md`.
+
+### Додано
+
+- ring-buffer на останні 32 log entries;
+- структура `LogEntry`;
+- `Logger::entries(...)`;
+- `Logger::clear()`;
+- `GET /api/logs`;
+- окрема сторінка `GET /logs`;
+- link `logs` у dashboard navigation;
+- runtime logs card з timestamp, level і message.
+
+### API
+
+```text
+GET /api/logs
+GET /logs
+```
+
+### Обмеження
+
+Log buffer зберігається тільки в RAM і очищується після reboot ESP.
+
+### Cleanup
+
+- `Logger::clear()` більше не використовує `memset` для `LogEntry`;
+- усунуто compiler warning `-Wclass-memaccess`.
+
+### Версія
+
+```text
+0.4.36-web-logs-page-runtime-buffer
+```
+
+---
+
 ## [0.4.35-web-config-pages-esp-restart] - 09.08.2026
 
 ### Статус

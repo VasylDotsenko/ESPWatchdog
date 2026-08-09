@@ -45,6 +45,7 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff
 <a href="/config/watchdog">watchdog</a>
 <a href="/config/relay">relay</a>
 <a href="/config/tuya">tuya</a>
+<a href="/logs">logs</a>
 </div>
 </header>
 <main id="app"></main>
@@ -59,6 +60,7 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff
 <a href="/api/watchdog">watchdog</a>
 <a href="/api/power">power</a>
 <a href="/api/config">config</a>
+<a href="/api/logs">logs</a>
 </div>
 </footer>
 <script>
@@ -104,6 +106,18 @@ function restartHistory(ph){
 function commandLogCard(){
  const lines=commandLog.length?commandLog.map(x=>logLine(x)).join(''):logLine('No manual commands yet');
  return `<section class="card"><h2>Command log</h2><div class="log">${lines}</div></section>`;
+}
+function currentPage(){
+ if(location.pathname==='/logs')return 'logs';
+ return '';
+}
+function logsCard(data){
+ const entries=(data&&data.entries)||[];
+ const lines=entries.length?entries.slice().reverse().map(e=>{
+  const c=e.levelText==='ERROR'?'bad':(e.levelText==='WARN '?'warn':'');
+  return logLine(`[${String(e.timestamp||0).padStart(10,'0')}][${e.levelText||'-'}] ${esc(e.message||'')}`,c);
+ }).join(''):logLine('No runtime logs yet');
+ return `<section class="card wide"><h2>Runtime logs</h2><div class="btns"><button onclick="load()">REFRESH</button></div><div class="log">${lines}</div></section>`;
 }
 function configCards(c){
  const wd=(c&&c.watchdog)||{}, tu=(c&&c.tuya)||{};
@@ -166,7 +180,14 @@ async function restartEsp(){
  addLog('ESP restart: sending','warn');
  try{const r=await fetch('/api/system/restart',{method:'POST',cache:'no-store'});const txt=await r.text();addLog(`ESP restart: HTTP ${r.status} ${txt}`,r.ok?'ok':'bad')}catch(e){addLog(`ESP restart: ${e.message||'failed'}`,'bad')}
 }
+async function renderLogs(){
+ try{const r=await fetch('/api/logs',{cache:'no-store'});app.innerHTML=logsCard(await r.json())+commandLogCard();updated.textContent=new Date().toLocaleTimeString()}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Logs','unable to load','bad')])}
+}
 function render(s,c){
+ if(currentPage()==='logs'){
+  renderLogs();
+  return;
+ }
  const section=currentSection();
  if(section){
   app.innerHTML=[
@@ -195,7 +216,7 @@ function render(s,c){
  ].join('');
  updated.textContent=new Date().toLocaleTimeString();
 }
-async function load(){try{if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const [sr,cr]=await Promise.all([fetch('/api/status',{cache:'no-store'}),fetch('/api/config',{cache:'no-store'})]);render(await sr.json(),await cr.json())}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status','unable to load','bad')])}}
+async function load(){try{if(currentPage()==='logs'){await renderLogs();return}if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const [sr,cr]=await Promise.all([fetch('/api/status',{cache:'no-store'}),fetch('/api/config',{cache:'no-store'})]);render(await sr.json(),await cr.json())}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status','unable to load','bad')])}}
 load();setInterval(load,2000);
 </script>
 </body>
@@ -320,6 +341,14 @@ void WebServerService::configureRoutes()
         });
 
     m_server.on(
+        "/api/logs",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiLogs();
+        });
+
+    m_server.on(
         "/api/config",
         HTTP_POST,
         [this]()
@@ -373,6 +402,14 @@ void WebServerService::configureRoutes()
         [this]()
         {
             handleConfigPage();
+        });
+
+    m_server.on(
+        "/logs",
+        HTTP_GET,
+        [this]()
+        {
+            handleLogsPage();
         });
 
     m_server.on(
@@ -490,12 +527,14 @@ void WebServerService::handleApiIndex()
         "{\"method\":\"GET\",\"path\":\"/api/watchdog\",\"description\":\"watchdog status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/power\",\"description\":\"power status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/config\",\"description\":\"runtime configuration\"},"
+        "{\"method\":\"GET\",\"path\":\"/api/logs\",\"description\":\"runtime logs\"},"
         "{\"method\":\"POST\",\"path\":\"/api/config\",\"description\":\"update configuration\"},"
         "{\"method\":\"GET\",\"path\":\"/config/device\",\"description\":\"device configuration page\"},"
         "{\"method\":\"GET\",\"path\":\"/config/wifi\",\"description\":\"wifi configuration page\"},"
         "{\"method\":\"GET\",\"path\":\"/config/watchdog\",\"description\":\"watchdog configuration page\"},"
         "{\"method\":\"GET\",\"path\":\"/config/relay\",\"description\":\"relay configuration page\"},"
         "{\"method\":\"GET\",\"path\":\"/config/tuya\",\"description\":\"tuya configuration page\"},"
+        "{\"method\":\"GET\",\"path\":\"/logs\",\"description\":\"runtime logs page\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/on\",\"description\":\"turn power on\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/off\",\"description\":\"turn power off\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/restart\",\"description\":\"restart power output\"},"
@@ -755,6 +794,60 @@ void WebServerService::handleApiConfigUpdate()
         m_jsonBuffer);
 }
 
+void WebServerService::handleApiLogs()
+{
+    LogEntry entries[Logger::LOG_CAPACITY] {};
+
+    const uint8_t count =
+        Log.entries(
+            entries,
+            Logger::LOG_CAPACITY);
+
+    JsonDocument doc;
+
+    doc["capacity"] =
+        Logger::LOG_CAPACITY;
+    doc["count"] =
+        count;
+
+    JsonArray items =
+        doc["entries"].to<JsonArray>();
+
+    for (uint8_t i = 0; i < count; ++i)
+    {
+        JsonObject item =
+            items.add<JsonObject>();
+
+        item["timestamp"] =
+            entries[i].timestamp;
+        item["level"] =
+            static_cast<uint8_t>(entries[i].level);
+        item["levelText"] =
+            entries[i].levelText;
+        item["message"] =
+            entries[i].message;
+    }
+
+    const size_t length =
+        serializeJson(
+            doc,
+            m_jsonBuffer,
+            sizeof(m_jsonBuffer));
+
+    if (length == 0 ||
+        length >= sizeof(m_jsonBuffer))
+    {
+        sendJson(
+            500,
+            "{\"ok\":false,\"error\":\"logs_serialization_failed\"}");
+        return;
+    }
+
+    sendJson(
+        200,
+        m_jsonBuffer);
+}
+
 void WebServerService::handleApiPowerOn()
 {
     if (Power.restartInProgress())
@@ -865,6 +958,11 @@ void WebServerService::handleHealth()
 }
 
 void WebServerService::handleConfigPage()
+{
+    handleRoot();
+}
+
+void WebServerService::handleLogsPage()
 {
     handleRoot();
 }

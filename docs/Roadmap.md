@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.4.35-web-config-pages-esp-restart
+0.4.36-web-logs-page-runtime-buffer
 ```
 
 Production target:
@@ -172,6 +172,8 @@ Planned endpoints:
 ```text
 GET /api/logs
 ```
+
+Статус: реалізовано.
 
 ### 0.4.37 — Tuya status policy
 

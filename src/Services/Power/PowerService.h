@@ -46,6 +46,19 @@ private:
 
     void fail(const char* reason);
 
+    void beginRestartHistory(
+        uint32_t powerOffTime,
+        RestartReason reason);
+
+    void completeRestartHistory();
+
+    void failRestartHistory(
+        RestartReason reason);
+
+    RestartHistoryEntry* activeRestartEntry();
+
+    RestartHistoryEntry* appendRestartEntry();
+
 private:
     IPowerController* m_controller = nullptr;
 

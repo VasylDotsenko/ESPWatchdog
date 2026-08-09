@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.16-tuya35-command-ack
+0.4.18-restart-history
 ```
 
 Production target:
@@ -70,8 +70,9 @@ Power Cycle
 - TuyaPowerController;
 - зв'язка `WatchdogService -> PowerService -> TuyaService`;
 - Tuya LAN command diagnostics;
-- automatic Tuya heartbeat/status query after connect;
-- explicit Tuya LAN `3.5` detection as unsupported;
+- on-demand Tuya LAN command session;
+- Tuya LAN `3.5` support for `TCOGCZ16-A`;
+- hardware-verified Tuya LAN power-cycle;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;
@@ -80,7 +81,7 @@ Power Cycle
 
 Ще не завершено:
 
-- hardware smoke-test із `TCOGCZ16-A`;
+- Tuya status polling policy;
 - Web UI;
 - OTA.
 
@@ -96,11 +97,12 @@ Power Cycle
 - ICMP HealthCheck через native ESP8266 SDK ping;
 - накопичення health statistics;
 - Watchdog decision-layer;
+- restart history у `PowerService`;
 - захист від restart-loop через `maxRestartPerDay`;
 - production power-control abstraction через `PowerService`;
 - Tuya LAN power controller adapter;
 - Tuya LAN crypto / packet / protocol / service layers;
-- підготовка до hardware smoke-test power-cycle через `TCOGCZ16-A`.
+- hardware-verified power-cycle через `TCOGCZ16-A`.
 
 ---
 
@@ -286,7 +288,7 @@ namespace Tuya
     "port": 6668,
     "deviceId": "...",
     "localKey": "...",
-    "version": 33,
+    "version": 35,
     "relayDps": 1
   }
 }
@@ -297,8 +299,8 @@ namespace Tuya
 - `localKey` не логувати;
 - `localKey` не публікувати;
 - Tuya `3.4` поки не підтримується;
-- Tuya `3.5` виявлено на `TCOGCZ16-A`, але ще не підтримується;
-- поточний стабільний напрямок — Tuya LAN `3.3`.
+- Tuya `3.5` підтримується для `TCOGCZ16-A`;
+- `localKey` має бути актуальним для конкретного пристрою.
 
 ---
 
@@ -410,7 +412,7 @@ pio device monitor -b 74880
 Hardware smoke-test
 ```
 
-Потрібно перевірити:
+Перевірено:
 
 - Tuya LAN connection;
 - правильність `relayDps`;
@@ -422,11 +424,12 @@ Hardware smoke-test
 ### Далі
 
 - heartbeat/status polling у `TuyaService`;
+- Tuya status polling policy;
 - Web API;
 - Web UI;
 - OTA;
 - diagnostics;
-- restart history;
+- restart history Web/API export;
 - average RTT;
 - availability history.
 
@@ -436,9 +439,8 @@ Hardware smoke-test
 
 - проєкт ще не є production `v1.0.0`;
 - Tuya LAN `3.4` ще не підтримується;
-- `WatchdogService` ще не керує Tuya-реле напряму;
 - GPIO `RelayService` залишився як проміжний модуль, але не є фінальним рішенням для `TCOGCZ16-A`;
-- потрібен hardware smoke-test із реальним Tuya device.
+- TCP socket Tuya LAN може закриватися пристроєм після idle-періоду; це нормально для on-demand режиму.
 
 ---
 

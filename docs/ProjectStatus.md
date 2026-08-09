@@ -11,9 +11,9 @@
 - стабілізація Tuya LAN `3.5` runtime;
 - фіналізація Tuya status polling policy;
 - очищення runtime-логів;
-- підготовка до наступних production-модулів: Web API, diagnostics, restart history.
+- підготовка до наступних production-модулів: Web API, diagnostics, restart history export.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.17-tuya-on-demand-idle`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.18-restart-history`.
 
 ## Вже зроблено
 
@@ -144,6 +144,7 @@
 - створено `TuyaPowerController`;
 - `Application` переведено з `RelayService` на `PowerService`;
 - `PowerService` виконує неблокуючий restart-cycle;
+- `PowerService` веде in-memory restart history;
 - `PowerService` має throttling повторних restart-спроб при недоступному Tuya LAN controller;
 - `PowerService` чекає перепідключення Tuya LAN controller перед `powerOn`, замість негайного переходу в `Error`;
 - `TuyaPowerController` керує живленням через `TuyaLan.relayOn()` / `TuyaLan.relayOff()`.
@@ -231,10 +232,10 @@
 - повна збірка проєкту після копіювання всіх файлів ще потребує перевірки;
 - частина старих файлів може містити застарілі include-шляхи;
 - GPIO-based `RelayService` не відповідає реальному hardware `TCOGCZ16-A`;
-- потрібна перевірка `PowerService` на реальному Tuya LAN пристрої;
+- `PowerService` перевірено на реальному Tuya LAN пристрої;
 - якщо `TuyaLan` недоступний, restart не буде виконано;
 - Tuya protocol `3.4` поки не підтримується;
-- Tuya protocol `3.5` реалізований як перший інтеграційний GCM етап і потребує hardware smoke-test;
+- Tuya protocol `3.5` hardware-verified на `TCOGCZ16-A`;
 - потрібні реальні `ip`, `deviceId`, `localKey`, `version`, `relayDps`;
 - `localKey` не можна логувати або дублювати у відкритих звітах;
 - потрібно перевірити, що Serial Monitor і `Log.begin(...)` використовують однакову швидкість;
@@ -242,8 +243,8 @@
 
 ## Наступні кроки
 
-1. Зафіксувати `v0.4.17-tuya-on-demand-idle` як hardware-verified baseline.
+1. Зафіксувати `v0.4.18-restart-history` як hardware-verified baseline.
 2. Реалізувати Tuya status polling policy.
-3. Додати restart history.
+3. Додати restart history Web/API export.
 4. Додати Web API для status/config/health/watchdog/power.
 5. Додати diagnostics endpoint.

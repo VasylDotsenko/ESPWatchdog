@@ -58,6 +58,7 @@ void PowerService::loop()
     {
         if ((now - m_data.runtime.powerOnWaitStarted) >= POWER_ON_WAIT_TIMEOUT_MS)
         {
+            failRestartHistory(RestartReason::PowerOnTimeout);
             fail("powerOn controller unavailable timeout");
             return;
         }
@@ -80,6 +81,7 @@ void PowerService::loop()
     {
         if ((now - m_data.runtime.powerOnWaitStarted) >= POWER_ON_WAIT_TIMEOUT_MS)
         {
+            failRestartHistory(RestartReason::PowerOnFailed);
             fail("powerOn failed");
         }
 
@@ -95,6 +97,8 @@ void PowerService::loop()
     ++m_data.statistics.restartCount;
 
     m_data.statistics.lastRestart = millis();
+
+    completeRestartHistory();
 
     m_data.state = PowerState::Idle;
 
@@ -120,6 +124,12 @@ bool PowerService::restart(uint32_t powerOffTime)
 
     if (m_controller == nullptr)
     {
+        beginRestartHistory(
+            powerOffTime,
+            RestartReason::ControllerUnavailable);
+
+        failRestartHistory(RestartReason::ControllerUnavailable);
+
         fail("controller not configured");
         return false;
     }
@@ -131,6 +141,15 @@ bool PowerService::restart(uint32_t powerOffTime)
 
     if (!available())
     {
+        beginRestartHistory(
+            powerOffTime,
+            RestartReason::ControllerUnavailable);
+
+        failRestartHistory(RestartReason::ControllerUnavailable);
+
+        ++m_data.statistics.errorCount;
+        m_data.statistics.lastError = now;
+
         Log.warning("PowerService: controller unavailable, restart delayed");
         return false;
     }
@@ -141,8 +160,13 @@ bool PowerService::restart(uint32_t powerOffTime)
     m_data.runtime.lastPowerOnAttempt = 0;
     m_data.runtime.powerOnWaitStarted = 0;
 
+    beginRestartHistory(
+        powerOffTime,
+        RestartReason::WatchdogFailure);
+
     if (!powerOff())
     {
+        failRestartHistory(RestartReason::PowerOffFailed);
         fail("powerOff failed");
         return false;
     }
@@ -214,6 +238,13 @@ bool PowerService::powerOn()
 
     m_data.statistics.lastPowerOn = millis();
 
+    RestartHistoryEntry* entry = activeRestartEntry();
+
+    if (entry != nullptr)
+    {
+        entry->powerOnAt = m_data.statistics.lastPowerOn;
+    }
+
     Log.info("PowerService: power ON");
 
     return true;
@@ -234,6 +265,13 @@ bool PowerService::powerOff()
     m_data.statistics.lastPowerOff = millis();
     m_data.state = PowerState::PowerOff;
 
+    RestartHistoryEntry* entry = activeRestartEntry();
+
+    if (entry != nullptr)
+    {
+        entry->powerOffAt = m_data.statistics.lastPowerOff;
+    }
+
     Log.warning("PowerService: power OFF");
 
     return true;
@@ -247,6 +285,7 @@ void PowerService::fail(const char* reason)
 
     m_data.runtime.restartInProgress = false;
     m_data.runtime.lastOperationSucceeded = false;
+    m_data.runtime.activeRestartId = 0;
 
     m_powerOffTimer.stop();
 
@@ -255,4 +294,137 @@ void PowerService::fail(const char* reason)
     Log.error(
         "PowerService: %s",
         reason != nullptr ? reason : "error");
+}
+
+void PowerService::beginRestartHistory(
+    uint32_t powerOffTime,
+    RestartReason reason)
+{
+    RestartHistoryEntry* entry = appendRestartEntry();
+
+    if (entry == nullptr)
+    {
+        return;
+    }
+
+    const uint64_t now = millis();
+
+    entry->reason = reason;
+    entry->result = RestartResult::InProgress;
+    entry->startedAt = now;
+    entry->completedAt = 0;
+    entry->powerOffAt = 0;
+    entry->powerOnAt = 0;
+    entry->requestedPowerOffTime = powerOffTime;
+    entry->actualDuration = 0;
+    entry->controllerAvailableAtStart = available();
+
+    m_data.runtime.activeRestartId = entry->id;
+
+    ++m_data.restartHistory.total;
+    m_data.restartHistory.lastStartedAt = now;
+}
+
+void PowerService::completeRestartHistory()
+{
+    RestartHistoryEntry* entry = activeRestartEntry();
+
+    if (entry == nullptr)
+    {
+        return;
+    }
+
+    const uint64_t now = millis();
+
+    entry->result = RestartResult::Success;
+    entry->completedAt = now;
+
+    if (entry->startedAt > 0 &&
+        now >= entry->startedAt)
+    {
+        entry->actualDuration =
+            static_cast<uint32_t>(now - entry->startedAt);
+    }
+
+    ++m_data.restartHistory.succeeded;
+    m_data.restartHistory.lastCompletedAt = now;
+
+    m_data.runtime.activeRestartId = 0;
+}
+
+void PowerService::failRestartHistory(
+    RestartReason reason)
+{
+    RestartHistoryEntry* entry = activeRestartEntry();
+
+    if (entry == nullptr)
+    {
+        return;
+    }
+
+    if (entry->result == RestartResult::Failed ||
+        entry->result == RestartResult::Success)
+    {
+        return;
+    }
+
+    const uint64_t now = millis();
+
+    entry->reason = reason;
+    entry->result = RestartResult::Failed;
+    entry->completedAt = now;
+
+    if (entry->startedAt > 0 &&
+        now >= entry->startedAt)
+    {
+        entry->actualDuration =
+            static_cast<uint32_t>(now - entry->startedAt);
+    }
+
+    ++m_data.restartHistory.failed;
+    m_data.restartHistory.lastFailedAt = now;
+
+    m_data.runtime.activeRestartId = 0;
+}
+
+RestartHistoryEntry* PowerService::activeRestartEntry()
+{
+    if (m_data.runtime.activeRestartId == 0)
+    {
+        return nullptr;
+    }
+
+    for (uint8_t i = 0; i < m_data.restartHistory.count; ++i)
+    {
+        if (m_data.restartHistory.entries[i].id ==
+            m_data.runtime.activeRestartId)
+        {
+            return &m_data.restartHistory.entries[i];
+        }
+    }
+
+    return nullptr;
+}
+
+RestartHistoryEntry* PowerService::appendRestartEntry()
+{
+    RestartHistoryData& history = m_data.restartHistory;
+
+    RestartHistoryEntry& entry =
+        history.entries[history.head];
+
+    entry = RestartHistoryEntry();
+    entry.id = history.nextId++;
+
+    history.head =
+        static_cast<uint8_t>(
+            (history.head + 1) %
+            RestartHistoryData::CAPACITY);
+
+    if (history.count < RestartHistoryData::CAPACITY)
+    {
+        ++history.count;
+    }
+
+    return &entry;
 }

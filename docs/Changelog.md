@@ -4,6 +4,71 @@
 
 ---
 
+## [0.4.18-restart-history] - 09.08.2026
+
+### Статус
+
+Додано базову in-memory історію restart/power-cycle подій.
+
+Після hardware-verified Tuya LAN `3.5` power-cycle наступним production-кроком стало збереження фактичних результатів перезапуску: коли restart почався, коли живлення було вимкнено, коли увімкнено, чи завершився цикл успішно, або чому він впав.
+
+### Оновлено
+
+- `Models/RestartHistoryData.h`;
+- `Models/PowerData.h`;
+- `Services/Power/PowerService.h`;
+- `Services/Power/PowerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `RestartHistoryData`;
+- `RestartHistoryEntry`;
+- `RestartResult`;
+- `RestartReason`;
+- ring-buffer на останні 10 restart-подій;
+- лічильники `total`, `succeeded`, `failed`;
+- timestamps:
+  - `startedAt`;
+  - `completedAt`;
+  - `powerOffAt`;
+  - `powerOnAt`;
+  - `lastStartedAt`;
+  - `lastCompletedAt`;
+  - `lastFailedAt`;
+- `requestedPowerOffTime`;
+- `actualDuration`;
+- `controllerAvailableAtStart`.
+
+### Змінено
+
+- `PowerService::restart()` створює запис історії при старті restart-attempt;
+- успішний `PowerService::powerOn()` завершує активний запис як `Success`;
+- помилки `controller unavailable`, `powerOff failed`, `powerOn failed`, `powerOn timeout` пишуться в історію як `Failed`;
+- `PowerData` тепер містить `restartHistory`.
+
+### Призначення
+
+Ця модель стане основою для:
+
+- Web API `/power/history`;
+- diagnostics endpoint;
+- restart dashboard;
+- аналізу failed restart attempts;
+- майбутнього збереження історії у Flash.
+
+### Версія
+
+```text
+0.4.18-restart-history
+```
+
+---
+
 ## [0.4.17-tuya-on-demand-idle] - 09.08.2026
 
 ### Статус

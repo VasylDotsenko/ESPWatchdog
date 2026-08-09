@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     17
+#define FW_VERSION_PATCH     18
 
-#define FW_VERSION_STRING    "0.4.17"
-#define FW_VERSION_LABEL     "tuya-on-demand-idle"
-#define FW_VERSION_FULL      "0.4.17-tuya-on-demand-idle"
+#define FW_VERSION_STRING    "0.4.18"
+#define FW_VERSION_LABEL     "restart-history"
+#define FW_VERSION_FULL      "0.4.18-restart-history"
 
 //=============================================================================
 // Project

@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "Models/RestartHistoryData.h"
+
 enum class PowerState : uint8_t
 {
     Disabled = 0,
@@ -16,6 +18,7 @@ struct PowerRuntime
     bool restartInProgress = false;
     bool restartCompleted = false;
     bool lastOperationSucceeded = false;
+    uint32_t activeRestartId = 0;
     uint32_t powerOffTime = 0;
     uint64_t lastRestartAttempt = 0;
     uint64_t lastPowerOnAttempt = 0;
@@ -37,4 +40,5 @@ struct PowerData
     PowerState state = PowerState::Disabled;
     PowerRuntime runtime;
     PowerStatistics statistics;
+    RestartHistoryData restartHistory;
 };

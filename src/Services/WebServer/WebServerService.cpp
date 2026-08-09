@@ -226,7 +226,7 @@ function render(s,c){
  ].join('');
  updated.textContent=new Date().toLocaleTimeString();
 }
-async function load(){try{if(currentPage()==='logs'){await renderLogs();return}if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const [sr,cr]=await Promise.all([fetch('/api/status',{cache:'no-store'}),fetch('/api/config',{cache:'no-store'})]);render(await sr.json(),await cr.json())}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status','unable to load','bad')])}}
+async function load(){try{if(currentPage()==='logs'){await renderLogs();return}if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const section=currentSection();if(section){const cr=await fetch('/api/config',{cache:'no-store'});render({},await cr.json());return}const [sr,cr]=await Promise.all([fetch('/api/status',{cache:'no-store'}),fetch('/api/config',{cache:'no-store'})]);render(await sr.json(),await cr.json())}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status','unable to load','bad')])}}
 load();setInterval(load,2000);
 </script>
 </body>

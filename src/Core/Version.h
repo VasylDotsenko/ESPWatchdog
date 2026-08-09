@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     44
+#define FW_VERSION_PATCH     45
 
-#define FW_VERSION_STRING    "0.4.44"
-#define FW_VERSION_LABEL     "web-config-stream"
-#define FW_VERSION_FULL      "0.4.44-web-config-stream"
+#define FW_VERSION_STRING    "0.4.45"
+#define FW_VERSION_LABEL     "config-pages-light"
+#define FW_VERSION_FULL      "0.4.45-config-pages-light"
 
 //=============================================================================
 // Project

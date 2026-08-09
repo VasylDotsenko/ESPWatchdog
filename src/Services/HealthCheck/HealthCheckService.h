@@ -6,6 +6,7 @@
 #include "Core/Timer.h"
 
 #include "HealthCheckInfo.h"
+#include "Models/HealthStatusData.h"
 #include "IHealthCheckProvider.h"
 
 //=============================================================================
@@ -61,6 +62,9 @@ public:
 
     [[nodiscard]]
     const HealthCheckInfo& info() const;
+
+    [[nodiscard]]
+    HealthStatusData status() const;
 
     //---------------------------------------------------------------------
     // Maintenance

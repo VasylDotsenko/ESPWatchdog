@@ -119,6 +119,38 @@ const HealthCheckInfo& HealthCheckService::info() const
     return m_info;
 }
 
+HealthStatusData HealthCheckService::status() const
+{
+    HealthStatusData status;
+
+    status.summary.available = m_info.available;
+    status.summary.running = running();
+    status.summary.lastStatus = m_info.lastStatus;
+    status.summary.responseTime = m_info.responseTime;
+
+    status.statistics.sent = m_info.sent;
+    status.statistics.received = m_info.received;
+    status.statistics.lost = m_info.lost;
+    status.statistics.consecutiveSuccess =
+        m_info.consecutiveSuccess;
+    status.statistics.consecutiveFails =
+        m_info.consecutiveFails;
+    status.statistics.minResponseTime =
+        m_info.minResponseTime == UINT32_MAX
+            ? 0
+            : m_info.minResponseTime;
+    status.statistics.maxResponseTime =
+        m_info.maxResponseTime;
+
+    status.timestamps.lastCheck = m_info.lastCheck;
+    status.timestamps.lastSuccess = m_info.lastSuccess;
+    status.timestamps.lastFail = m_info.lastFail;
+    status.timestamps.availabilityChanged =
+        m_info.availabilityChanged;
+
+    return status;
+}
+
 //=============================================================================
 // Start new health check
 //=============================================================================

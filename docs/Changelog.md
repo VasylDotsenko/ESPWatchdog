@@ -4,6 +4,61 @@
 
 ---
 
+## [0.4.21-health-status-snapshot] - 09.08.2026
+
+### Статус
+
+Додано API-ready snapshot модель для HealthCheck subsystem.
+
+Це другий підготовчий етап перед Web API після `PowerStatusData`: `HealthCheckService` тепер може віддати стабільний POD-знімок стану перевірки доступності без прив'язки до JSON, Logger або WebServer.
+
+### Оновлено
+
+- `Models/HealthStatusData.h`;
+- `Services/HealthCheck/HealthCheckService.h`;
+- `Services/HealthCheck/HealthCheckService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `HealthStatusSummary`;
+- `HealthStatusStatistics`;
+- `HealthStatusTimestamps`;
+- `HealthStatusData`;
+- `HealthCheckService::status()`.
+
+### Містить
+
+- поточну доступність target host;
+- стан виконання health-check;
+- останній `HealthCheckStatus`;
+- останній RTT;
+- статистику sent/received/lost;
+- consecutive success/fails;
+- min/max RTT;
+- timestamps останньої перевірки, success/fail і зміни availability.
+
+### Призначення
+
+`HealthStatusData` стане джерелом для:
+
+- `/api/health/status`;
+- diagnostics endpoint;
+- Web Dashboard;
+- майбутнього MQTT telemetry.
+
+### Версія
+
+```text
+0.4.21-health-status-snapshot
+```
+
+---
+
 ## [0.4.20-power-status-snapshot] - 09.08.2026
 
 ### Статус

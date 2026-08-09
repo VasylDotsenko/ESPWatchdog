@@ -13,7 +13,7 @@
 - очищення runtime-логів;
 - підготовка до наступних production-модулів: Web API, diagnostics, restart history export.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.20-power-status-snapshot`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.21-health-status-snapshot`.
 
 ## Вже зроблено
 
@@ -147,6 +147,7 @@
 - `PowerService` веде in-memory restart history;
 - `PowerService` логує завершені restart history entries;
 - `PowerService` надає API-ready `PowerStatusData` snapshot;
+- `HealthCheckService` надає API-ready `HealthStatusData` snapshot;
 - `PowerService` має throttling повторних restart-спроб при недоступному Tuya LAN controller;
 - `PowerService` чекає перепідключення Tuya LAN controller перед `powerOn`, замість негайного переходу в `Error`;
 - `TuyaPowerController` керує живленням через `TuyaLan.relayOn()` / `TuyaLan.relayOff()`.
@@ -245,7 +246,7 @@
 
 ## Наступні кроки
 
-1. Зафіксувати `v0.4.20-power-status-snapshot` як hardware-verified baseline.
+1. Зафіксувати `v0.4.21-health-status-snapshot` як hardware-verified baseline.
 2. Реалізувати Tuya status polling policy.
 3. Додати restart history Web/API export.
 4. Додати Web API для status/config/health/watchdog/power.

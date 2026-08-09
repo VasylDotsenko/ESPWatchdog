@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.23-system-status-snapshot
+0.4.24-network-status-snapshot
 ```
 
 Production target:
@@ -102,6 +102,7 @@ Power Cycle
 - API-ready health status snapshot;
 - API-ready watchdog status snapshot;
 - API-ready system status snapshot;
+- API-ready network status snapshot;
 - захист від restart-loop через `maxRestartPerDay`;
 - production power-control abstraction через `PowerService`;
 - Tuya LAN power controller adapter;

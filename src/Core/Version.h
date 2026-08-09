@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     23
+#define FW_VERSION_PATCH     24
 
-#define FW_VERSION_STRING    "0.4.23"
-#define FW_VERSION_LABEL     "system-status-snapshot"
-#define FW_VERSION_FULL      "0.4.23-system-status-snapshot"
+#define FW_VERSION_STRING    "0.4.24"
+#define FW_VERSION_LABEL     "network-status-snapshot"
+#define FW_VERSION_FULL      "0.4.24-network-status-snapshot"
 
 //=============================================================================
 // Project

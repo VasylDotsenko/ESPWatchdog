@@ -4,6 +4,65 @@
 
 ---
 
+## [0.4.24-network-status-snapshot] - 09.08.2026
+
+### Статус
+
+Додано API-ready snapshot модель для Network/WiFi subsystem.
+
+Це п'ятий базовий snapshot-шар. Тепер усі ключові runtime subsystem-и мають стабільні POD-знімки для майбутнього Web API.
+
+### Оновлено
+
+- `Models/NetworkStatusData.h`;
+- `Models/NetworkData.h`;
+- `Services/WiFi/WiFiService.h`;
+- `Services/WiFi/WiFiService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `NetworkStatusSummary`;
+- `NetworkStatusConfiguration`;
+- `NetworkStatusAddress`;
+- `NetworkStatusSignal`;
+- `NetworkStatusStatistics`;
+- `NetworkStatusData`;
+- `WiFiService::status()`.
+
+### Містить
+
+- WiFi connection state;
+- hostname;
+- SSID;
+- IP/gateway/subnet/DNS;
+- RSSI;
+- signal quality;
+- reconnect statistics;
+- connect/disconnect timestamps.
+
+### Призначення
+
+`NetworkStatusData` стане джерелом для:
+
+- `/api/network/status`;
+- `/api/status`;
+- diagnostics endpoint;
+- Web Dashboard;
+- майбутнього MQTT telemetry.
+
+### Версія
+
+```text
+0.4.24-network-status-snapshot
+```
+
+---
+
 ## [0.4.23-system-status-snapshot] - 09.08.2026
 
 ### Статус

@@ -5,6 +5,7 @@
 #include "Core/IService.h"
 #include "Core/Timer.h"
 #include "Models/NetworkData.h"
+#include "Models/NetworkStatusData.h"
 
 class WiFiService final : public IService
 {
@@ -18,6 +19,7 @@ public:
     bool isConnected() const;
     NetworkState connectionState() const;
     const NetworkData& data() const;
+    NetworkStatusData status() const;
 
 private:
     void updateData();

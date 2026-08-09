@@ -179,6 +179,42 @@ const NetworkData& WiFiService::data() const
     return m_data;
 }
 
+NetworkStatusData WiFiService::status() const
+{
+    NetworkStatusData status;
+
+    status.summary.connected = m_data.connected;
+    status.summary.state = m_data.state;
+
+    copyText(
+        status.configuration.hostname,
+        sizeof(status.configuration.hostname),
+        m_data.configuration.hostname);
+
+    copyText(
+        status.configuration.ssid,
+        sizeof(status.configuration.ssid),
+        m_data.configuration.ssid);
+
+    status.address.ip = m_data.address.ip;
+    status.address.gateway = m_data.address.gateway;
+    status.address.subnet = m_data.address.subnet;
+    status.address.dns1 = m_data.address.dns1;
+    status.address.dns2 = m_data.address.dns2;
+
+    status.signal.rssi = m_data.signal.rssi;
+    status.signal.quality = m_data.signal.quality;
+
+    status.statistics.reconnectCount =
+        m_data.statistics.reconnectCount;
+    status.statistics.connectTime =
+        m_data.statistics.connectTime;
+    status.statistics.disconnectTime =
+        m_data.statistics.disconnectTime;
+
+    return status;
+}
+
 void WiFiService::updateData()
 {
     m_data.connected = true;

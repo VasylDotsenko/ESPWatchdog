@@ -4,6 +4,34 @@
 
 ---
 
+## [0.4.50-web-api-logs-split] - 09.08.2026
+
+### Статус
+
+Четвертий етап розділення `WebServerService.cpp`.
+
+### Оновлено
+
+- handler `GET /api/logs` винесено з `WebServerService.cpp`;
+- додано окремі файли:
+  - `WebApiLogs.h`;
+  - `WebApiLogs.cpp`;
+- streaming JSON для runtime logs збережено без зміни поведінки;
+- сторінка `/logs` продовжує використовувати той самий endpoint;
+- `WebServerService` більше не залежить напряму від `WebJsonUtils`.
+
+### Чому
+
+`/api/logs` уже був оптимізований для ESP8266 через chunked response. Винесення його в окремий модуль зменшує розмір `WebServerService.cpp` і залишає сервісу роль routing/coordinator.
+
+### Версія
+
+```text
+0.4.50-web-api-logs-split
+```
+
+---
+
 ## [0.4.49-web-api-config-split] - 09.08.2026
 
 ### Статус

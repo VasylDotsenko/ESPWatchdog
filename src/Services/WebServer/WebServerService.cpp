@@ -1,8 +1,8 @@
 #include "WebServerService.h"
 
 #include "WebPages.h"
-#include "WebJsonUtils.h"
 #include "WebApiConfig.h"
+#include "WebApiLogs.h"
 
 #include <ArduinoJson.h>
 #include <cstring>
@@ -466,62 +466,7 @@ void WebServerService::handleApiConfigUpdate()
 
 void WebServerService::handleApiLogs()
 {
-    const uint8_t count =
-        Log.count();
-
-    char chunk[96] {};
-
-    m_server.setContentLength(CONTENT_LENGTH_UNKNOWN);
-    m_server.send(
-        200,
-        "application/json",
-        "");
-
-    snprintf(
-        chunk,
-        sizeof(chunk),
-        "{\"capacity\":%u,\"count\":%u,\"entries\":[",
-        Logger::LOG_CAPACITY,
-        count);
-
-    m_server.sendContent(chunk);
-
-    for (uint8_t i = 0; i < count; ++i)
-    {
-        LogEntry entry;
-
-        if (!Log.entry(
-                i,
-                entry))
-        {
-            continue;
-        }
-
-        snprintf(
-            chunk,
-            sizeof(chunk),
-            "%s{\"timestamp\":%lu,\"level\":%u,\"levelText\":\"",
-            i == 0 ? "" : ",",
-            static_cast<unsigned long>(entry.timestamp),
-            static_cast<unsigned int>(entry.level));
-
-        m_server.sendContent(chunk);
-
-        WebJsonUtils::sendEscaped(
-            m_server,
-            entry.levelText);
-
-        m_server.sendContent("\",\"message\":\"");
-
-        WebJsonUtils::sendEscaped(
-            m_server,
-            entry.message);
-
-        m_server.sendContent("\"}");
-    }
-
-    m_server.sendContent("]}");
-    m_server.sendContent("");
+    WebApiLogs::handleGet(m_server);
 }
 
 void WebServerService::handleApiPowerOn()

@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     49
+#define FW_VERSION_PATCH     50
 
-#define FW_VERSION_STRING    "0.4.49"
-#define FW_VERSION_LABEL     "web-api-config-split"
-#define FW_VERSION_FULL      "0.4.49-web-api-config-split"
+#define FW_VERSION_STRING    "0.4.50"
+#define FW_VERSION_LABEL     "web-api-logs-split"
+#define FW_VERSION_FULL      "0.4.50-web-api-logs-split"
 
 //=============================================================================
 // Project

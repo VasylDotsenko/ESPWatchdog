@@ -193,7 +193,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.4.50 — WebApiLogs split
 
-Статус: next.
+Статус: реалізовано.
 
 План:
 
@@ -205,6 +205,8 @@ URL: http://192.168.4.1/config/wifi
 - не змінювати поведінку `/logs`.
 
 ### 0.4.51 — WebApiPower split
+
+Статус: next.
 
 План:
 

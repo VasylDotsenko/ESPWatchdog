@@ -16,7 +16,7 @@ main{padding:16px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,mi
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 10px 28px #0004}
 .card h2{font-size:15px;margin:0 0 10px;color:#fff}.row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding:7px 0}
 .row:first-of-type{border-top:0}.k{color:var(--muted)}.v{text-align:right;word-break:break-word}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
-button{border:0;border-radius:10px;padding:10px 12px;background:#33415f;color:#fff;font-weight:700;cursor:pointer}button:hover{filter:brightness(1.1)}button:disabled{opacity:.45;cursor:not-allowed}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.danger{background:#8f2635}.warnBtn{background:#8b6822}.okBtn{background:#16724e}.log{max-height:180px;overflow:auto;background:#0a0f1d;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.log div{padding:2px 0;color:#cdd7ee}.log .warn{color:var(--warn)}.log .bad{color:var(--bad)}.log .ok{color:var(--ok)}
+button{border:0;border-radius:10px;padding:10px 12px;background:#33415f;color:#fff;font-weight:700;cursor:pointer}button:hover{filter:brightness(1.1)}button:disabled{opacity:.45;cursor:not-allowed}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.danger{background:#8f2635}.warnBtn{background:#8b6822}.okBtn{background:#16724e}.notice{border:1px solid var(--warn);background:#2c2413;color:var(--warn);border-radius:10px;padding:10px;margin:10px 0}.log{max-height:180px;overflow:auto;background:#0a0f1d;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.log div{padding:2px 0;color:#cdd7ee}.log .warn{color:var(--warn)}.log .bad{color:var(--bad)}.log .ok{color:var(--ok)}
 input{width:100%;margin-top:4px;border:1px solid var(--line);border-radius:9px;background:#0a0f1d;color:var(--text);padding:8px}.field{margin:8px 0}.field label{display:block;color:var(--muted);font-size:12px}.wide{grid-column:1/-1}.formGrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
 footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff;text-decoration:none}a:hover{text-decoration:underline}.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
 </style>
@@ -55,7 +55,7 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff
 <script>
 const app=document.getElementById('app'),updated=document.getElementById('updated');
 const commandLog=[];
-let configCache={},configLoadedAt=0,loading=false;
+let configCache={},configLoadedAt=0,loading=false,restartRecommended=false;
 const ip=a=>a||'0.0.0.0';
 const cls=b=>b?'ok':'bad';
 const ms=v=>v?`${v} ms`:'0 ms';
@@ -64,13 +64,15 @@ function row(k,v,c=''){return `<div class="row"><span class="k">${k}</span><span
 function card(t,rows){return `<section class="card"><h2>${t}</h2>${rows.join('')}</section>`}
 function logLine(t,c=''){return `<div class="${c}">${t}</div>`}
 function addLog(t,c=''){commandLog.unshift(`[${new Date().toLocaleTimeString()}] ${t}`);if(commandLog.length>20)commandLog.pop();load()}
+async function apiResult(r){const text=await r.text();let data={};try{data=text?JSON.parse(text):{}}catch(e){}return{ok:r.ok,status:r.status,text,data}}
+function apiSummary(prefix,res){const d=res.data||{};const detail=d.error||d.message||d.command||res.text||'';return `${prefix}: HTTP ${res.status}${detail?' · '+detail:''}`}
 async function powerCommand(name,path,confirmText=''){
  if(confirmText&&!confirm(confirmText))return;
  addLog(`${name}: sending`,'warn');
  try{
   const r=await fetch(path,{method:'POST',cache:'no-store',headers:authHeaders()});
-  const txt=await r.text();
-  addLog(`${name}: HTTP ${r.status} ${txt}`,r.ok?'ok':'bad');
+  const res=await apiResult(r);
+  addLog(apiSummary(name,res),res.ok?'ok':'bad');
  }catch(e){addLog(`${name}: ${e.message||'failed'}`,'bad')}
 }
 function apiToken(){return localStorage.getItem('espw_api_token')||''}
@@ -156,7 +158,8 @@ function sectionEditor(section,c){
  if(section==='relay'){title='Relay settings';fields=check('cfg_relay_enabled','relay.enabled',r.enabled)+field('cfg_relay_pin','relay.pin',r.pin||0,'number')+check('cfg_relay_active','relay.activeHigh',r.activeHigh)}
  if(section==='tuya'){title='Tuya socket settings';fields=field('cfg_tuya_ip','tuya.ip',tu.ip||'')+field('cfg_tuya_port','tuya.port',tu.port||0,'number')+field('cfg_tuya_device','tuya.deviceId',tu.deviceId||'')+secretField('cfg_tuya_key','tuya.localKey',tu.localKeyMasked||'leave empty to keep')+field('cfg_tuya_ver','tuya.version',tu.version||35,'number')+field('cfg_tuya_dps','tuya.relayDps',tu.relayDps||1,'number')+check('cfg_tuya_poll_enabled','tuya.statusPollingEnabled',tu.statusPollingEnabled)+field('cfg_tuya_poll_interval','tuya.statusPollingInterval',tu.statusPollingInterval||60000,'number')}
  if(section==='security'){title='Web API security';fields=check('cfg_sec_enabled','security.apiAuthEnabled',sec.apiAuthEnabled)+secretField('cfg_sec_token','security.apiToken',sec.apiTokenMasked||'leave empty to keep current token')}
- return `<section class="card wide"><h2>${title}</h2><div class="formGrid">${fields}</div><div class="btns"><button class="okBtn" onclick="saveSection('${section}')">SAVE ${section.toUpperCase()}</button><button class="warnBtn" onclick="restartEsp()">RESTART ESP</button></div></section>`;
+ const note=restartRecommended?'<div class="notice">Configuration saved. Restart ESP is recommended to apply all changes.</div>':'';
+ return `<section class="card wide"><h2>${title}</h2>${note}<div class="formGrid">${fields}</div><div class="btns"><button class="okBtn" onclick="saveSection('${section}')">SAVE ${section.toUpperCase()}</button><button class="warnBtn" onclick="restartEsp()">RESTART ESP</button></div></section>`;
 }
 function sectionBody(section){
  const body={version:3};
@@ -171,12 +174,29 @@ function sectionBody(section){
 async function saveSection(section){
  addLog(`Config ${section}: saving`,'warn');
  const body=sectionBody(section);
- try{const r=await fetch('/api/config',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify(body)});const txt=await r.text();addLog(`Config: HTTP ${r.status} ${txt}`,r.ok?'ok':'bad')}catch(e){addLog(`Config: ${e.message||'failed'}`,'bad')}
+ try{
+  const r=await fetch('/api/config',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify(body)});
+  const res=await apiResult(r);
+  if(res.ok){
+   restartRecommended=!!res.data.restartRecommended;
+   await loadDashboardConfig(true);
+   addLog(`Config ${section}: saved${restartRecommended?' · restart recommended':''}`,'ok');
+   load();
+  }else{
+   addLog(apiSummary('Config',res),'bad');
+  }
+ }catch(e){addLog(`Config: ${e.message||'failed'}`,'bad')}
 }
 async function restartEsp(){
  if(!confirm('Restart ESP now?'))return;
  addLog('ESP restart: sending','warn');
- try{const r=await fetch('/api/system/restart',{method:'POST',cache:'no-store',headers:authHeaders()});const txt=await r.text();addLog(`ESP restart: HTTP ${r.status} ${txt}`,r.ok?'ok':'bad')}catch(e){addLog(`ESP restart: ${e.message||'failed'}`,'bad')}
+ try{
+  const r=await fetch('/api/system/restart',{method:'POST',cache:'no-store',headers:authHeaders()});
+  const res=await apiResult(r);
+  const delay=res.data.delayMs||2000;
+  addLog(res.ok?`ESP restart: scheduled in ${delay} ms`:apiSummary('ESP restart',res),res.ok?'warn':'bad');
+  if(res.ok){updated.textContent='restart scheduled';setTimeout(()=>{updated.textContent='reconnecting...'},delay)}
+ }catch(e){addLog(`ESP restart: ${e.message||'failed'}`,'bad')}
 }
 async function renderLogs(){
  try{const r=await fetch('/api/logs',{cache:'no-store'});app.innerHTML=logsCard(await r.json())+commandLogCard();updated.textContent=new Date().toLocaleTimeString()}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Logs','unable to load','bad')])}

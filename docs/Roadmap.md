@@ -295,7 +295,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.4.58 — Web UI production polish
 
-Статус: next.
+Статус: реалізовано.
 
 План:
 
@@ -305,6 +305,24 @@ URL: http://192.168.4.1/config/wifi
 - підготувати UI до `requiresRestart` / live apply policy;
 - перевірити mobile layout;
 - мінімізувати HTML/JS без втрати читабельності.
+
+### 0.4.59 — Config apply policy
+
+Статус: next.
+
+План:
+
+- визначити, які секції config застосовуються live;
+- визначити, які секції потребують restart ESP;
+- додати `requiresRestart` у відповідь `POST /api/config`;
+- додати section-level apply policy для:
+  - device;
+  - wifi;
+  - watchdog;
+  - relay;
+  - tuya;
+  - security;
+- синхронізувати Web UI з цією політикою.
 
 ---
 

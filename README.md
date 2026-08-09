@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.57-web-command-auth-cleanup
+0.4.58-web-ui-production-polish
 ```
 
 Production target:
@@ -154,6 +154,8 @@ http://192.168.4.1/config/wifi
 - Web API token protection for state-changing commands;
 - centralized Web API response headers;
 - centralized Web API command authorization;
+- polished Web UI command messages;
+- visible `restartRecommended` warning after config save;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;
@@ -163,7 +165,7 @@ http://192.168.4.1/config/wifi
 Ще не завершено:
 
 - Tuya LAN `3.5` status DPQuery через `6699`;
-- Web UI production polish;
+- Config apply policy;
 - OTA.
 
 ---
@@ -586,7 +588,7 @@ pio device monitor -b 74880
 ### Наступний етап
 
 ```text
-Web UI production polish
+Config apply policy
 ```
 
 Поточний WebServer вже розділено на окремі модулі:
@@ -603,14 +605,14 @@ Web UI production polish
 
 Route registration уже згруповано в `WebServerService`.
 Response/auth helpers уже винесено з `WebServerService`.
+Web UI command messages і restart recommendation вже приведені до читабельного вигляду.
 
-Далі потрібно довести Web UI до production-рівня:
+Далі потрібно формалізувати config apply policy:
 
-- покращити UX config pages;
-- показувати `restartRecommended`;
-- підготувати UI до live apply / requires restart policy;
-- перевірити mobile layout;
-- зменшити вагу HTML/JS там, де це безпечно.
+- визначити live/restart behavior для кожної секції config;
+- додати `requiresRestart`;
+- показувати section-level apply result у Web UI;
+- підготувати безпечне live apply для параметрів, які можна змінювати без reboot.
 
 ### Далі
 

@@ -4,6 +4,35 @@
 
 ---
 
+## [0.4.58-web-ui-production-polish] - 09.08.2026
+
+### Статус
+
+Перший етап production polish для Web UI.
+
+### Оновлено
+
+- command log більше не показує сирий JSON для power/config/restart команд;
+- додано компактне форматування результатів Web API command responses;
+- після `POST /api/config` UI показує `restart recommended`;
+- configuration pages показують помітний warning-блок, якщо після save рекомендовано restart ESP;
+- після save config Dashboard оновлює cached config;
+- `Restart ESP` у UI показує scheduled delay і переходить у стан `reconnecting...`;
+- додано захист від невалідного JSON у command responses;
+- UI залишено lightweight без великих зовнішніх залежностей.
+
+### Чому
+
+Після стабілізації Web API основна проблема була не в функціональності, а в польовому UX: користувач бачив сирі JSON-відповіді й не мав зрозумілого сигналу, що після зміни конфігурації потрібен restart. Цей етап робить Web UI ближчим до production-панелі керування.
+
+### Версія
+
+```text
+0.4.58-web-ui-production-polish
+```
+
+---
+
 ## [0.4.57-web-command-auth-cleanup] - 09.08.2026
 
 ### Статус

@@ -4,6 +4,66 @@
 
 ---
 
+## [0.4.37-first-boot-wifi-setup] - 09.08.2026
+
+### Статус
+
+Додано first-boot WiFi setup portal для первинного підключення WeMos D1 mini до домашньої мережі.
+
+Якщо `wifi.ssid` порожній або підключення до WiFi завершується timeout, пристрій піднімає власну AP-точку `ESP-Watchdog-Setup`. Через неї можна відкрити Web UI, налаштувати WiFi та інші параметри, зберегти `config.json` і перезавантажити ESP.
+
+### Оновлено
+
+- `Models/NetworkData.h`;
+- `Services/WiFi/WiFiService.h`;
+- `Services/WiFi/WiFiService.cpp`;
+- `Serializers/JsonStatusSerializer.cpp`;
+- `Core/Application.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Roadmap.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `NetworkState::SetupPortal`;
+- `WiFiService::setupMode()`;
+- fallback AP mode:
+  - SSID: `ESP-Watchdog-Setup`;
+  - password: `12345678`;
+  - IP: `192.168.4.1`;
+- автоматичний setup portal при порожньому `wifi.ssid`;
+- автоматичний setup portal після WiFi connection timeout;
+- захист від Watchdog/Power-cycle у setup mode.
+
+### Поведінка first boot
+
+```text
+config.json missing/default
+        ↓
+wifi.ssid empty
+        ↓
+ESP starts AP: ESP-Watchdog-Setup
+        ↓
+User opens http://192.168.4.1/config/wifi
+        ↓
+User saves WiFi settings
+        ↓
+User clicks Restart ESP
+        ↓
+ESP connects to home WiFi
+```
+
+### Версія
+
+```text
+0.4.37-first-boot-wifi-setup
+```
+
+---
+
 ## [0.4.36-web-logs-page-runtime-buffer] - 09.08.2026
 
 ### Статус

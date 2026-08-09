@@ -14,6 +14,9 @@ namespace
             case NetworkState::Connected:
                 return "connected";
 
+            case NetworkState::SetupPortal:
+                return "setup_portal";
+
             case NetworkState::Disconnected:
             default:
                 return "disconnected";

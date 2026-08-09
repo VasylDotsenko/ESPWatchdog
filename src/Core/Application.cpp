@@ -107,6 +107,12 @@ void Application::loop()
 
     System.loop();
 
+    if (Network.setupMode())
+    {
+        WebServer.loop();
+        return;
+    }
+
     TuyaLan.loop();
 
     HealthCheck.loop();

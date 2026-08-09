@@ -8,6 +8,9 @@
 
 namespace
 {
+constexpr char SETUP_AP_SSID[] = "ESP-Watchdog-Setup";
+constexpr char SETUP_AP_PASSWORD[] = "12345678";
+
 void copyText(char* destination, size_t destinationSize, const char* source)
 {
     if (destinationSize == 0)
@@ -73,7 +76,17 @@ bool WiFiService::begin()
     m_state = NetworkState::Disconnected;
     m_reconnectTimer.start(config.wifi.reconnectInterval, TimerMode::Periodic);
 
-    return connect();
+    if (config.wifi.ssid[0] == '\0')
+    {
+        return startSetupPortal("ssid_empty");
+    }
+
+    if (!connect())
+    {
+        return startSetupPortal("connect_start_failed");
+    }
+
+    return true;
 }
 
 bool WiFiService::connect()
@@ -88,8 +101,7 @@ bool WiFiService::connect()
 
     if (config.ssid[0] == '\0')
     {
-        Log.error("WiFi: SSID is empty");
-        return false;
+        return startSetupPortal("ssid_empty");
     }
 
     WiFi.begin(config.ssid, config.password);
@@ -147,6 +159,7 @@ void WiFiService::loop()
                 Log.warning("WiFi: connection timeout");
                 ++m_data.statistics.reconnectCount;
                 disconnect();
+                startSetupPortal("connect_timeout");
             }
             break;
 
@@ -161,12 +174,21 @@ void WiFiService::loop()
 
             updateData();
             break;
+
+        case NetworkState::SetupPortal:
+            updateData();
+            break;
     }
 }
 
 bool WiFiService::isConnected() const
 {
     return m_state == NetworkState::Connected;
+}
+
+bool WiFiService::setupMode() const
+{
+    return m_state == NetworkState::SetupPortal;
 }
 
 NetworkState WiFiService::connectionState() const
@@ -217,8 +239,24 @@ NetworkStatusData WiFiService::status() const
 
 void WiFiService::updateData()
 {
-    m_data.connected = true;
-    m_data.state = NetworkState::Connected;
+    m_data.connected =
+        m_state == NetworkState::Connected;
+    m_data.state =
+        m_state;
+
+    if (m_state == NetworkState::SetupPortal)
+    {
+        copyAddress(WiFi.softAPIP(), m_data.address.ip);
+        copyAddress(WiFi.softAPIP(), m_data.address.gateway);
+        copyAddress(
+            IPAddress(255, 255, 255, 0),
+            m_data.address.subnet);
+        m_data.address.dns1 = IPv4Address {};
+        m_data.address.dns2 = IPv4Address {};
+        m_data.signal.rssi = 0;
+        m_data.signal.quality = 0;
+        return;
+    }
 
     copyAddress(WiFi.localIP(), m_data.address.ip);
     copyAddress(WiFi.gatewayIP(), m_data.address.gateway);
@@ -235,4 +273,54 @@ void WiFiService::clearAddressData()
     m_data.address = NetworkAddress {};
     m_data.signal.rssi = 0;
     m_data.signal.quality = 0;
+}
+
+bool WiFiService::startSetupPortal(const char* reason)
+{
+    WiFi.disconnect(false);
+
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.persistent(false);
+    WiFi.setAutoReconnect(false);
+
+    IPAddress apIp(192, 168, 4, 1);
+    IPAddress gateway(192, 168, 4, 1);
+    IPAddress subnet(255, 255, 255, 0);
+
+    WiFi.softAPConfig(
+        apIp,
+        gateway,
+        subnet);
+
+    const bool started =
+        WiFi.softAP(
+            SETUP_AP_SSID,
+            SETUP_AP_PASSWORD);
+
+    if (!started)
+    {
+        Log.error("WiFi: setup portal failed");
+        return false;
+    }
+
+    m_connectTimeout.stop();
+    m_reconnectTimer.stop();
+
+    m_state = NetworkState::SetupPortal;
+    m_data.connected = false;
+    m_data.state = NetworkState::SetupPortal;
+
+    copyText(
+        m_data.configuration.ssid,
+        sizeof(m_data.configuration.ssid),
+        SETUP_AP_SSID);
+
+    updateData();
+
+    Log.warning(
+        "WiFi: setup portal started, reason=%s ssid=%s ip=192.168.4.1",
+        reason != nullptr ? reason : "unknown",
+        SETUP_AP_SSID);
+
+    return true;
 }

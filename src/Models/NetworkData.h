@@ -36,7 +36,9 @@ enum class NetworkState : uint8_t
 
     Connecting,
 
-    Connected
+    Connected,
+
+    SetupPortal
 };
 
 //=============================================================================

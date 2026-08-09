@@ -17,11 +17,13 @@ public:
     void disconnect();
 
     bool isConnected() const;
+    bool setupMode() const;
     NetworkState connectionState() const;
     const NetworkData& data() const;
     NetworkStatusData status() const;
 
 private:
+    bool startSetupPortal(const char* reason);
     void updateData();
     void clearAddressData();
 

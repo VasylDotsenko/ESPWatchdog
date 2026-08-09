@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.4.36-web-logs-page-runtime-buffer
+0.4.37-first-boot-wifi-setup
 ```
 
 Production target:
@@ -175,7 +175,26 @@ GET /api/logs
 
 Статус: реалізовано.
 
-### 0.4.37 — Tuya status policy
+### 0.4.37 — First boot WiFi setup
+
+Мета:
+
+- якщо `wifi.ssid` порожній, автоматично підняти setup AP;
+- якщо підключення до домашньої мережі не вдалося, перейти в setup AP;
+- дозволити налаштувати WiFi через Web UI;
+- не запускати Watchdog/Power-cycle у setup mode.
+
+Setup AP:
+
+```text
+SSID: ESP-Watchdog-Setup
+Password: 12345678
+URL: http://192.168.4.1/config/wifi
+```
+
+Статус: реалізовано.
+
+### 0.4.38 — Tuya status policy
 
 Мета:
 

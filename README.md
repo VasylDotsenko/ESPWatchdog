@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.36-web-logs-page-runtime-buffer
+0.4.37-first-boot-wifi-setup
 ```
 
 Production target:
@@ -42,6 +42,39 @@ TCOGCZ16-A
     ▼
 Power Cycle
 ```
+
+---
+
+## Перший старт / підключення до домашньої мережі
+
+Якщо `wifi.ssid` ще не налаштований або WeMos не може підключитися до домашньої мережі, ESP Watchdog автоматично переходить у setup portal mode.
+
+Пристрій піднімає WiFi AP:
+
+```text
+SSID: ESP-Watchdog-Setup
+Password: 12345678
+IP: 192.168.4.1
+```
+
+Далі:
+
+1. Підключитися телефоном/ноутбуком до `ESP-Watchdog-Setup`.
+2. Відкрити:
+
+```text
+http://192.168.4.1/config/wifi
+```
+
+3. Ввести домашній WiFi SSID/password.
+4. За потреби налаштувати:
+   - `/config/watchdog`;
+   - `/config/tuya`;
+   - `/config/device`.
+5. Натиснути `Restart ESP`.
+6. Після reboot пристрій має підключитися до домашньої мережі.
+
+У setup mode `Watchdog` і `PowerService` не виконують power-cycle, щоб пристрій не перезапускав розетку під час первинного налаштування.
 
 ---
 
@@ -99,6 +132,10 @@ Power Cycle
 - runtime log ring-buffer in `Logger`;
 - `GET /api/logs`;
 - separate logs page `/logs`;
+- first-boot WiFi setup portal;
+- fallback AP mode `ESP-Watchdog-Setup`;
+- setup portal address `192.168.4.1`;
+- Watchdog/Power actions disabled while setup portal is active;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;

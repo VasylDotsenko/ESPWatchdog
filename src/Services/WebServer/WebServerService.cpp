@@ -744,6 +744,7 @@ void WebServerService::handleApiConfig()
 
     char maskedPassword[WIFI_PASSWORD_LENGTH] {};
     char maskedLocalKey[TUYA_LOCAL_KEY_LENGTH] {};
+    char chunk[160] {};
 
     maskSecret(
         config.wifi.password,
@@ -755,108 +756,119 @@ void WebServerService::handleApiConfig()
         maskedLocalKey,
         sizeof(maskedLocalKey));
 
-    JsonDocument doc;
-
-    doc["version"] = CONFIG_VERSION;
-
-    JsonObject device =
-        doc["device"].to<JsonObject>();
-
-    device["hostname"] =
-        config.device.hostname;
-
-    JsonObject wifi =
-        doc["wifi"].to<JsonObject>();
-
-    wifi["ssid"] =
-        config.wifi.ssid;
-    wifi["passwordSet"] =
-        strlen(config.wifi.password) > 0;
-    wifi["passwordMasked"] =
-        maskedPassword;
-    wifi["reconnectInterval"] =
-        config.wifi.reconnectInterval;
-    wifi["connectTimeout"] =
-        config.wifi.connectTimeout;
-
-    JsonObject watchdog =
-        doc["watchdog"].to<JsonObject>();
-
-    watchdog["targetHost"] =
-        config.watchdog.targetHost;
-    watchdog["targetPort"] =
-        config.watchdog.targetPort;
-    watchdog["pingInterval"] =
-        config.watchdog.pingInterval;
-    watchdog["pingTimeout"] =
-        config.watchdog.pingTimeout;
-    watchdog["failCount"] =
-        config.watchdog.failCount;
-    watchdog["bootDelay"] =
-        config.watchdog.bootDelay;
-    watchdog["powerOffTime"] =
-        config.watchdog.powerOffTime;
-    watchdog["maxRestartPerDay"] =
-        config.watchdog.maxRestartPerDay;
-
-    JsonObject relay =
-        doc["relay"].to<JsonObject>();
-
-    relay["enabled"] =
-        config.relay.enabled;
-    relay["pin"] =
-        config.relay.pin;
-    relay["activeHigh"] =
-        config.relay.activeHigh;
-
-    JsonObject tuya =
-        doc["tuya"].to<JsonObject>();
-
-    tuya["ip"] =
-        config.tuya.ipAddress;
-    tuya["port"] =
-        config.tuya.port;
-    tuya["deviceId"] =
-        config.tuya.deviceId;
-    tuya["localKeySet"] =
-        strlen(config.tuya.localKey) > 0;
-    tuya["localKeyMasked"] =
-        maskedLocalKey;
-    tuya["version"] =
-        config.tuya.protocolVersion;
-    tuya["relayDps"] =
-        config.tuya.relayDps;
-    tuya["statusPollingEnabled"] =
-        config.tuya.statusPollingEnabled;
-    tuya["statusPollingInterval"] =
-        config.tuya.statusPollingInterval;
-
-    JsonObject security =
-        doc["security"].to<JsonObject>();
-
-    security["apiAuthEnabled"] =
-        config.security.apiAuthEnabled;
-    security["apiTokenSet"] =
-        strlen(config.security.apiToken) > 0;
-
-    const size_t length =
-        serializeJson(
-            doc,
-            m_jsonBuffer,
-            sizeof(m_jsonBuffer));
-
-    if (length == 0 ||
-        length >= sizeof(m_jsonBuffer))
-    {
-        sendJson(
-            500,
-            "{\"ok\":false,\"error\":\"config_serialization_failed\"}");
-        return;
-    }
-
-    sendJson(
+    m_server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    m_server.send(
         200,
-        m_jsonBuffer);
+        "application/json",
+        "");
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        "{\"version\":%u,\"device\":{\"hostname\":\"",
+        CONFIG_VERSION);
+
+    m_server.sendContent(chunk);
+    sendJsonEscaped(m_server, config.device.hostname);
+
+    m_server.sendContent("\"},\"wifi\":{\"ssid\":\"");
+    sendJsonEscaped(m_server, config.wifi.ssid);
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        "\",\"passwordSet\":%s,\"passwordMasked\":\"",
+        strlen(config.wifi.password) > 0 ? "true" : "false");
+
+    m_server.sendContent(chunk);
+    sendJsonEscaped(m_server, maskedPassword);
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        "\",\"reconnectInterval\":%lu,\"connectTimeout\":%lu}",
+        static_cast<unsigned long>(config.wifi.reconnectInterval),
+        static_cast<unsigned long>(config.wifi.connectTimeout));
+
+    m_server.sendContent(chunk);
+
+    m_server.sendContent(",\"watchdog\":{\"targetHost\":\"");
+    sendJsonEscaped(m_server, config.watchdog.targetHost);
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        "\",\"targetPort\":%u,\"pingInterval\":%lu,\"pingTimeout\":%lu,"
+        "\"failCount\":%u",
+        config.watchdog.targetPort,
+        static_cast<unsigned long>(config.watchdog.pingInterval),
+        static_cast<unsigned long>(config.watchdog.pingTimeout),
+        config.watchdog.failCount);
+
+    m_server.sendContent(chunk);
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        ",\"bootDelay\":%lu,\"powerOffTime\":%lu,\"maxRestartPerDay\":%u}",
+        static_cast<unsigned long>(config.watchdog.bootDelay),
+        static_cast<unsigned long>(config.watchdog.powerOffTime),
+        config.watchdog.maxRestartPerDay);
+
+    m_server.sendContent(chunk);
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        ",\"relay\":{\"enabled\":%s,\"pin\":%u,\"activeHigh\":%s}",
+        config.relay.enabled ? "true" : "false",
+        config.relay.pin,
+        config.relay.activeHigh ? "true" : "false");
+
+    m_server.sendContent(chunk);
+
+    m_server.sendContent(",\"tuya\":{\"ip\":\"");
+    sendJsonEscaped(m_server, config.tuya.ipAddress);
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        "\",\"port\":%u,\"deviceId\":\"",
+        config.tuya.port);
+
+    m_server.sendContent(chunk);
+    sendJsonEscaped(m_server, config.tuya.deviceId);
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        "\",\"localKeySet\":%s,\"localKeyMasked\":\"",
+        strlen(config.tuya.localKey) > 0 ? "true" : "false");
+
+    m_server.sendContent(chunk);
+    sendJsonEscaped(m_server, maskedLocalKey);
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        "\",\"version\":%u,\"relayDps\":%u,\"statusPollingEnabled\":%s,"
+        "\"statusPollingInterval\":%lu}",
+        config.tuya.protocolVersion,
+        config.tuya.relayDps,
+        config.tuya.statusPollingEnabled ? "true" : "false",
+        static_cast<unsigned long>(config.tuya.statusPollingInterval));
+
+    m_server.sendContent(chunk);
+
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        ",\"security\":{\"apiAuthEnabled\":%s,\"apiTokenSet\":%s}}",
+        config.security.apiAuthEnabled ? "true" : "false",
+        strlen(config.security.apiToken) > 0 ? "true" : "false");
+
+    m_server.sendContent(chunk);
+    m_server.sendContent("");
 }
 
 void WebServerService::handleApiConfigUpdate()

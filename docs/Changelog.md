@@ -4,6 +4,56 @@
 
 ---
 
+## [0.4.17-tuya-on-demand-idle] - 09.08.2026
+
+### Статус
+
+Стабілізовано idle-поведінку Tuya LAN service після успішного hardware-verified power-cycle.
+
+Після виконання команди розетка може сама закривати TCP socket. Для Tuya LAN power-control це нормальна поведінка, тому `TuyaService` переведено в чистий on-demand режим.
+
+### Оновлено
+
+- `Services/Tuya/TuyaService.h`;
+- `Services/Tuya/TuyaService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Змінено
+
+- `TuyaService` більше не виконує background reconnect у `loop()`;
+- підключення до Tuya socket виконується перед реальною командою;
+- `queryStatus()` також підключається on-demand;
+- idle disconnect більше не запускає автоматичний reconnect timer;
+- runtime лог після power-cycle має бути чистішим і без зайвих reconnect/disconnect циклів.
+
+### Очікувана поведінка
+
+```text
+Watchdog: restart required
+Connecting to Tuya ...
+Tuya connected
+Tuya: 3.5 session established
+Tuya: 3.5 relay command sent, state=0
+Tuya: relay state=0
+Tuya: 3.5 relay command sent, state=1
+Tuya: relay state=1
+PowerService: restart completed
+```
+
+Після цього socket може залишитись відкритим або бути закритим розеткою. `TuyaService` не буде перепідключатися без потреби.
+
+### Версія
+
+```text
+0.4.17-tuya-on-demand-idle
+```
+
+---
+
 ## [0.4.16-tuya35-command-ack] - 09.08.2026
 
 ### Статус

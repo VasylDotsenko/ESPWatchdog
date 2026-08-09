@@ -32,10 +32,6 @@ bool TuyaService::begin()
 
     initializeProtocol();
 
-    m_reconnectTimer.start(
-        1,
-        TimerMode::OneShot);
-
     Log.info("TuyaService started");
 
     return true;
@@ -114,27 +110,20 @@ void TuyaService::disconnect()
     m_receiveLength = 0;
     m_protocol.reset();
 
-    m_reconnectTimer.start(
-        RECONNECT_INTERVAL_MS,
-        TimerMode::OneShot);
-
     Log.warning("Tuya disconnected");
 }
 
 void TuyaService::updateConnection()
 {
-    if (m_state == TuyaState::Connected)
+    if (m_state != TuyaState::Connected)
+    {
         return;
+    }
 
     if (!WiFi.isConnected())
-        return;
-
-    if (!m_reconnectTimer.expired())
-        return;
-
-    m_reconnectTimer.restart();
-
-    connect();
+    {
+        disconnect();
+    }
 }
 
 bool TuyaService::relayOn()
@@ -169,7 +158,10 @@ bool TuyaService::queryStatus()
 {
     if (!connected())
     {
-        return false;
+        if (!connect())
+        {
+            return false;
+        }
     }
 
     return sendStatusQuery();

@@ -28,7 +28,6 @@ class TuyaService final : public IService
 public:
     static constexpr uint32_t CONNECT_TIMEOUT_MS = 5000;
     static constexpr uint32_t SESSION_RESPONSE_TIMEOUT_MS = 1200;
-    static constexpr uint32_t RECONNECT_INTERVAL_MS = 10000;
     static constexpr uint32_t RECEIVE_TIMEOUT_MS = 3000;
     static constexpr size_t RECEIVE_BUFFER_SIZE = Tuya::MAX_PACKET_6699_SIZE;
 
@@ -102,7 +101,6 @@ private:
 private:
     WiFiClient m_client;
 
-    Timer m_reconnectTimer;
     Timer m_receiveTimer;
 
     TuyaState m_state = TuyaState::Disconnected;

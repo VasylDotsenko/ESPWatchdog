@@ -8,15 +8,12 @@
 
 Основний напрямок роботи зараз:
 
-- побудова Tuya LAN stack;
-- реалізація `TuyaCrypto`;
-- реалізація `TuyaPacket`;
-- реалізація `TuyaProtocol`;
-- інтеграція `WatchdogService -> PowerService -> TuyaPowerController -> TuyaService`;
-- hardware smoke-test із `TCOGCZ16-A`;
-- стабілізація Tuya LAN power-cycle.
+- стабілізація Tuya LAN `3.5` runtime;
+- фіналізація Tuya status polling policy;
+- очищення runtime-логів;
+- підготовка до наступних production-модулів: Web API, diagnostics, restart history.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.16-tuya35-command-ack`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.17-tuya-on-demand-idle`.
 
 ## Вже зроблено
 
@@ -245,10 +242,8 @@
 
 ## Наступні кроки
 
-1. Скопіювати актуальні Tuya-файли з `outputs/` у проєкт.
-2. Запустити повну збірку PlatformIO.
-3. Заповнити реальні `tuya.ip`, `deviceId`, `localKey`, `relayDps`.
-4. Залити LittleFS config.
-5. Перевірити `TuyaLan` connection.
-6. Перевірити `PowerService` power-cycle.
-7. Провести повний hardware smoke-test із `TCOGCZ16-A`.
+1. Зафіксувати `v0.4.17-tuya-on-demand-idle` як hardware-verified baseline.
+2. Реалізувати Tuya status polling policy.
+3. Додати restart history.
+4. Додати Web API для status/config/health/watchdog/power.
+5. Додати diagnostics endpoint.

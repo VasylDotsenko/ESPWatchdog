@@ -228,7 +228,18 @@ URL: http://192.168.4.1/config/wifi
 - уникнути додаткового логування в момент безпосереднього `ESP.restart()`;
 - зменшити ризик `Exception (29)` / `ctx: sys` після натискання кнопки Restart ESP.
 
-### 0.4.53 — WebApiStatus split
+### 0.4.53 — Dashboard resilient loading
+
+Статус: реалізовано.
+
+План:
+
+- додати route `/dashboard`;
+- зробити `/api/config` optional для головної сторінки;
+- дозволити Dashboard відкриватися при частковій недоступності API;
+- показувати конкретну помилку endpoint-а замість загального `unable to load`.
+
+### 0.4.54 — WebApiStatus split
 
 Статус: next.
 
@@ -243,7 +254,7 @@ URL: http://192.168.4.1/config/wifi
 - оцінити потребу у streaming serializer для status endpoints;
 - залишити `/api/status` як compatibility endpoint.
 
-### 0.4.54 — WebServer route cleanup
+### 0.4.55 — WebServer route cleanup
 
 План:
 

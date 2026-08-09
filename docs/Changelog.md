@@ -4,6 +4,32 @@
 
 ---
 
+## [0.4.53-dashboard-resilient] - 09.08.2026
+
+### Статус
+
+Hotfix доступності Dashboard після restart ESP та при частковій недоступності API.
+
+### Виправлено
+
+- додано явний route `GET /dashboard`;
+- Dashboard більше не залежить критично від `/api/config`;
+- read-only status endpoints на Dashboard завантажуються незалежно один від одного;
+- якщо один endpoint тимчасово недоступний, головна сторінка все одно відкривається і показує доступні блоки;
+- повідомлення про помилку тепер показує конкретний endpoint / HTTP status.
+
+### Чому
+
+Після restart або при увімкненому API auth endpoint `/api/config` міг бути недоступний для браузера без токена. Через це весь Dashboard переходив у стан `unable to load`, хоча базові status endpoints працювали.
+
+### Версія
+
+```text
+0.4.53-dashboard-resilient
+```
+
+---
+
 ## [0.4.52-esp-restart-safe] - 09.08.2026
 
 ### Статус

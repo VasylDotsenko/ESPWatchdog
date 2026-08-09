@@ -180,14 +180,15 @@ async function restartEsp(){
 async function renderLogs(){
  try{const r=await fetch('/api/logs',{cache:'no-store'});app.innerHTML=logsCard(await r.json())+commandLogCard();updated.textContent=new Date().toLocaleTimeString()}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Logs','unable to load','bad')])}
 }
-async function getJson(path){const r=await fetch(path,{cache:'no-store'});return await r.json()}
+async function getJson(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path}: HTTP ${r.status}`);return await r.json()}
+async function tryGetJson(path,fallback={}){try{return await getJson(path)}catch(e){return fallback}}
 async function loadDashboardStatus(){
  const s={};
- s.system=await getJson('/api/system');
- s.network=await getJson('/api/network');
- s.health=await getJson('/api/health');
- s.watchdog=await getJson('/api/watchdog');
- s.power=await getJson('/api/power');
+ s.system=await tryGetJson('/api/system');
+ s.network=await tryGetJson('/api/network');
+ s.health=await tryGetJson('/api/health');
+ s.watchdog=await tryGetJson('/api/watchdog');
+ s.power=await tryGetJson('/api/power');
  return s;
 }
 function render(s,c){
@@ -223,7 +224,7 @@ function render(s,c){
  ].join('');
  updated.textContent=new Date().toLocaleTimeString();
 }
-async function load(){try{if(currentPage()==='logs'){await renderLogs();return}if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const section=currentSection();if(section){render({},await getJson('/api/config'));return}const s=await loadDashboardStatus();const c=await getJson('/api/config');render(s,c)}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status','unable to load','bad')])}}
+async function load(){try{if(currentPage()==='logs'){await renderLogs();return}if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const section=currentSection();if(section){render({},await getJson('/api/config'));return}const s=await loadDashboardStatus();const c=await tryGetJson('/api/config');render(s,c)}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status',esc(e.message||'unable to load'),'bad')])}}
 load();setInterval(load,2000);
 </script>
 </body>

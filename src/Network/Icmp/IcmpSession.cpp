@@ -7,6 +7,7 @@
 bool IcmpSession::begin()
 {
     reset();
+
     return true;
 }
 

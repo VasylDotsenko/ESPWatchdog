@@ -47,6 +47,12 @@ public:
         LogEntry* output,
         uint8_t capacity) const;
 
+    uint8_t count() const;
+
+    bool entry(
+        uint8_t position,
+        LogEntry& output) const;
+
     void clear();
 
 private:

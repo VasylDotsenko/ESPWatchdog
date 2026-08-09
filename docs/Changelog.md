@@ -4,6 +4,96 @@
 
 ---
 
+## [0.4.43-web-logs-stream] - 09.08.2026
+
+### Статус
+
+Hotfix для crash `Stack smashing detected` при відкритті сторінки логів.
+
+### Виправлено
+
+- `/api/logs` більше не створює повний `JsonDocument` для runtime log buffer;
+- JSON для логів тепер віддається потоково через chunked response;
+- кожен `LogEntry` читається і відправляється окремо;
+- додано безпечне JSON-escaping для повідомлень логера;
+- зменшено пікове використання RAM/stack при відкритті `/logs`.
+
+### Чому
+
+Сторінка логів відкривала `/api/logs`, де одночасно формувався весь JSON зі списком логів. Для ESP8266 це ризиковано, особливо коли WebServer, Logger і WiFi працюють в одному циклі. Потокова відповідь прибирає великий проміжний JSON-об'єкт і робить сторінку логів значно стабільнішою.
+
+### Версія
+
+```text
+0.4.43-web-logs-stream
+```
+
+---
+
+## [0.4.42-stack-safe-logs] - 09.08.2026
+
+### Статус
+
+Hotfix для `Stack smashing detected`, який існував ще до переходу на TCP/SSH HealthCheck.
+
+### Виправлено
+
+- прибрано великий стековий масив:
+
+```cpp
+LogEntry entries[Logger::LOG_CAPACITY]
+```
+
+з `WebServerService::handleApiLogs()`;
+
+- додано читання runtime log ring-buffer по одному запису:
+  - `Logger::count()`;
+  - `Logger::entry(...)`;
+- `/api/logs` більше не копіює весь log buffer на стек;
+- очищено випадково пошкоджений `IcmpSession::begin()`.
+
+### Чому
+
+На ESP8266 стек дуже обмежений. `Logger::LOG_CAPACITY = 32`, а один `LogEntry` містить message buffer. Копіювання всіх записів у локальний масив усередині HTTP handler-а могло займати кілька KB стеку й провокувати `Stack smashing detected`.
+
+### Версія
+
+```text
+0.4.42-stack-safe-logs
+```
+
+---
+
+## [0.4.41-web-api-auth-stack-fix] - 09.08.2026
+
+### Статус
+
+Hotfix для runtime crash `Stack smashing detected` після додавання Web API auth.
+
+### Виправлено
+
+- прибрано custom `collectHeaders("X-API-Token")`;
+- прибрано локальний стековий `maskedApiToken[]` з `handleApiConfig()`;
+- Web UI тепер передає токен через стандартний header:
+
+```text
+Authorization: Bearer <token>
+```
+
+- ручний fallback `?token=...` залишено.
+
+### Чому
+
+На ESP8266 краще використовувати стандартний `Authorization` header, який `ESP8266WebServer` підтримує штатно, замість custom header collection. Це зменшує ризик runtime crash у WebServer path.
+
+### Версія
+
+```text
+0.4.41-web-api-auth-stack-fix
+```
+
+---
+
 ## [0.4.40-web-api-auth] - 09.08.2026
 
 ### Статус

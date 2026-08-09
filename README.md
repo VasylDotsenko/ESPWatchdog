@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.40-web-api-auth
+0.4.41-web-api-auth-stack-fix
 ```
 
 Production target:
@@ -425,10 +425,10 @@ POST /api/power/restart
 }
 ```
 
-Web UI передає токен через header:
+Web UI передає токен через стандартний header:
 
 ```text
-X-API-Token: change-this-token
+Authorization: Bearer change-this-token
 ```
 
 Для ручного тесту також доступний fallback:

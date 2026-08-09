@@ -138,6 +138,34 @@ uint8_t Logger::entries(
     return count;
 }
 
+uint8_t Logger::count() const
+{
+    return m_count;
+}
+
+bool Logger::entry(
+    uint8_t position,
+    LogEntry& output) const
+{
+    if (position >= m_count)
+    {
+        return false;
+    }
+
+    const uint8_t start =
+        m_count < LOG_CAPACITY
+            ? 0
+            : m_head;
+
+    const uint8_t index =
+        static_cast<uint8_t>(
+            (start + position) % LOG_CAPACITY);
+
+    output = m_entries[index];
+
+    return true;
+}
+
 void Logger::clear()
 {
     m_head = 0;

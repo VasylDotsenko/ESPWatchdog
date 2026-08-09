@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     40
+#define FW_VERSION_PATCH     43
 
-#define FW_VERSION_STRING    "0.4.40"
-#define FW_VERSION_LABEL     "web-api-auth"
-#define FW_VERSION_FULL      "0.4.40-web-api-auth"
+#define FW_VERSION_STRING    "0.4.43"
+#define FW_VERSION_LABEL     "web-logs-stream"
+#define FW_VERSION_FULL      "0.4.43-web-logs-stream"
 
 //=============================================================================
 // Project

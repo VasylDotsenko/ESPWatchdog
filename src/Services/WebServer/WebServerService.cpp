@@ -86,7 +86,7 @@ async function powerCommand(name,path,confirmText=''){
  }catch(e){addLog(`${name}: ${e.message||'failed'}`,'bad')}
 }
 function apiToken(){return localStorage.getItem('espw_api_token')||''}
-function authHeaders(extra={}){const t=apiToken();if(t)extra['X-API-Token']=t;return extra}
+function authHeaders(extra={}){const t=apiToken();if(t)extra['Authorization']='Bearer '+t;return extra}
 function setApiToken(){const v=prompt('API token for this browser',apiToken());if(v!==null){localStorage.setItem('espw_api_token',v);addLog('API token saved in browser','ok')}}
 function controls(ps,wc){
  const disabled=!ps.available||ps.restartInProgress?'disabled':'';
@@ -232,13 +232,82 @@ load();setInterval(load,2000);
 </body>
 </html>
 )HTML";
+
+    void sendJsonEscaped(
+        ESP8266WebServer& server,
+        const char* value)
+    {
+        if (value == nullptr)
+        {
+            return;
+        }
+
+        char out[7] {};
+
+        for (const char* p = value; *p != '\0'; ++p)
+        {
+            const unsigned char ch =
+                static_cast<unsigned char>(*p);
+
+            switch (ch)
+            {
+                case '\"':
+                    server.sendContent("\\\"");
+                    break;
+
+                case '\\':
+                    server.sendContent("\\\\");
+                    break;
+
+                case '\b':
+                    server.sendContent("\\b");
+                    break;
+
+                case '\f':
+                    server.sendContent("\\f");
+                    break;
+
+                case '\n':
+                    server.sendContent("\\n");
+                    break;
+
+                case '\r':
+                    server.sendContent("\\r");
+                    break;
+
+                case '\t':
+                    server.sendContent("\\t");
+                    break;
+
+                default:
+                    if (ch < 0x20)
+                    {
+                        snprintf(
+                            out,
+                            sizeof(out),
+                            "\\u%04x",
+                            ch);
+
+                        server.sendContent(out);
+                    }
+                    else
+                    {
+                        out[0] =
+                            static_cast<char>(ch);
+                        out[1] =
+                            '\0';
+
+                        server.sendContent(out);
+                    }
+
+                    break;
+            }
+        }
+    }
 }
 
 bool WebServerService::begin()
 {
-    m_server.collectHeaders(
-        "X-API-Token");
-
     configureRoutes();
 
     m_server.begin();
@@ -675,7 +744,6 @@ void WebServerService::handleApiConfig()
 
     char maskedPassword[WIFI_PASSWORD_LENGTH] {};
     char maskedLocalKey[TUYA_LOCAL_KEY_LENGTH] {};
-    char maskedApiToken[API_TOKEN_LENGTH] {};
 
     maskSecret(
         config.wifi.password,
@@ -686,11 +754,6 @@ void WebServerService::handleApiConfig()
         config.tuya.localKey,
         maskedLocalKey,
         sizeof(maskedLocalKey));
-
-    maskSecret(
-        config.security.apiToken,
-        maskedApiToken,
-        sizeof(maskedApiToken));
 
     JsonDocument doc;
 
@@ -775,8 +838,6 @@ void WebServerService::handleApiConfig()
         config.security.apiAuthEnabled;
     security["apiTokenSet"] =
         strlen(config.security.apiToken) > 0;
-    security["apiTokenMasked"] =
-        maskedApiToken;
 
     const size_t length =
         serializeJson(
@@ -848,56 +909,62 @@ void WebServerService::handleApiConfigUpdate()
 
 void WebServerService::handleApiLogs()
 {
-    LogEntry entries[Logger::LOG_CAPACITY] {};
-
     const uint8_t count =
-        Log.entries(
-            entries,
-            Logger::LOG_CAPACITY);
+        Log.count();
 
-    JsonDocument doc;
+    char chunk[96] {};
 
-    doc["capacity"] =
-        Logger::LOG_CAPACITY;
-    doc["count"] =
-        count;
+    m_server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    m_server.send(
+        200,
+        "application/json",
+        "");
 
-    JsonArray items =
-        doc["entries"].to<JsonArray>();
+    snprintf(
+        chunk,
+        sizeof(chunk),
+        "{\"capacity\":%u,\"count\":%u,\"entries\":[",
+        Logger::LOG_CAPACITY,
+        count);
+
+    m_server.sendContent(chunk);
 
     for (uint8_t i = 0; i < count; ++i)
     {
-        JsonObject item =
-            items.add<JsonObject>();
+        LogEntry entry;
 
-        item["timestamp"] =
-            entries[i].timestamp;
-        item["level"] =
-            static_cast<uint8_t>(entries[i].level);
-        item["levelText"] =
-            entries[i].levelText;
-        item["message"] =
-            entries[i].message;
+        if (!Log.entry(
+                i,
+                entry))
+        {
+            continue;
+        }
+
+        snprintf(
+            chunk,
+            sizeof(chunk),
+            "%s{\"timestamp\":%lu,\"level\":%u,\"levelText\":\"",
+            i == 0 ? "" : ",",
+            static_cast<unsigned long>(entry.timestamp),
+            static_cast<unsigned int>(entry.level));
+
+        m_server.sendContent(chunk);
+
+        sendJsonEscaped(
+            m_server,
+            entry.levelText);
+
+        m_server.sendContent("\",\"message\":\"");
+
+        sendJsonEscaped(
+            m_server,
+            entry.message);
+
+        m_server.sendContent("\"}");
     }
 
-    const size_t length =
-        serializeJson(
-            doc,
-            m_jsonBuffer,
-            sizeof(m_jsonBuffer));
-
-    if (length == 0 ||
-        length >= sizeof(m_jsonBuffer))
-    {
-        sendJson(
-            500,
-            "{\"ok\":false,\"error\":\"logs_serialization_failed\"}");
-        return;
-    }
-
-    sendJson(
-        200,
-        m_jsonBuffer);
+    m_server.sendContent("]}");
+    m_server.sendContent("");
 }
 
 void WebServerService::handleApiPowerOn()
@@ -1028,8 +1095,14 @@ bool WebServerService::authorizeCommand()
         return true;
     }
 
-    const String headerToken =
-        m_server.header("X-API-Token");
+    String headerToken =
+        m_server.header("Authorization");
+
+    if (headerToken.startsWith("Bearer "))
+    {
+        headerToken =
+            headerToken.substring(7);
+    }
 
     if (tokenMatches(
             headerToken.c_str(),
@@ -1100,7 +1173,7 @@ void WebServerService::sendJson(
 
     m_server.sendHeader(
         "Access-Control-Allow-Headers",
-        "Content-Type, X-API-Token");
+        "Content-Type, Authorization");
 
     m_server.sendHeader(
         "Cache-Control",

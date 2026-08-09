@@ -217,7 +217,18 @@ URL: http://192.168.4.1/config/wifi
 - залишити authorization у `WebServerService`;
 - централізувати JSON responses для command handlers.
 
-### 0.4.52 — WebApiStatus split
+### 0.4.52 — ESP restart safe
+
+Статус: реалізовано.
+
+План:
+
+- стабілізувати `POST /api/system/restart`;
+- дати браузеру отримати HTTP-відповідь до фактичного restart;
+- уникнути додаткового логування в момент безпосереднього `ESP.restart()`;
+- зменшити ризик `Exception (29)` / `ctx: sys` після натискання кнопки Restart ESP.
+
+### 0.4.53 — WebApiStatus split
 
 Статус: next.
 
@@ -232,7 +243,7 @@ URL: http://192.168.4.1/config/wifi
 - оцінити потребу у streaming serializer для status endpoints;
 - залишити `/api/status` як compatibility endpoint.
 
-### 0.4.53 — WebServer route cleanup
+### 0.4.54 — WebServer route cleanup
 
 План:
 

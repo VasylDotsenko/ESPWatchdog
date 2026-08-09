@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     51
+#define FW_VERSION_PATCH     52
 
-#define FW_VERSION_STRING    "0.4.51"
-#define FW_VERSION_LABEL     "web-api-power-split"
-#define FW_VERSION_FULL      "0.4.51-web-api-power-split"
+#define FW_VERSION_STRING    "0.4.52"
+#define FW_VERSION_LABEL     "esp-restart-safe"
+#define FW_VERSION_FULL      "0.4.52-esp-restart-safe"
 
 //=============================================================================
 // Project

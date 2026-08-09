@@ -16,6 +16,12 @@
 
 WebServerService WebServer;
 
+namespace
+{
+    constexpr uint32_t ESP_RESTART_DELAY_MS = 2000;
+    constexpr uint32_t ESP_RESTART_SETTLE_MS = 50;
+}
+
 bool WebServerService::begin()
 {
     configureRoutes();
@@ -36,8 +42,10 @@ void WebServerService::loop()
     if (m_restartRequested &&
         static_cast<int32_t>(millis() - m_restartAt) >= 0)
     {
-        Log.warning("WebServer: ESP restart requested");
+        m_restartRequested = false;
 
+        delay(ESP_RESTART_SETTLE_MS);
+        yield();
         ESP.restart();
     }
 }
@@ -371,12 +379,20 @@ void WebServerService::handleApiSystemRestart()
     if (!m_restartRequested)
     {
         m_restartRequested = true;
-        m_restartAt = millis() + 500;
+        m_restartAt = millis() + ESP_RESTART_DELAY_MS;
+
+        Log.warning(
+            "WebServer: ESP restart scheduled, delay=%lu ms",
+            static_cast<unsigned long>(ESP_RESTART_DELAY_MS));
     }
 
-    sendJson(
-        202,
-        "{\"ok\":true,\"command\":\"esp_restart\",\"delayMs\":500}");
+    snprintf(
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer),
+        "{\"ok\":true,\"command\":\"esp_restart\",\"delayMs\":%lu}",
+        static_cast<unsigned long>(ESP_RESTART_DELAY_MS));
+
+    sendJson(202, m_jsonBuffer);
 }
 
 void WebServerService::handleApiNetwork()

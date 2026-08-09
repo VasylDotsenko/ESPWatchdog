@@ -2,7 +2,7 @@
 
 #include "Services/Config/Config.h"
 #include "Services/HealthCheck/HealthCheckService.h"
-#include "Services/HealthCheck/IcmpHealthCheckProvider.h"
+#include "Services/HealthCheck/TcpHealthCheckProvider.h"
 #include "Services/Logger/Logger.h"
 #include "Services/Power/PowerService.h"
 #include "Services/Power/TuyaPowerController.h"
@@ -72,7 +72,7 @@ bool Application::begin()
         return false;
     }
 
-    HealthCheck.setProvider(IcmpProvider);
+    HealthCheck.setProvider(TcpProvider);
 
     if (!HealthCheck.begin())
     {

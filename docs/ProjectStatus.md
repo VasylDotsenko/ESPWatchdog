@@ -14,7 +14,7 @@
 - підготовка Web API authentication / basic protection;
 - production polish Web Dashboard.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.38-tuya-status-polling-policy`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.39-tcp-ssh-healthcheck`.
 
 ## Вже зроблено
 
@@ -32,7 +32,7 @@
   - `System`;
   - `HealthCheck`;
 - виправлено помилку з неіснуючим глобальним сервісом `Health`;
-- додано підключення `IcmpProvider` через `HealthCheck.setProvider(IcmpProvider)`;
+- активний HealthCheck provider підключено через `HealthCheck.setProvider(TcpProvider)`;
 - узгоджено швидкість `Logger` із `monitor_speed = 74880`.
 
 ### Logger
@@ -104,7 +104,11 @@
 - створено фінальну архітектуру `IcmpSession`;
 - ICMP реалізація переведена на native ESP8266 SDK `ping_start()`;
 - прибрано залежність від старого blocking `executePing`;
-- ICMP працює як асинхронна сесія через lwIP callback.
+- ICMP працює як асинхронна сесія через lwIP callback;
+- додано `TcpHealthCheckProvider`;
+- активний HealthCheck provider у `Application` змінено на `TcpProvider`;
+- production HealthCheck тепер виконується через TCP connect до `watchdog.targetHost:watchdog.targetPort`;
+- для SSH-based перевірки використовується `watchdog.targetPort = 22`.
 
 ### HealthCheck
 
@@ -113,12 +117,15 @@
 - створено `HealthCheckInfo`;
 - створено `IHealthCheckProvider`;
 - створено `IcmpHealthCheckProvider`;
+- створено `TcpHealthCheckProvider`;
 - `HealthCheckService` працює через Dependency Injection;
-- `IcmpHealthCheckProvider` підключає `IcmpSession` до сервісу HealthCheck;
+- `IcmpHealthCheckProvider` підключає `IcmpSession` до сервісу HealthCheck як fallback;
+- `TcpHealthCheckProvider` використовується як активний production provider;
 - виправлено проблему з неоголошеним `Health`;
 - прийнято глобальний екземпляр:
   - `HealthCheckService HealthCheck`;
-  - `IcmpHealthCheckProvider IcmpProvider`.
+  - `IcmpHealthCheckProvider IcmpProvider`;
+  - `TcpHealthCheckProvider TcpProvider`.
 
 ### WatchdogService
 
@@ -311,7 +318,7 @@
 
 ## Наступні кроки
 
-1. Додати authentication / basic protection для Web API command endpoints.
-2. Реалізувати Tuya LAN `3.5` status DPQuery через `6699`.
-3. Підготувати production Web Dashboard polish.
-4. Поступово винести UI/JSON форматування в окремий formatting layer.
+1. Hardware-verify TCP/SSH HealthCheck на реальному контрольованому хості.
+2. Додати authentication / basic protection для Web API command endpoints.
+3. Реалізувати Tuya LAN `3.5` status DPQuery через `6699`.
+4. Підготувати production Web Dashboard polish.

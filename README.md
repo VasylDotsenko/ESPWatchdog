@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.38-tuya-status-polling-policy
+0.4.39-tcp-ssh-healthcheck
 ```
 
 Production target:
@@ -18,7 +18,7 @@ Production target:
 
 ## Призначення
 
-Пристрій періодично перевіряє доступність цільового вузла через ICMP Ping. Якщо вузол не відповідає задану кількість разів поспіль, watchdog ініціює power-cycle зовнішнього реле / Wi-Fi power controller.
+Пристрій періодично перевіряє доступність цільового вузла через TCP connect. Для SSH-based перевірки використовується порт `22`. Якщо вузол не відповідає задану кількість разів поспіль, watchdog ініціює power-cycle зовнішнього реле / Wi-Fi power controller.
 
 Цільовий hardware для power control:
 
@@ -31,7 +31,7 @@ TCOGCZ16-A через Tuya LAN protocol
 ```text
 Target Host
     │
-    │ ICMP Ping
+    │ TCP/SSH connect
     ▼
 ESP Watchdog
     │
@@ -89,7 +89,7 @@ http://192.168.4.1/config/wifi
 - LittleFS Storage;
 - Config loading;
 - WiFi connection;
-- ICMP HealthCheck;
+- TCP/SSH HealthCheck;
 - HealthCheck `ONLINE`;
 - Watchdog decision-layer;
 - PowerService abstraction;
@@ -161,7 +161,8 @@ http://192.168.4.1/config/wifi
 - конфігурація через LittleFS JSON;
 - стабільний `Logger` із `printf`-style API;
 - WiFi reconnect state machine;
-- ICMP HealthCheck через native ESP8266 SDK ping;
+- TCP HealthCheck через `WiFiClient.connect()`;
+- ICMP HealthCheck через native ESP8266 SDK ping як fallback provider;
 - накопичення health statistics;
 - Watchdog decision-layer;
 - restart history у `PowerService`;
@@ -371,7 +372,7 @@ namespace Tuya
   },
   "watchdog": {
     "targetHost": "192.168.10.50",
-    "targetPort": 80,
+    "targetPort": 22,
     "pingInterval": 5000,
     "pingTimeout": 1000,
     "failCount": 5,

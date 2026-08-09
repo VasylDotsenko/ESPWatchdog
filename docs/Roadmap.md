@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.4.38-tuya-status-polling-policy
+0.4.39-tcp-ssh-healthcheck
 ```
 
 Production target:
@@ -22,7 +22,7 @@ Production target:
 
 - завантаження конфігурації з LittleFS;
 - WiFi connection;
-- ICMP HealthCheck;
+- TCP/SSH HealthCheck;
 - Watchdog decision-layer;
 - Tuya LAN `3.5` power-control для `TCOGCZ16-A`;
 - restart history;
@@ -90,6 +90,7 @@ Production target:
 - `IHealthCheckProvider`;
 - `IcmpHealthCheckProvider`;
 - native ESP8266 SDK ICMP session;
+- TCP/SSH HealthCheck provider;
 - API-ready `HealthStatusData`.
 
 ### Watchdog
@@ -207,7 +208,18 @@ URL: http://192.168.4.1/config/wifi
 
 Статус: реалізовано як safe opt-in policy.
 
-### 0.4.39 — Web API protection
+### 0.4.39 — TCP/SSH HealthCheck
+
+Мета:
+
+- замінити нестабільний ICMP Ping на TCP connect перевірку;
+- використовувати `watchdog.targetPort`;
+- для SSH-based health check використовувати port `22`;
+- залишити ICMP provider як fallback.
+
+Статус: реалізовано.
+
+### 0.4.40 — Web API protection
 
 Мета:
 
@@ -225,7 +237,7 @@ POST /api/power/restart
 POST /api/system/restart
 ```
 
-### 0.4.39 — Dashboard polish
+### 0.4.41 — Dashboard polish
 
 Мета:
 

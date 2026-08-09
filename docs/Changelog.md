@@ -4,6 +4,61 @@
 
 ---
 
+## [0.4.39-tcp-ssh-healthcheck] - 09.08.2026
+
+### Статус
+
+HealthCheck переведено з нестабільного ICMP Ping на TCP connect перевірку контрольованого хоста.
+
+Для SSH-based перевірки використовується TCP connect до:
+
+```text
+watchdog.targetHost:watchdog.targetPort
+```
+
+Типовий production варіант:
+
+```text
+targetPort = 22
+```
+
+Це не повний SSH-клієнт і не виконує авторизацію. Перевірка вважається успішною, якщо контрольований хост приймає TCP-з'єднання на SSH-порту.
+
+### Оновлено
+
+- `Services/HealthCheck/TcpHealthCheckProvider.h`;
+- `Services/HealthCheck/TcpHealthCheckProvider.cpp`;
+- `Core/Application.cpp`;
+- `Services/Config/ConfigDefaults.cpp`;
+- `Services/Config/ConfigJson.cpp`;
+- `config.json`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Roadmap.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `TcpHealthCheckProvider`;
+- активний provider у `Application`: `TcpProvider`;
+- TCP/SSH availability check через `WiFiClient.connect()`;
+- підтримка `watchdog.targetPort`;
+- типовий target port змінено на `22`.
+
+### Чому
+
+ICMP Ping на ESP8266 / WeMos D1 mini може бути нестабільним через особливості WiFi/lwIP/SDK і поведінку роутера. TCP connect до SSH-порту краще відповідає реальному критерію доступності контрольованого хоста.
+
+### Версія
+
+```text
+0.4.39-tcp-ssh-healthcheck
+```
+
+---
+
 ## [0.4.38-tuya-status-polling-policy] - 09.08.2026
 
 ### Статус

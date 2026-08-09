@@ -7,7 +7,7 @@ namespace DefaultConfig
     constexpr char HOSTNAME[] = "ESP-Watchdog";
     constexpr char TARGET_HOST[] = "192.168.1.100";
 
-    constexpr uint16_t TARGET_PORT = 80;
+    constexpr uint16_t TARGET_PORT = 22;
     constexpr uint32_t WIFI_RECONNECT_INTERVAL = 10000;
     constexpr uint32_t WIFI_CONNECT_TIMEOUT = 15000;
     constexpr uint32_t PING_INTERVAL = 5000;

@@ -55,7 +55,7 @@ bool ConfigService::loadJson()
         watchdog["targetHost"] | "192.168.1.100");
 
     m_data.watchdog.targetPort =
-        watchdog["targetPort"] | 80;
+        watchdog["targetPort"] | 22;
 
     m_data.watchdog.pingInterval =
         watchdog["pingInterval"] | 5000;

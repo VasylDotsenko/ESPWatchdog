@@ -1,255 +1,306 @@
-# Roadmap
+# ESP Watchdog — Roadmap
 
-## Мета проєкту
+Дата оновлення: 09.08.2026
 
-Створити автономний апаратний watchdog на базі ESP8266, який здатний:
+Поточний baseline:
 
-* незалежно контролювати доступність мережевого обладнання;
-* автоматично відновлювати живлення через Wi-Fi розетку;
-* працювати без Home Assistant;
-* забезпечувати просте налаштування через Web UI;
-* підтримувати OTA-оновлення;
-* працювати безперервно 24/7.
+```text
+0.4.34-web-config-editor
+```
 
----
+Production target:
 
-# Поточна версія
-
-**v0.3.0**
-
-Статус: **Розробка**
+```text
+1.0.0
+```
 
 ---
 
-# v0.1.0 — Core Foundation
+## Поточний стан
 
-Статус: ✅ Завершено
+Проєкт вже має робочий runtime для ESP8266 / WeMos D1 mini:
 
-### Реалізовано
+- завантаження конфігурації з LittleFS;
+- WiFi connection;
+- ICMP HealthCheck;
+- Watchdog decision-layer;
+- Tuya LAN `3.5` power-control для `TCOGCZ16-A`;
+- restart history;
+- Web API;
+- lightweight Web Dashboard;
+- Web configuration editor.
 
-* Logger
-* Storage
-* Config
-* Version
-* LittleFS
-* Application
-
----
-
-# v0.2.0 — System Information
-
-Статус: ✅ Завершено
-
-### Реалізовано
-
-* SystemInfo
-* Інформація про ESP8266
-* Flash
-* Heap
-* SDK
-* CPU
-* Chip ID
+Поточний етап — інтеграційна стабілізація перед production hardening.
 
 ---
 
-# v0.3.0 — Network Foundation
+## Завершено
 
-Статус: 🔄 У роботі
+### Core
 
-### Завдання
+- `Application`;
+- `IService`;
+- `Timer`;
+- `Version.h`;
+- `BuildInfo.h`;
+- глобальні сервіси:
+  - `Log`;
+  - `Config`;
+  - `Network`;
+  - `System`;
+  - `HealthCheck`;
+  - `Watchdog`;
+  - `Power`;
+  - `TuyaLan`;
+  - `WebServer`.
 
-* WiFiService
-* автоматичне підключення
-* автоматичне перепідключення
-* кешування параметрів мережі
-* NetworkData
-* NetworkState
-* логування подій
+### Config
 
----
+- `config.json`;
+- `ConfigService`;
+- LittleFS load/save;
+- default config;
+- validation;
+- `GET /api/config`;
+- `POST /api/config`;
+- Web configuration editor.
 
-# v0.4.0 — Timer Library
+### Logger / Storage
 
-Статус: ⏳ Заплановано
+- printf-style logger;
+- рівні логування;
+- RAM/Flash string support;
+- Storage синхронізовано з Logger;
+- JSON read/write diagnostics.
 
-### Завдання
+### WiFi / SystemInfo
 
-* універсальний Timer
-* неблокуючі таймери
-* restart()
-* stop()
-* expired()
-* elapsed()
-* remaining()
+- `WiFiService`;
+- `SystemInfoService`;
+- `NetworkStatusData`;
+- `SystemStatusData`;
+- API-ready snapshots.
 
-Після завершення всі сервіси переходять на Timer.
+### HealthCheck
 
----
+- `HealthCheckService`;
+- `HealthCheckInfo`;
+- `HealthCheckResult`;
+- `IHealthCheckProvider`;
+- `IcmpHealthCheckProvider`;
+- native ESP8266 SDK ICMP session;
+- API-ready `HealthStatusData`.
 
-# v0.5.0 — Ping Service
+### Watchdog
 
-Статус: ⏳ Заплановано
+- `WatchdogService`;
+- restart decision-layer;
+- cooldown через `bootDelay`;
+- restart limit через `maxRestartPerDay`;
+- API-ready `WatchdogStatusData`.
 
-### Завдання
+### Power / Tuya
 
-* ICMP Ping
-* контроль доступності сервера
-* статистика
-* кількість помилок
-* середній час відповіді
-* PingState
-* PingData
+- `IPowerController`;
+- `PowerService`;
+- `TuyaPowerController`;
+- `TuyaService`;
+- `TuyaCrypto`;
+- `TuyaPacket`;
+- `TuyaProtocol`;
+- Tuya LAN `3.5` session negotiation;
+- Tuya LAN `3.5` relay command path;
+- manual power API commands:
+  - `POST /api/power/on`;
+  - `POST /api/power/off`;
+  - `POST /api/power/restart`;
+- dashboard power buttons.
 
----
+### Web API / Dashboard
 
-# v0.6.0 — Plug Controller
-
-Статус: ⏳ Заплановано
-
-### Завдання
-
-* HTTP API
-* Tuya
-* резервна підтримка MQTT
-* увімкнення
-* вимкнення
-* цикл перезапуску
-
----
-
-# v0.7.0 — Watchdog
-
-Статус: ⏳ Заплановано
-
-### Завдання
-
-* логіка watchdog
-* автоматичний перезапуск
-* затримка перед вимкненням
-* затримка ввімкнення
-* очікування завантаження сервера
-* обмеження кількості перезапусків
-* журнал подій
-
----
-
-# v0.8.0 — Web Interface
-
-Статус: ⏳ Заплановано
-
-### Завдання
-
-* Web UI
-* налаштування Wi-Fi
-* налаштування Ping
-* налаштування Plug
-* журнал
-* перегляд статистики
-* ручне керування
-
----
-
-# v0.9.0 — OTA
-
-Статус: ⏳ Заплановано
-
-### Завдання
-
-* OTA Update
-* перевірка версії
-* безпечне оновлення
-* інформація про збірку
+- `GET /`;
+- `GET /api`;
+- `GET /api/status`;
+- `GET /api/system`;
+- `GET /api/network`;
+- `GET /api/health`;
+- `GET /api/watchdog`;
+- `GET /api/power`;
+- `GET /api/config`;
+- `POST /api/config`;
+- `POST /api/power/on`;
+- `POST /api/power/off`;
+- `POST /api/power/restart`;
+- dashboard status cards;
+- dashboard command log;
+- dashboard restart history;
+- dashboard controlled host config;
+- dashboard Tuya socket config;
+- dashboard full config editor.
 
 ---
 
-# v1.0.0 — First Stable Release
+## Наступний етап — 0.4.x Stabilization
 
-Статус: 🎯 Ціль
+### 0.4.35 — System restart API
 
-### Повинно бути реалізовано
+Мета:
 
-* автономна робота
-* стабільна робота 24/7
-* автоматичний recovery
-* OTA
-* Web UI
-* журнал
-* статистика
-* резервування конфігурації
-* production ready
+- додати безпечний reboot ESP з Web API;
+- показувати після збереження конфігу повідомлення `Restart recommended`;
+- додати кнопку `Restart ESP` на dashboard.
 
----
+Planned endpoints:
 
-# Майбутні можливості
+```text
+POST /api/system/restart
+```
 
-## v1.1
+### 0.4.36 — Runtime log buffer
 
-* MQTT
-* Home Assistant Discovery
-* REST API
-* SNTP
-* журнал у JSON
+Мета:
 
----
+- додати ring-buffer для runtime logs;
+- вивести logs у Web API;
+- показати logs на dashboard.
 
-## v1.2
+Planned endpoints:
 
-* Telegram повідомлення
-* Push-повідомлення
-* Email повідомлення
+```text
+GET /api/logs
+```
 
----
+### 0.4.37 — Tuya status policy
 
-## v1.3
+Мета:
 
-* декілька серверів
-* декілька Wi-Fi розеток
-* правила перезапуску
+- стабілізувати Tuya status polling;
+- не провокувати disconnect на Tuya LAN `3.5`;
+- показувати реальний стан relay на dashboard.
 
----
+### 0.4.38 — Web API protection
 
-## v1.4
+Мета:
 
-* резервний Wi-Fi
-* Captive Portal
-* автоматичне налаштування
+- захистити state-changing endpoints;
+- мінімальний варіант: API token або Basic Auth;
+- не дозволяти випадковий power-cycle без авторизації.
 
----
+Critical endpoints:
 
-## v2.0
+```text
+POST /api/config
+POST /api/power/on
+POST /api/power/off
+POST /api/power/restart
+POST /api/system/restart
+```
 
-* підтримка ESP32
-* Ethernet
-* кілька мережевих інтерфейсів
-* Docker API
-* Proxmox API
-* UPS моніторинг
+### 0.4.39 — Dashboard polish
 
----
+Мета:
 
-# Загальні принципи
-
-Перед переходом до наступної версії:
-
-* код компілюється без попереджень;
-* усі модулі проходять ручне тестування;
-* документація оновлена;
-* номер версії збільшено;
-* Changelog доповнено.
+- покращити UX;
+- рознести Dashboard / Config / Logs;
+- додати зрозуміші статуси помилок;
+- додати reconnect/reload feedback.
 
 ---
 
-# Поточний пріоритет
+## Production hardening — 0.5.x
 
-1. Завершити WiFiService.
-2. Реалізувати Timer.
-3. Перевести WiFiService на Timer.
-4. Реалізувати PingService.
-5. Почати розробку PlugController.
-6. Створити ядро WatchdogService.
+### 0.5.0 — Security baseline
+
+- Web API authentication;
+- safe defaults;
+- не показувати секрети;
+- document threat model для LAN-only deployment.
+
+### 0.5.1 — Config apply policy
+
+- визначити, які налаштування застосовуються live;
+- визначити, які потребують reboot;
+- додати `requiresRestart` у `POST /api/config` response.
+
+### 0.5.2 — Diagnostics
+
+- heap diagnostics;
+- uptime diagnostics;
+- Tuya session diagnostics;
+- watchdog reason diagnostics;
+- export status snapshot.
+
+### 0.5.3 — Recovery behavior
+
+- покращення поведінки при:
+  - WiFi reconnect;
+  - Tuya unavailable;
+  - config invalid;
+  - LittleFS write failure;
+  - repeated watchdog failures.
 
 ---
 
-# Кінцева мета
+## Release Candidate — 0.9.x
 
-Створити невеликий, надійний та незалежний пристрій, який може працювати роками без втручання користувача, автоматично відновлюючи роботу серверів та іншого мережевого обладнання після зависання або втрати зв'язку.
+### 0.9.0 — Feature freeze
+
+- заборона великих архітектурних змін;
+- тільки bugfix/stability;
+- оновлення документації;
+- перевірка повної збірки.
+
+### 0.9.1 — Hardware verification
+
+Перевірити на реальному hardware:
+
+- cold boot;
+- WiFi reconnect;
+- HealthCheck online/offline;
+- Watchdog trigger;
+- Tuya power OFF;
+- Tuya power ON;
+- restart history;
+- Web config save;
+- reboot after config change.
+
+### 0.9.2 — Long run test
+
+- 24h runtime;
+- memory stability;
+- no heap fragmentation symptoms;
+- no unexpected WDT reset;
+- Tuya LAN stability.
+
+---
+
+## Production release — 1.0.0
+
+Критерії готовності:
+
+- firmware стабільно стартує;
+- config створюється/читається/зберігається;
+- WiFi reconnect працює;
+- HealthCheck стабільний;
+- Watchdog не створює restart-loop;
+- Tuya LAN power-cycle hardware-verified;
+- Web API захищений;
+- dashboard показує runtime state;
+- dashboard дозволяє змінювати config;
+- logs/diagnostics доступні;
+- документація актуальна.
+
+---
+
+## Після 1.0
+
+Можливі напрями:
+
+- MQTT status publishing;
+- HTTP/TCP HealthCheck providers;
+- OTA update;
+- Web UI assets у LittleFS;
+- backup/restore config;
+- multiple controlled hosts;
+- multiple Tuya sockets;
+- ESP32 portability layer.

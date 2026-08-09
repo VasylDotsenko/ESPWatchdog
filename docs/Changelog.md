@@ -4,6 +4,116 @@
 
 ---
 
+## [0.4.34-web-config-editor] - 09.08.2026
+
+### Статус
+
+Додано Web UI для редагування всіх налаштувань з `config.json`.
+
+Після read-only перегляду конфігурації dashboard отримав повноцінний configuration editor. Налаштування зберігаються через `POST /api/config` у LittleFS, використовуючи той самий формат, що й `/config.json`.
+
+### Оновлено
+
+- `Services/Config/Config.h`;
+- `Services/Config/ConfigJson.cpp`;
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Roadmap.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `ConfigService::updateFromJson(...)`;
+- `POST /api/config`;
+- validation-before-save для web config update;
+- dashboard `Configuration editor`;
+- редагування секцій:
+  - `device`;
+  - `wifi`;
+  - `watchdog`;
+  - `relay`;
+  - `tuya`;
+- захист від випадкового перезапису секретів masked value;
+- auto-refresh pause під час редагування input-полів.
+
+### Секрети
+
+`wifi.password` і `tuya.localKey` не показуються відкрито.
+
+Якщо поле пароля/ключа залишити порожнім — поточне значення зберігається.
+
+Якщо ввести нове значення — воно буде записане в `config.json`.
+
+### API
+
+```text
+GET  /api/config
+POST /api/config
+```
+
+### Версія
+
+```text
+0.4.34-web-config-editor
+```
+
+---
+
+## [0.4.33-web-config-display] - 09.08.2026
+
+### Статус
+
+Додано відображення налаштувань контрольованого хоста та Tuya-розетки у Web Dashboard.
+
+Конфігурацію винесено в окремий read-only endpoint `GET /api/config`, щоб не змішувати runtime status і налаштування. Секретний `localKey` не віддається у відкритому вигляді — dashboard отримує тільки masked value.
+
+### Оновлено
+
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `GET /api/config`;
+- блок `Controlled host` на dashboard:
+  - target host;
+  - target port;
+  - ping interval;
+  - ping timeout;
+  - fail count;
+- блок `Tuya socket` на dashboard:
+  - IP address;
+  - port;
+  - protocol version;
+  - relay DPS;
+  - device ID;
+  - masked local key.
+
+### Безпека
+
+`tuya.localKey` не показується повністю. У Web API повертається тільки поле:
+
+```json
+"localKeyMasked": "************abcd"
+```
+
+### Версія
+
+```text
+0.4.33-web-config-display
+```
+
+---
+
 ## [0.4.32-web-power-controls-log] - 09.08.2026
 
 ### Статус

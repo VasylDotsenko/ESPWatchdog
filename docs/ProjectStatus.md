@@ -1,19 +1,20 @@
 # ESP Watchdog — Project Status
 
-Дата: 30.07.2026
+Дата: 09.08.2026
 
 ## Поточний статус
 
-Проєкт знаходиться у стані інтеграційної стабілізації після завершення базового runtime, HealthCheck, Watchdog decision-layer та інтеграції PowerController abstraction для Tuya LAN керування зовнішнім реле `TCOGCZ16-A`.
+Проєкт знаходиться у стані інтеграційної стабілізації після завершення базового runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control та першого Web Dashboard / Web API шару.
 
 Основний напрямок роботи зараз:
 
+- hardware verification поточного Web Dashboard;
+- перевірка `GET /api/config` і `POST /api/config` на реальній платі;
 - стабілізація Tuya LAN `3.5` runtime;
-- фіналізація Tuya status polling policy;
-- очищення runtime-логів;
-- підготовка до наступних production-модулів: Web API, diagnostics, restart history export.
+- підготовка diagnostics/log endpoints;
+- підготовка до ESP restart command та безпечного застосування змінених налаштувань.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.32-web-power-controls-log`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.34-web-config-editor`.
 
 ## Вже зроблено
 
@@ -158,6 +159,23 @@
 - додано subsystem API endpoints;
 - додано API index endpoint `/api`;
 - dashboard отримав links до API endpoints;
+- додано API power commands:
+  - `POST /api/power/on`;
+  - `POST /api/power/off`;
+  - `POST /api/power/restart`;
+- dashboard отримав power-control buttons:
+  - `ON`;
+  - `OFF`;
+  - `RESTART`;
+- dashboard отримав command log;
+- dashboard отримав restart history log;
+- додано read-only config endpoint `GET /api/config`;
+- dashboard показує налаштування контрольованого хоста;
+- dashboard показує налаштування Tuya socket з masked `localKey`;
+- додано `POST /api/config` для оновлення всіх секцій `config.json`;
+- dashboard отримав `Configuration editor`;
+- `ConfigService` отримав `updateFromJson(...)` з validation-before-save;
+- секрети `wifi.password` і `tuya.localKey` не віддаються відкрито через Web API;
 - `PowerService` має throttling повторних restart-спроб при недоступному Tuya LAN controller;
 - `PowerService` чекає перепідключення Tuya LAN controller перед `powerOn`, замість негайного переходу в `Error`;
 - `TuyaPowerController` керує живленням через `TuyaLan.relayOn()` / `TuyaLan.relayOff()`.
@@ -239,10 +257,24 @@
 - `TuyaProtocol.cpp`;
 - `TuyaService.h`;
 - `TuyaService.cpp`.
+- `JsonStatusSerializer.h`;
+- `JsonStatusSerializer.cpp`;
+- `ApiStatusData.h`;
+- `SystemStatusData.h`;
+- `NetworkStatusData.h`;
+- `HealthStatusData.h`;
+- `WatchdogStatusData.h`;
+- `PowerStatusData.h`;
+- `RestartHistoryData.h`;
+- `WebServerService.h`;
+- `WebServerService.cpp`;
 
 ## Відомі ризики
 
 - повна збірка проєкту після копіювання всіх файлів ще потребує перевірки;
+- `POST /api/config` змінює файл конфігурації, але частина сервісів може потребувати reboot для повного застосування нових налаштувань;
+- Web configuration editor поки не має authentication layer;
+- power-control buttons на dashboard виконують реальні команди Tuya socket;
 - частина старих файлів може містити застарілі include-шляхи;
 - GPIO-based `RelayService` не відповідає реальному hardware `TCOGCZ16-A`;
 - `PowerService` перевірено на реальному Tuya LAN пристрої;
@@ -256,8 +288,12 @@
 
 ## Наступні кроки
 
-1. Зафіксувати `v0.4.32-web-power-controls-log` як hardware-verified baseline.
-2. Реалізувати Tuya status polling policy.
-3. Додати restart history Web/API export.
-4. Додати Web API для status/config/health/watchdog/power.
-5. Додати diagnostics endpoint.
+1. Зафіксувати `v0.4.34-web-config-editor` як hardware-verified baseline.
+2. Додати `POST /api/system/restart` для безпечного перезавантаження ESP після зміни конфігурації.
+3. Додати diagnostics/log endpoint:
+   - runtime log ring-buffer;
+   - `GET /api/logs`;
+   - вивід логів на dashboard.
+4. Реалізувати Tuya status polling policy без провокування disconnect на protocol `3.5`.
+5. Додати authentication / basic protection для Web API command endpoints.
+6. Підготувати production Web Dashboard polish.

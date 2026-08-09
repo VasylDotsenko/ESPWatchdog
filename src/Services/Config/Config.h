@@ -78,6 +78,12 @@ public:
 
     bool save() const;
 
+    bool updateFromJson(
+        const char* json,
+        size_t length,
+        char* error,
+        size_t errorSize);
+
     void reset();
 
     AppConfig& data();

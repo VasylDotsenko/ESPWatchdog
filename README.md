@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.32-web-power-controls-log
+0.4.34-web-config-editor
 ```
 
 Production target:
@@ -83,6 +83,11 @@ Power Cycle
   - `RESTART`;
 - dashboard command log;
 - dashboard restart history log;
+- dashboard controlled host configuration;
+- dashboard Tuya socket configuration with masked local key;
+- `GET /api/config`;
+- `POST /api/config`;
+- dashboard configuration editor for all `config.json` sections;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;
@@ -92,7 +97,10 @@ Power Cycle
 Ще не завершено:
 
 - Tuya status polling policy;
-- Web UI;
+- Web UI production polish;
+- runtime logs endpoint;
+- Web API authentication;
+- ESP restart command after configuration changes;
 - OTA.
 
 ---
@@ -120,9 +128,26 @@ Power Cycle
 - subsystem API endpoints;
 - API index endpoint `/api`;
 - dashboard links до API endpoints;
+- dashboard power controls;
+- dashboard command log;
+- dashboard restart history;
+- dashboard configuration viewer/editor;
+- `GET /api/config`;
+- `POST /api/config`;
 - захист від restart-loop через `maxRestartPerDay`;
 - production power-control abstraction через `PowerService`;
 - Tuya LAN power controller adapter;
+
+---
+
+## Документація поточного етапу
+
+Актуальні документи:
+
+- `README.md` — загальний опис проєкту;
+- `Changelog.md` — журнал змін;
+- `ProjectStatus.md` — фактичний стан реалізації;
+- `Roadmap.md` — подальший план розвитку до `1.0.0`.
 - Tuya LAN crypto / packet / protocol / service layers;
 - hardware-verified power-cycle через `TCOGCZ16-A`.
 

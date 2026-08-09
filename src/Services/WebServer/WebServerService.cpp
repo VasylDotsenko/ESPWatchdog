@@ -1,5 +1,8 @@
 #include "WebServerService.h"
 
+#include <ArduinoJson.h>
+#include <cstring>
+
 #include "Core/Application.h"
 #include "Services/Config/Config.h"
 #include "Serializers/JsonStatusSerializer.h"
@@ -27,6 +30,7 @@ main{padding:16px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,mi
 .card h2{font-size:15px;margin:0 0 10px;color:#fff}.row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding:7px 0}
 .row:first-of-type{border-top:0}.k{color:var(--muted)}.v{text-align:right;word-break:break-word}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
 button{border:0;border-radius:10px;padding:10px 12px;background:#33415f;color:#fff;font-weight:700;cursor:pointer}button:hover{filter:brightness(1.1)}button:disabled{opacity:.45;cursor:not-allowed}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.danger{background:#8f2635}.warnBtn{background:#8b6822}.okBtn{background:#16724e}.log{max-height:180px;overflow:auto;background:#0a0f1d;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.log div{padding:2px 0;color:#cdd7ee}.log .warn{color:var(--warn)}.log .bad{color:var(--bad)}.log .ok{color:var(--ok)}
+input{width:100%;margin-top:4px;border:1px solid var(--line);border-radius:9px;background:#0a0f1d;color:var(--text);padding:8px}.field{margin:8px 0}.field label{display:block;color:var(--muted);font-size:12px}.wide{grid-column:1/-1}.formGrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
 footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff;text-decoration:none}a:hover{text-decoration:underline}.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
 </style>
 </head>
@@ -46,6 +50,7 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff
 <a href="/api/health">health</a>
 <a href="/api/watchdog">watchdog</a>
 <a href="/api/power">power</a>
+<a href="/api/config">config</a>
 </div>
 </footer>
 <script>
@@ -54,6 +59,7 @@ const commandLog=[];
 const ip=a=>a||'0.0.0.0';
 const cls=b=>b?'ok':'bad';
 const ms=v=>v?`${v} ms`:'0 ms';
+const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function row(k,v,c=''){return `<div class="row"><span class="k">${k}</span><span class="v ${c}">${v}</span></div>`}
 function card(t,rows){return `<section class="card"><h2>${t}</h2>${rows.join('')}</section>`}
 function logLine(t,c=''){return `<div class="${c}">${t}</div>`}
@@ -91,7 +97,56 @@ function commandLogCard(){
  const lines=commandLog.length?commandLog.map(x=>logLine(x)).join(''):logLine('No manual commands yet');
  return `<section class="card"><h2>Command log</h2><div class="log">${lines}</div></section>`;
 }
-function render(s){
+function configCards(c){
+ const wd=(c&&c.watchdog)||{}, tu=(c&&c.tuya)||{};
+ const proto=tu.version?`${Math.floor(tu.version/10)}.${tu.version%10}`:'-';
+ return [
+  card('Controlled host',[row('Host',wd.targetHost||'-'),row('Port',wd.targetPort||0),row('Ping interval',ms(wd.pingInterval)),row('Ping timeout',ms(wd.pingTimeout)),row('Fail count',wd.failCount||0)]),
+  card('Tuya socket',[row('IP',tu.ip||'-'),row('Port',tu.port||0),row('Protocol',proto),row('Relay DPS',tu.relayDps||0),row('Device ID',tu.deviceId||'-'),row('Local key',tu.localKeyMasked||'-')])
+ ];
+}
+function field(id,label,value,type='text'){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="${type}" value="${esc(value)}"></div>`}
+function secretField(id,label,placeholder){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="password" value="" placeholder="${esc(placeholder||'leave empty to keep')}"></div>`}
+function check(id,label,value){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="checkbox" ${value?'checked':''}></div>`}
+function n(id){return Number(document.getElementById(id).value||0)}
+function s(id){return document.getElementById(id).value}
+function b(id){return document.getElementById(id).checked}
+function configEditor(c){
+ const d=(c&&c.device)||{}, wf=(c&&c.wifi)||{}, wd=(c&&c.watchdog)||{}, r=(c&&c.relay)||{}, tu=(c&&c.tuya)||{};
+ return `<section class="card wide"><h2>Configuration editor</h2><div class="formGrid">
+ ${field('cfg_device_hostname','device.hostname',d.hostname||'')}
+ ${field('cfg_wifi_ssid','wifi.ssid',wf.ssid||'')}
+ ${secretField('cfg_wifi_password','wifi.password',wf.passwordMasked||'leave empty to keep')}
+ ${field('cfg_wifi_reconnect','wifi.reconnectInterval',wf.reconnectInterval||0,'number')}
+ ${field('cfg_wifi_timeout','wifi.connectTimeout',wf.connectTimeout||0,'number')}
+ ${field('cfg_wd_host','watchdog.targetHost',wd.targetHost||'')}
+ ${field('cfg_wd_port','watchdog.targetPort',wd.targetPort||0,'number')}
+ ${field('cfg_wd_interval','watchdog.pingInterval',wd.pingInterval||0,'number')}
+ ${field('cfg_wd_timeout','watchdog.pingTimeout',wd.pingTimeout||0,'number')}
+ ${field('cfg_wd_fail','watchdog.failCount',wd.failCount||0,'number')}
+ ${field('cfg_wd_boot','watchdog.bootDelay',wd.bootDelay||0,'number')}
+ ${field('cfg_wd_off','watchdog.powerOffTime',wd.powerOffTime||0,'number')}
+ ${field('cfg_wd_max','watchdog.maxRestartPerDay',wd.maxRestartPerDay||0,'number')}
+ ${check('cfg_relay_enabled','relay.enabled',r.enabled)}
+ ${field('cfg_relay_pin','relay.pin',r.pin||0,'number')}
+ ${check('cfg_relay_active','relay.activeHigh',r.activeHigh)}
+ ${field('cfg_tuya_ip','tuya.ip',tu.ip||'')}
+ ${field('cfg_tuya_port','tuya.port',tu.port||0,'number')}
+ ${field('cfg_tuya_device','tuya.deviceId',tu.deviceId||'')}
+ ${secretField('cfg_tuya_key','tuya.localKey',tu.localKeyMasked||'leave empty to keep')}
+ ${field('cfg_tuya_ver','tuya.version',tu.version||35,'number')}
+ ${field('cfg_tuya_dps','tuya.relayDps',tu.relayDps||1,'number')}
+ </div><div class="btns"><button class="okBtn" onclick="saveConfig()">SAVE CONFIG</button></div></section>`;
+}
+async function saveConfig(){
+ const wfPass=s('cfg_wifi_password'), tuKey=s('cfg_tuya_key');
+ const body={version:3,device:{hostname:s('cfg_device_hostname')},wifi:{ssid:s('cfg_wifi_ssid'),reconnectInterval:n('cfg_wifi_reconnect'),connectTimeout:n('cfg_wifi_timeout')},watchdog:{targetHost:s('cfg_wd_host'),targetPort:n('cfg_wd_port'),pingInterval:n('cfg_wd_interval'),pingTimeout:n('cfg_wd_timeout'),failCount:n('cfg_wd_fail'),bootDelay:n('cfg_wd_boot'),powerOffTime:n('cfg_wd_off'),maxRestartPerDay:n('cfg_wd_max')},relay:{enabled:b('cfg_relay_enabled'),pin:n('cfg_relay_pin'),activeHigh:b('cfg_relay_active')},tuya:{ip:s('cfg_tuya_ip'),port:n('cfg_tuya_port'),deviceId:s('cfg_tuya_device'),version:n('cfg_tuya_ver'),relayDps:n('cfg_tuya_dps')}};
+ if(wfPass)body.wifi.password=wfPass;
+ if(tuKey)body.tuya.localKey=tuKey;
+ addLog('Config: saving','warn');
+ try{const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const txt=await r.text();addLog(`Config: HTTP ${r.status} ${txt}`,r.ok?'ok':'bad')}catch(e){addLog(`Config: ${e.message||'failed'}`,'bad')}
+}
+function render(s,c){
  const sys=s.system||{}, fw=sys.firmware||{}, up=sys.uptime||{}, mem=sys.memory||{}, cpu=sys.cpu||{};
  const net=s.network||{}, ns=net.summary||{}, nc=net.configuration||{}, na=net.address||{}, sig=net.signal||{};
  const h=s.health||{}, hs=h.summary||{}, hst=h.statistics||{};
@@ -103,13 +158,15 @@ function render(s){
   card('Health',[row('Available',hs.available?'online':'offline',cls(hs.available)),row('Last status',hs.lastStatusText||'-'),row('RTT',ms(hs.responseTime)),row('Sent',hst.sent||0),row('Lost',hst.lost||0),row('Fails',hst.consecutiveFails||0)]),
   card('Watchdog',[row('State',ws.stateText||'-',ws.lockedOut?'bad':ws.cooldown?'warn':'ok'),row('Enabled',ws.enabled?'yes':'no',cls(ws.enabled)),row('Failures',`${ws.consecutiveFailures||0}/${wc.failureThreshold||0}`),row('Restarts',wst.restartCount||0),row('Power off',ms(wc.powerOffTime))]),
   card('Power',[row('State',ps.stateText||'-',ps.available?'ok':'warn'),row('Controller',ps.available?'available':'unavailable',cls(ps.available)),row('Restarting',ps.restartInProgress?'yes':'no',ps.restartInProgress?'warn':''),row('Restarts',pst.restartCount||0),row('Errors',pst.errorCount||0),row('History',`${ph.succeeded||0} ok / ${ph.failed||0} failed`)]),
+  ...configCards(c),
+  configEditor(c),
   controls(ps,wc),
   restartHistory(ph),
   commandLogCard()
  ].join('');
  updated.textContent=new Date().toLocaleTimeString();
 }
-async function load(){try{const r=await fetch('/api/status',{cache:'no-store'});render(await r.json())}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status','unable to load','bad')])}}
+async function load(){try{if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const [sr,cr]=await Promise.all([fetch('/api/status',{cache:'no-store'}),fetch('/api/config',{cache:'no-store'})]);render(await sr.json(),await cr.json())}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status','unable to load','bad')])}}
 load();setInterval(load,2000);
 </script>
 </body>
@@ -199,6 +256,30 @@ void WebServerService::configureRoutes()
         [this]()
         {
             handleApiPower();
+        });
+
+    m_server.on(
+        "/api/config",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiConfig();
+        });
+
+    m_server.on(
+        "/api/config",
+        HTTP_POST,
+        [this]()
+        {
+            handleApiConfigUpdate();
+        });
+
+    m_server.on(
+        "/api/config",
+        HTTP_OPTIONS,
+        [this]()
+        {
+            handleApiOptions();
         });
 
     m_server.on(
@@ -314,6 +395,8 @@ void WebServerService::handleApiIndex()
         "{\"method\":\"GET\",\"path\":\"/api/health\",\"description\":\"health status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/watchdog\",\"description\":\"watchdog status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/power\",\"description\":\"power status\"},"
+        "{\"method\":\"GET\",\"path\":\"/api/config\",\"description\":\"runtime configuration\"},"
+        "{\"method\":\"POST\",\"path\":\"/api/config\",\"description\":\"update configuration\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/on\",\"description\":\"turn power on\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/off\",\"description\":\"turn power off\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/restart\",\"description\":\"restart power output\"},"
@@ -405,6 +488,159 @@ void WebServerService::handleApiPower()
     }
 
     sendJson(200, m_jsonBuffer);
+}
+
+void WebServerService::handleApiConfig()
+{
+    const AppConfig& config =
+        Config.data();
+
+    char maskedPassword[WIFI_PASSWORD_LENGTH] {};
+    char maskedLocalKey[TUYA_LOCAL_KEY_LENGTH] {};
+
+    maskSecret(
+        config.wifi.password,
+        maskedPassword,
+        sizeof(maskedPassword));
+
+    maskSecret(
+        config.tuya.localKey,
+        maskedLocalKey,
+        sizeof(maskedLocalKey));
+
+    JsonDocument doc;
+
+    doc["version"] = CONFIG_VERSION;
+
+    JsonObject device =
+        doc["device"].to<JsonObject>();
+
+    device["hostname"] =
+        config.device.hostname;
+
+    JsonObject wifi =
+        doc["wifi"].to<JsonObject>();
+
+    wifi["ssid"] =
+        config.wifi.ssid;
+    wifi["passwordSet"] =
+        strlen(config.wifi.password) > 0;
+    wifi["passwordMasked"] =
+        maskedPassword;
+    wifi["reconnectInterval"] =
+        config.wifi.reconnectInterval;
+    wifi["connectTimeout"] =
+        config.wifi.connectTimeout;
+
+    JsonObject watchdog =
+        doc["watchdog"].to<JsonObject>();
+
+    watchdog["targetHost"] =
+        config.watchdog.targetHost;
+    watchdog["targetPort"] =
+        config.watchdog.targetPort;
+    watchdog["pingInterval"] =
+        config.watchdog.pingInterval;
+    watchdog["pingTimeout"] =
+        config.watchdog.pingTimeout;
+    watchdog["failCount"] =
+        config.watchdog.failCount;
+    watchdog["bootDelay"] =
+        config.watchdog.bootDelay;
+    watchdog["powerOffTime"] =
+        config.watchdog.powerOffTime;
+    watchdog["maxRestartPerDay"] =
+        config.watchdog.maxRestartPerDay;
+
+    JsonObject relay =
+        doc["relay"].to<JsonObject>();
+
+    relay["enabled"] =
+        config.relay.enabled;
+    relay["pin"] =
+        config.relay.pin;
+    relay["activeHigh"] =
+        config.relay.activeHigh;
+
+    JsonObject tuya =
+        doc["tuya"].to<JsonObject>();
+
+    tuya["ip"] =
+        config.tuya.ipAddress;
+    tuya["port"] =
+        config.tuya.port;
+    tuya["deviceId"] =
+        config.tuya.deviceId;
+    tuya["localKeySet"] =
+        strlen(config.tuya.localKey) > 0;
+    tuya["localKeyMasked"] =
+        maskedLocalKey;
+    tuya["version"] =
+        config.tuya.protocolVersion;
+    tuya["relayDps"] =
+        config.tuya.relayDps;
+
+    const size_t length =
+        serializeJson(
+            doc,
+            m_jsonBuffer,
+            sizeof(m_jsonBuffer));
+
+    if (length == 0 ||
+        length >= sizeof(m_jsonBuffer))
+    {
+        sendJson(
+            500,
+            "{\"ok\":false,\"error\":\"config_serialization_failed\"}");
+        return;
+    }
+
+    sendJson(
+        200,
+        m_jsonBuffer);
+}
+
+void WebServerService::handleApiConfigUpdate()
+{
+    if (!m_server.hasArg("plain"))
+    {
+        sendJson(
+            400,
+            "{\"ok\":false,\"error\":\"empty_body\"}");
+        return;
+    }
+
+    const String body =
+        m_server.arg("plain");
+
+    char error[48] {};
+
+    if (!Config.updateFromJson(
+            body.c_str(),
+            body.length(),
+            error,
+            sizeof(error)))
+    {
+        snprintf(
+            m_jsonBuffer,
+            sizeof(m_jsonBuffer),
+            "{\"ok\":false,\"error\":\"%s\"}",
+            error[0] != '\0' ? error : "update_failed");
+
+        sendJson(
+            400,
+            m_jsonBuffer);
+        return;
+    }
+
+    snprintf(
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer),
+        "{\"ok\":true,\"message\":\"configuration_updated\",\"restartRecommended\":true}");
+
+    sendJson(
+        200,
+        m_jsonBuffer);
 }
 
 void WebServerService::handleApiPowerOn()
@@ -568,4 +804,49 @@ uint32_t WebServerService::requestedPowerOffTime()
     }
 
     return powerOffTime;
+}
+
+void WebServerService::maskSecret(
+    const char* source,
+    char* output,
+    size_t outputSize) const
+{
+    if (output == nullptr ||
+        outputSize == 0)
+    {
+        return;
+    }
+
+    output[0] = '\0';
+
+    if (source == nullptr)
+    {
+        return;
+    }
+
+    const size_t length =
+        strlen(source);
+
+    const size_t capacity =
+        outputSize - 1;
+
+    const size_t copyLength =
+        length < capacity
+            ? length
+            : capacity;
+
+    for (size_t i = 0; i < copyLength; ++i)
+    {
+        if (copyLength > 4 &&
+            i < (copyLength - 4))
+        {
+            output[i] = '*';
+        }
+        else
+        {
+            output[i] = source[i];
+        }
+    }
+
+    output[copyLength] = '\0';
 }

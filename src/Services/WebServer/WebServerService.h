@@ -34,6 +34,10 @@ private:
 
     void handleApiPower();
 
+    void handleApiConfig();
+
+    void handleApiConfigUpdate();
+
     void handleApiPowerOn();
 
     void handleApiPowerOff();
@@ -51,6 +55,11 @@ private:
         const char* json);
 
     uint32_t requestedPowerOffTime();
+
+    void maskSecret(
+        const char* source,
+        char* output,
+        size_t outputSize) const;
 
 private:
     ESP8266WebServer m_server { DEFAULT_PORT };

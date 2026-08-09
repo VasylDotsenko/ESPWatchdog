@@ -112,6 +112,7 @@ void TuyaService::disconnect()
     m_state = TuyaState::Disconnected;
     m_status.connected = false;
     m_receiveLength = 0;
+    m_protocol.reset();
 
     m_reconnectTimer.start(
         RECONNECT_INTERVAL_MS,
@@ -329,7 +330,7 @@ bool TuyaService::sendCommand35(bool state)
 
     const auto& cfg = Config.data().tuya;
 
-    Tuya::Packet6699 packet;
+    m_packet6699.clear();
 
     const uint32_t sequence = nextSequence();
 
@@ -337,14 +338,14 @@ bool TuyaService::sendCommand35(bool state)
             sequence,
             cfg.relayDps,
             state,
-            packet))
+            m_packet6699))
     {
         m_status.errorCount++;
         Log.warning("Tuya: unable to build 3.5 relay command");
         return false;
     }
 
-    if (!writePacket(packet))
+    if (!writePacket(m_packet6699))
     {
         m_status.errorCount++;
         Log.warning("Tuya: 3.5 command write failed");
@@ -359,7 +360,7 @@ bool TuyaService::sendCommand35(bool state)
         static_cast<unsigned long>(sequence),
         cfg.relayDps,
         state ? 1 : 0,
-        static_cast<unsigned long>(packet.size()));
+        static_cast<unsigned long>(m_packet6699.size()));
 
     return true;
 }
@@ -371,57 +372,64 @@ bool TuyaService::ensureSession35()
         return true;
     }
 
-    Tuya::Packet6699 startPacket;
+    m_packet6699.clear();
 
     const uint32_t startSequence = nextSequence();
 
     if (!m_protocol.buildSessionStart(
             startSequence,
-            startPacket))
+            m_packet6699))
     {
         return false;
     }
 
-    if (!writePacket(startPacket))
+    if (!writePacket(m_packet6699))
     {
         return false;
     }
+
+    yield();
 
     Log.info(
         "Tuya: 3.5 session start sent, seq=%lu",
         static_cast<unsigned long>(startSequence));
 
-    Tuya::Packet6699 responsePacket;
+    m_packet6699.clear();
 
     if (!readPacket6699(
-            responsePacket,
-            CONNECT_TIMEOUT_MS))
+            m_packet6699,
+            SESSION_RESPONSE_TIMEOUT_MS))
     {
-        Log.warning("Tuya: 3.5 session response timeout");
+        Log.warning(
+            "Tuya: 3.5 session response timeout, rx=%lu connected=%u",
+            static_cast<unsigned long>(m_receiveLength),
+            m_client.connected() ? 1 : 0);
         return false;
     }
 
-    if (!m_protocol.processSessionResponse(responsePacket))
+    if (!m_protocol.processSessionResponse(m_packet6699))
     {
         Log.warning("Tuya: 3.5 session response invalid");
         return false;
     }
 
-    Tuya::Packet6699 finishPacket;
+    m_packet6699.clear();
 
     const uint32_t finishSequence = nextSequence();
 
     if (!m_protocol.buildSessionFinish(
             finishSequence,
-            finishPacket))
+            m_packet6699))
     {
         return false;
     }
 
-    if (!writePacket(finishPacket))
+    if (!writePacket(m_packet6699))
     {
         return false;
     }
+
+    yield();
 
     Log.info(
         "Tuya: 3.5 session established");
@@ -444,10 +452,9 @@ bool TuyaService::readPacket6699(
     Tuya::Packet6699& packet,
     uint32_t timeoutMs)
 {
-    const uint64_t deadline =
-        millis() + timeoutMs;
+    const uint32_t startedAt = millis();
 
-    while (millis() < deadline)
+    while ((millis() - startedAt) < timeoutMs)
     {
         if (!m_client.connected())
         {
@@ -539,7 +546,7 @@ bool TuyaService::readPacket6699(
             return true;
         }
 
-        delay(1);
+        yield();
     }
 
     return false;
@@ -772,9 +779,9 @@ bool TuyaService::processPacket6699(
     const uint8_t* data,
     size_t size)
 {
-    Tuya::Packet6699 packet;
+    m_packet6699.clear();
 
-    if (!packet.parse(
+    if (!m_packet6699.parse(
             data,
             size))
     {
@@ -785,9 +792,9 @@ bool TuyaService::processPacket6699(
     Log.info(
         "Tuya: 3.5 packet received, cmd=%lu seq=%lu payload=%lu",
         static_cast<unsigned long>(
-            static_cast<uint32_t>(packet.command())),
-        static_cast<unsigned long>(packet.sequence()),
-        static_cast<unsigned long>(packet.encryptedPayloadSize()));
+            static_cast<uint32_t>(m_packet6699.command())),
+        static_cast<unsigned long>(m_packet6699.sequence()),
+        static_cast<unsigned long>(m_packet6699.encryptedPayloadSize()));
 
     if (!m_protocol.sessionReady())
     {
@@ -798,7 +805,7 @@ bool TuyaService::processPacket6699(
     size_t jsonLength = 0;
 
     if (!m_protocol.decryptPayload(
-            packet,
+            m_packet6699,
             json,
             sizeof(json),
             jsonLength))

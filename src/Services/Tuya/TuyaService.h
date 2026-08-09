@@ -27,6 +27,7 @@ class TuyaService final : public IService
 {
 public:
     static constexpr uint32_t CONNECT_TIMEOUT_MS = 5000;
+    static constexpr uint32_t SESSION_RESPONSE_TIMEOUT_MS = 1200;
     static constexpr uint32_t RECONNECT_INTERVAL_MS = 10000;
     static constexpr uint32_t RECEIVE_TIMEOUT_MS = 3000;
     static constexpr size_t RECEIVE_BUFFER_SIZE = Tuya::MAX_PACKET_6699_SIZE;
@@ -109,6 +110,8 @@ private:
     TuyaStatus m_status;
 
     Tuya::Protocol m_protocol;
+
+    Tuya::Packet6699 m_packet6699;
 
     uint8_t m_receiveBuffer[RECEIVE_BUFFER_SIZE] {};
 

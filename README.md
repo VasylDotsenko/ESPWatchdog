@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.13-tuya35-gcm-frame
+0.4.14-tuya35-wdt-safe
 ```
 
 Production target:

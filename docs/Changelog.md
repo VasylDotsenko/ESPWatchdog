@@ -4,6 +4,57 @@
 
 ---
 
+## [0.4.14-tuya35-wdt-safe] - 09.08.2026
+
+### Статус
+
+Виправлено runtime-падіння ESP8266 під час старту Tuya LAN protocol `3.5`.
+
+За логом плата успішно підключалась до Tuya socket і відправляла `SESSION_KEY_START`, після чого отримувала `Soft WDT reset`.
+
+### Оновлено
+
+- `Services/Tuya/TuyaService.h`;
+- `Services/Tuya/TuyaService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`.
+
+### Виправлено
+
+- прибрано великі локальні `Packet6699` об'єкти зі stack у Tuya 3.5 command/session path;
+- додано спільний `Packet6699` buffer як поле `TuyaService`;
+- скорочено очікування відповіді Tuya 3.5 handshake до WDT-safe timeout;
+- додано `yield()` під час очікування handshake-пакета;
+- додано діагностичний лог timeout із кількістю отриманих байтів;
+- при `disconnect()` скидається Tuya protocol/session state, щоб не використовувати старий session key після reconnect.
+
+### Очікуваний runtime flow
+
+```text
+Tuya connected
+Tuya: 3.5 session start sent, seq=1
+Tuya: 3.5 packet received, cmd=4
+Tuya: 3.5 session established
+Tuya: 3.5 relay command sent
+```
+
+Якщо розетка не відповість на handshake:
+
+```text
+Tuya: 3.5 session response timeout, rx=0 connected=1
+Tuya: 3.5 session negotiation failed
+```
+
+### Версія
+
+```text
+0.4.14-tuya35-wdt-safe
+```
+
+---
+
 ## [0.4.13-tuya35-gcm-frame] - 09.08.2026
 
 ### Статус

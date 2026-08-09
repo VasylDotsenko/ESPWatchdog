@@ -4,6 +4,42 @@
 
 ---
 
+## [0.4.32-web-power-controls-log] - 09.08.2026
+
+### Статус
+
+Додано ручне керування живленням безпосередньо на lightweight dashboard.
+
+Після появи `POST` API-команд сторінка `/` отримала UI для польового тестування Tuya LAN power-cycle без `curl`: кнопки `ON`, `OFF`, `RESTART`, command log браузера і restart history з runtime status.
+
+### Оновлено
+
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- блок `Power controls` на dashboard;
+- кнопка `ON` -> `POST /api/power/on`;
+- кнопка `OFF` -> `POST /api/power/off`;
+- кнопка `RESTART` -> `POST /api/power/restart`;
+- browser-side `Command log`;
+- `Restart history` з `power.history.entries`;
+- confirm-dialog для небезпечних `OFF` і `RESTART`;
+- автоматичне блокування кнопок, якщо controller unavailable або restart уже виконується.
+
+### Версія
+
+```text
+0.4.32-web-power-controls-log
+```
+
+---
+
 ## [0.4.31-api-power-commands] - 09.08.2026
 
 ### Статус

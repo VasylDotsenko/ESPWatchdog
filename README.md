@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.31-api-power-commands
+0.4.32-web-power-controls-log
 ```
 
 Production target:
@@ -77,6 +77,12 @@ Power Cycle
   - `POST /api/power/on`;
   - `POST /api/power/off`;
   - `POST /api/power/restart`;
+- dashboard power controls:
+  - `ON`;
+  - `OFF`;
+  - `RESTART`;
+- dashboard command log;
+- dashboard restart history log;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;

@@ -26,6 +26,7 @@ main{padding:16px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,mi
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 10px 28px #0004}
 .card h2{font-size:15px;margin:0 0 10px;color:#fff}.row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding:7px 0}
 .row:first-of-type{border-top:0}.k{color:var(--muted)}.v{text-align:right;word-break:break-word}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+button{border:0;border-radius:10px;padding:10px 12px;background:#33415f;color:#fff;font-weight:700;cursor:pointer}button:hover{filter:brightness(1.1)}button:disabled{opacity:.45;cursor:not-allowed}.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.danger{background:#8f2635}.warnBtn{background:#8b6822}.okBtn{background:#16724e}.log{max-height:180px;overflow:auto;background:#0a0f1d;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.log div{padding:2px 0;color:#cdd7ee}.log .warn{color:var(--warn)}.log .bad{color:var(--bad)}.log .ok{color:var(--ok)}
 footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff;text-decoration:none}a:hover{text-decoration:underline}.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
 </style>
 </head>
@@ -49,11 +50,47 @@ footer{padding:0 18px 18px;color:var(--muted)}code{color:#c6d3ff}a{color:#9db7ff
 </footer>
 <script>
 const app=document.getElementById('app'),updated=document.getElementById('updated');
+const commandLog=[];
 const ip=a=>a||'0.0.0.0';
 const cls=b=>b?'ok':'bad';
 const ms=v=>v?`${v} ms`:'0 ms';
 function row(k,v,c=''){return `<div class="row"><span class="k">${k}</span><span class="v ${c}">${v}</span></div>`}
 function card(t,rows){return `<section class="card"><h2>${t}</h2>${rows.join('')}</section>`}
+function logLine(t,c=''){return `<div class="${c}">${t}</div>`}
+function addLog(t,c=''){commandLog.unshift(`[${new Date().toLocaleTimeString()}] ${t}`);if(commandLog.length>20)commandLog.pop();load()}
+async function powerCommand(name,path,confirmText=''){
+ if(confirmText&&!confirm(confirmText))return;
+ addLog(`${name}: sending`,'warn');
+ try{
+  const r=await fetch(path,{method:'POST',cache:'no-store'});
+  const txt=await r.text();
+  addLog(`${name}: HTTP ${r.status} ${txt}`,r.ok?'ok':'bad');
+ }catch(e){addLog(`${name}: ${e.message||'failed'}`,'bad')}
+}
+function controls(ps,wc){
+ const disabled=!ps.available||ps.restartInProgress?'disabled':'';
+ const restartText=`Restart power for ${(wc.powerOffTime||10000)} ms?`;
+ return `<section class="card"><h2>Power controls</h2>
+  ${row('Controller',ps.available?'available':'unavailable',cls(ps.available))}
+  ${row('Restarting',ps.restartInProgress?'yes':'no',ps.restartInProgress?'warn':'')}
+  <div class="btns">
+   <button class="okBtn" ${disabled} onclick="powerCommand('Power ON','/api/power/on')">ON</button>
+   <button class="danger" ${disabled} onclick="powerCommand('Power OFF','/api/power/off','Turn power OFF?')">OFF</button>
+   <button class="warnBtn" ${disabled} onclick="powerCommand('Restart','/api/power/restart','${restartText}')">RESTART</button>
+  </div>
+ </section>`;
+}
+function restartHistory(ph){
+ const entries=(ph.entries||[]).slice().reverse().slice(0,8);
+ if(!entries.length)return card('Restart history',[row('Entries','none')]);
+ return `<section class="card"><h2>Restart history</h2><div class="log">`+
+  entries.map(e=>logLine(`#${e.id} ${e.reasonText||'unknown'} → ${e.resultText||'none'} · off=${e.requestedPowerOffTime||0} ms · dur=${e.actualDuration||0} ms`,e.resultText==='success'?'ok':(e.resultText==='failed'?'bad':'warn'))).join('')+
+  `</div></section>`;
+}
+function commandLogCard(){
+ const lines=commandLog.length?commandLog.map(x=>logLine(x)).join(''):logLine('No manual commands yet');
+ return `<section class="card"><h2>Command log</h2><div class="log">${lines}</div></section>`;
+}
 function render(s){
  const sys=s.system||{}, fw=sys.firmware||{}, up=sys.uptime||{}, mem=sys.memory||{}, cpu=sys.cpu||{};
  const net=s.network||{}, ns=net.summary||{}, nc=net.configuration||{}, na=net.address||{}, sig=net.signal||{};
@@ -65,7 +102,10 @@ function render(s){
   card('Network',[row('State',ns.stateText||'-',cls(ns.connected)),row('IP',ip(na.ip)),row('SSID',nc.ssid||'-'),row('RSSI',`${sig.rssi||0} dBm`),row('Quality',`${sig.quality||0}%`)]),
   card('Health',[row('Available',hs.available?'online':'offline',cls(hs.available)),row('Last status',hs.lastStatusText||'-'),row('RTT',ms(hs.responseTime)),row('Sent',hst.sent||0),row('Lost',hst.lost||0),row('Fails',hst.consecutiveFails||0)]),
   card('Watchdog',[row('State',ws.stateText||'-',ws.lockedOut?'bad':ws.cooldown?'warn':'ok'),row('Enabled',ws.enabled?'yes':'no',cls(ws.enabled)),row('Failures',`${ws.consecutiveFailures||0}/${wc.failureThreshold||0}`),row('Restarts',wst.restartCount||0),row('Power off',ms(wc.powerOffTime))]),
-  card('Power',[row('State',ps.stateText||'-',ps.available?'ok':'warn'),row('Controller',ps.available?'available':'unavailable',cls(ps.available)),row('Restarting',ps.restartInProgress?'yes':'no',ps.restartInProgress?'warn':''),row('Restarts',pst.restartCount||0),row('Errors',pst.errorCount||0),row('History',`${ph.succeeded||0} ok / ${ph.failed||0} failed`)])
+  card('Power',[row('State',ps.stateText||'-',ps.available?'ok':'warn'),row('Controller',ps.available?'available':'unavailable',cls(ps.available)),row('Restarting',ps.restartInProgress?'yes':'no',ps.restartInProgress?'warn':''),row('Restarts',pst.restartCount||0),row('Errors',pst.errorCount||0),row('History',`${ph.succeeded||0} ok / ${ph.failed||0} failed`)]),
+  controls(ps,wc),
+  restartHistory(ph),
+  commandLogCard()
  ].join('');
  updated.textContent=new Date().toLocaleTimeString();
 }

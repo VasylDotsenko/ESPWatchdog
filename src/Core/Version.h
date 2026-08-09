@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     37
+#define FW_VERSION_PATCH     38
 
-#define FW_VERSION_STRING    "0.4.37"
-#define FW_VERSION_LABEL     "first-boot-wifi-setup"
-#define FW_VERSION_FULL      "0.4.37-first-boot-wifi-setup"
+#define FW_VERSION_STRING    "0.4.38"
+#define FW_VERSION_LABEL     "tuya-status-polling-policy"
+#define FW_VERSION_FULL      "0.4.38-tuya-status-polling-policy"
 
 //=============================================================================
 // Project

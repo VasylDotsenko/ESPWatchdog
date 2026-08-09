@@ -112,6 +112,12 @@ bool ConfigService::loadJson()
     m_data.tuya.relayDps =
         tuya["relayDps"] | 1;
 
+    m_data.tuya.statusPollingEnabled =
+        tuya["statusPollingEnabled"] | false;
+
+    m_data.tuya.statusPollingInterval =
+        tuya["statusPollingInterval"] | 60000;
+
     Log.info("Configuration loaded");
 
     return true;
@@ -162,6 +168,10 @@ bool ConfigService::saveJson() const
     tuya["localKey"] = m_data.tuya.localKey;
     tuya["version"] = m_data.tuya.protocolVersion;
     tuya["relayDps"] = m_data.tuya.relayDps;
+    tuya["statusPollingEnabled"] =
+        m_data.tuya.statusPollingEnabled;
+    tuya["statusPollingInterval"] =
+        m_data.tuya.statusPollingInterval;
 
     return Storage.writeJson(CONFIG_FILE, doc);
 }
@@ -388,6 +398,20 @@ bool ConfigService::updateFromJson(
         {
             m_data.tuya.relayDps =
                 tuya["relayDps"] | m_data.tuya.relayDps;
+        }
+
+        if (!tuya["statusPollingEnabled"].isNull())
+        {
+            m_data.tuya.statusPollingEnabled =
+                tuya["statusPollingEnabled"] |
+                m_data.tuya.statusPollingEnabled;
+        }
+
+        if (!tuya["statusPollingInterval"].isNull())
+        {
+            m_data.tuya.statusPollingInterval =
+                tuya["statusPollingInterval"] |
+                m_data.tuya.statusPollingInterval;
         }
     }
 

@@ -28,6 +28,8 @@ namespace DefaultConfig
     constexpr char TUYA_LOCAL_KEY[] = "";
     constexpr uint8_t TUYA_PROTOCOL_VERSION = 33;
     constexpr uint8_t TUYA_RELAY_DPS = 1;
+    constexpr bool TUYA_STATUS_POLLING_ENABLED = false;
+    constexpr uint32_t TUYA_STATUS_POLLING_INTERVAL = 60000;
 }
 
 void ConfigService::setDefaults()
@@ -63,6 +65,10 @@ void ConfigService::setDefaults()
     copyString(m_data.tuya.localKey, DefaultConfig::TUYA_LOCAL_KEY);
     m_data.tuya.protocolVersion = DefaultConfig::TUYA_PROTOCOL_VERSION;
     m_data.tuya.relayDps = DefaultConfig::TUYA_RELAY_DPS;
+    m_data.tuya.statusPollingEnabled =
+        DefaultConfig::TUYA_STATUS_POLLING_ENABLED;
+    m_data.tuya.statusPollingInterval =
+        DefaultConfig::TUYA_STATUS_POLLING_INTERVAL;
 }
 
 bool ConfigService::validate() const
@@ -157,6 +163,12 @@ bool ConfigService::validate() const
     if (m_data.tuya.relayDps == 0)
     {
         Log.error("Config: invalid tuya relayDps");
+        return false;
+    }
+
+    if (m_data.tuya.statusPollingInterval < 30000)
+    {
+        Log.error("Config: invalid tuya statusPollingInterval");
         return false;
     }
 

@@ -124,7 +124,7 @@ function configCards(c){
  const proto=tu.version?`${Math.floor(tu.version/10)}.${tu.version%10}`:'-';
  return [
   card('Controlled host',[row('Host',wd.targetHost||'-'),row('Port',wd.targetPort||0),row('Ping interval',ms(wd.pingInterval)),row('Ping timeout',ms(wd.pingTimeout)),row('Fail count',wd.failCount||0)]),
-  card('Tuya socket',[row('IP',tu.ip||'-'),row('Port',tu.port||0),row('Protocol',proto),row('Relay DPS',tu.relayDps||0),row('Device ID',tu.deviceId||'-'),row('Local key',tu.localKeyMasked||'-')])
+  card('Tuya socket',[row('IP',tu.ip||'-'),row('Port',tu.port||0),row('Protocol',proto),row('Relay DPS',tu.relayDps||0),row('Status polling',tu.statusPollingEnabled?'enabled':'disabled'),row('Poll interval',ms(tu.statusPollingInterval||0)),row('Device ID',tu.deviceId||'-'),row('Local key',tu.localKeyMasked||'-')])
  ];
 }
 function field(id,label,value,type='text'){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="${type}" value="${esc(value)}"></div>`}
@@ -158,7 +158,7 @@ function sectionEditor(section,c){
  if(section==='wifi'){title='WiFi settings';fields=field('cfg_wifi_ssid','wifi.ssid',wf.ssid||'')+secretField('cfg_wifi_password','wifi.password',wf.passwordMasked||'leave empty to keep')+field('cfg_wifi_reconnect','wifi.reconnectInterval',wf.reconnectInterval||0,'number')+field('cfg_wifi_timeout','wifi.connectTimeout',wf.connectTimeout||0,'number')}
  if(section==='watchdog'){title='Controlled host / Watchdog settings';fields=field('cfg_wd_host','watchdog.targetHost',wd.targetHost||'')+field('cfg_wd_port','watchdog.targetPort',wd.targetPort||0,'number')+field('cfg_wd_interval','watchdog.pingInterval',wd.pingInterval||0,'number')+field('cfg_wd_timeout','watchdog.pingTimeout',wd.pingTimeout||0,'number')+field('cfg_wd_fail','watchdog.failCount',wd.failCount||0,'number')+field('cfg_wd_boot','watchdog.bootDelay',wd.bootDelay||0,'number')+field('cfg_wd_off','watchdog.powerOffTime',wd.powerOffTime||0,'number')+field('cfg_wd_max','watchdog.maxRestartPerDay',wd.maxRestartPerDay||0,'number')}
  if(section==='relay'){title='Relay settings';fields=check('cfg_relay_enabled','relay.enabled',r.enabled)+field('cfg_relay_pin','relay.pin',r.pin||0,'number')+check('cfg_relay_active','relay.activeHigh',r.activeHigh)}
- if(section==='tuya'){title='Tuya socket settings';fields=field('cfg_tuya_ip','tuya.ip',tu.ip||'')+field('cfg_tuya_port','tuya.port',tu.port||0,'number')+field('cfg_tuya_device','tuya.deviceId',tu.deviceId||'')+secretField('cfg_tuya_key','tuya.localKey',tu.localKeyMasked||'leave empty to keep')+field('cfg_tuya_ver','tuya.version',tu.version||35,'number')+field('cfg_tuya_dps','tuya.relayDps',tu.relayDps||1,'number')}
+ if(section==='tuya'){title='Tuya socket settings';fields=field('cfg_tuya_ip','tuya.ip',tu.ip||'')+field('cfg_tuya_port','tuya.port',tu.port||0,'number')+field('cfg_tuya_device','tuya.deviceId',tu.deviceId||'')+secretField('cfg_tuya_key','tuya.localKey',tu.localKeyMasked||'leave empty to keep')+field('cfg_tuya_ver','tuya.version',tu.version||35,'number')+field('cfg_tuya_dps','tuya.relayDps',tu.relayDps||1,'number')+check('cfg_tuya_poll_enabled','tuya.statusPollingEnabled',tu.statusPollingEnabled)+field('cfg_tuya_poll_interval','tuya.statusPollingInterval',tu.statusPollingInterval||60000,'number')}
  return `<section class="card wide"><h2>${title}</h2><div class="formGrid">${fields}</div><div class="btns"><button class="okBtn" onclick="saveSection('${section}')">SAVE ${section.toUpperCase()}</button><button class="warnBtn" onclick="restartEsp()">RESTART ESP</button></div></section>`;
 }
 function sectionBody(section){
@@ -167,7 +167,7 @@ function sectionBody(section){
  if(section==='wifi'){body.wifi={ssid:s('cfg_wifi_ssid'),reconnectInterval:n('cfg_wifi_reconnect'),connectTimeout:n('cfg_wifi_timeout')};const p=s('cfg_wifi_password');if(p)body.wifi.password=p}
  if(section==='watchdog')body.watchdog={targetHost:s('cfg_wd_host'),targetPort:n('cfg_wd_port'),pingInterval:n('cfg_wd_interval'),pingTimeout:n('cfg_wd_timeout'),failCount:n('cfg_wd_fail'),bootDelay:n('cfg_wd_boot'),powerOffTime:n('cfg_wd_off'),maxRestartPerDay:n('cfg_wd_max')};
  if(section==='relay')body.relay={enabled:b('cfg_relay_enabled'),pin:n('cfg_relay_pin'),activeHigh:b('cfg_relay_active')};
- if(section==='tuya'){body.tuya={ip:s('cfg_tuya_ip'),port:n('cfg_tuya_port'),deviceId:s('cfg_tuya_device'),version:n('cfg_tuya_ver'),relayDps:n('cfg_tuya_dps')};const k=s('cfg_tuya_key');if(k)body.tuya.localKey=k}
+ if(section==='tuya'){body.tuya={ip:s('cfg_tuya_ip'),port:n('cfg_tuya_port'),deviceId:s('cfg_tuya_device'),version:n('cfg_tuya_ver'),relayDps:n('cfg_tuya_dps'),statusPollingEnabled:b('cfg_tuya_poll_enabled'),statusPollingInterval:n('cfg_tuya_poll_interval')};const k=s('cfg_tuya_key');if(k)body.tuya.localKey=k}
  return body;
 }
 async function saveSection(section){
@@ -730,6 +730,10 @@ void WebServerService::handleApiConfig()
         config.tuya.protocolVersion;
     tuya["relayDps"] =
         config.tuya.relayDps;
+    tuya["statusPollingEnabled"] =
+        config.tuya.statusPollingEnabled;
+    tuya["statusPollingInterval"] =
+        config.tuya.statusPollingInterval;
 
     const size_t length =
         serializeJson(

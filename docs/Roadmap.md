@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.4.37-first-boot-wifi-setup
+0.4.38-tuya-status-polling-policy
 ```
 
 Production target:
@@ -28,7 +28,8 @@ Production target:
 - restart history;
 - Web API;
 - lightweight Web Dashboard;
-- Web configuration editor.
+- Web configuration editor;
+- controlled Tuya status polling policy.
 
 Поточний етап — інтеграційна стабілізація перед production hardening.
 
@@ -194,15 +195,19 @@ URL: http://192.168.4.1/config/wifi
 
 Статус: реалізовано.
 
-### 0.4.38 — Tuya status policy
+### 0.4.38 — Tuya status polling policy
 
 Мета:
 
+- додати явні налаштування `tuya.statusPollingEnabled` і `tuya.statusPollingInterval`;
 - стабілізувати Tuya status polling;
 - не провокувати disconnect на Tuya LAN `3.5`;
+- не виконувати автоматичний `3.5` status query до реалізації окремого `6699 DPQuery`;
 - показувати реальний стан relay на dashboard.
 
-### 0.4.38 — Web API protection
+Статус: реалізовано як safe opt-in policy.
+
+### 0.4.39 — Web API protection
 
 Мета:
 

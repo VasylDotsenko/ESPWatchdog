@@ -11,10 +11,10 @@
 - hardware verification поточного Web Dashboard;
 - перевірка `GET /api/config` і `POST /api/config` на реальній платі;
 - стабілізація Tuya LAN `3.5` runtime;
-- підготовка diagnostics/log endpoints;
-- підготовка до ESP restart command та безпечного застосування змінених налаштувань.
+- підготовка Web API authentication / basic protection;
+- production polish Web Dashboard.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.37-first-boot-wifi-setup`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.38-tuya-status-polling-policy`.
 
 ## Вже зроблено
 
@@ -197,7 +197,12 @@
 - `TuyaPowerController` керує живленням через `TuyaLan.relayOn()` / `TuyaLan.relayOff()`.
 - `TuyaPowerController::available()` більше не залежить від поточного TCP socket стану;
 - `TuyaService::relaySet()` підключається до Tuya device on-demand перед відправкою relay-команди;
-- автоматичний status query після connect вимкнено, щоб не провокувати disconnect на Tuya LAN `3.5`.
+- автоматичний status query після connect вимкнено, щоб не провокувати disconnect на Tuya LAN `3.5`;
+- додано явну політику Tuya status polling:
+  - `tuya.statusPollingEnabled`;
+  - `tuya.statusPollingInterval`;
+  - polling disabled by default;
+  - `3.5` automatic polling пропускається до реалізації окремого `6699 DPQuery`.
 
 ### Tuya
 
@@ -224,13 +229,14 @@
 - `TuyaProtocol` будує heartbeat, status query та DPS control payload для Tuya LAN `3.3`.
 - `TuyaService` використовує `TuyaProtocol` для `relaySet()` і має TCP receive buffer.
 - глобальний екземпляр Tuya-сервісу: `TuyaLan`.
-- після TCP connect `TuyaService` відправляє heartbeat та status query;
+- після TCP connect `TuyaService` не відправляє автоматичний status query;
 - додано діагностичні логи `seq`, `cmd`, `payload`, `dps`, `bytes` для перевірки реакції Tuya LAN device.
 - підтверджено, що цільова розетка використовує Tuya LAN `3.5`;
 - додано базовий Tuya LAN `3.5` frame layer `6699`;
 - додано AES-GCM encrypt/decrypt;
 - додано session-key negotiation START/RESP/FINISH;
-- додано `CONTROL_NEW` relay command path для `3.5`.
+- додано `CONTROL_NEW` relay command path для `3.5`;
+- додано safe opt-in status polling policy для legacy `3.3` path.
 
 ## Поточні готові файли для інтеграції
 
@@ -298,13 +304,14 @@
 - Tuya protocol `3.4` поки не підтримується;
 - Tuya protocol `3.5` hardware-verified на `TCOGCZ16-A`;
 - потрібні реальні `ip`, `deviceId`, `localKey`, `version`, `relayDps`;
+- для Tuya LAN `3.5` status polling поки не виконує `6699 DPQuery`;
 - `localKey` не можна логувати або дублювати у відкритих звітах;
 - потрібно перевірити, що Serial Monitor і `Log.begin(...)` використовують однакову швидкість;
 - потрібно поступово винести форматування в `Formatters/LogFormatter`.
 
 ## Наступні кроки
 
-1. Зафіксувати `v0.4.37-first-boot-wifi-setup` як hardware-verified baseline.
-2. Реалізувати Tuya status polling policy без провокування disconnect на protocol `3.5`.
-3. Додати authentication / basic protection для Web API command endpoints.
-4. Підготувати production Web Dashboard polish.
+1. Додати authentication / basic protection для Web API command endpoints.
+2. Реалізувати Tuya LAN `3.5` status DPQuery через `6699`.
+3. Підготувати production Web Dashboard polish.
+4. Поступово винести UI/JSON форматування в окремий formatting layer.

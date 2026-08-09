@@ -29,6 +29,9 @@ public:
     static constexpr uint32_t CONNECT_TIMEOUT_MS = 5000;
     static constexpr uint32_t SESSION_RESPONSE_TIMEOUT_MS = 1200;
     static constexpr uint32_t RECEIVE_TIMEOUT_MS = 3000;
+    static constexpr uint32_t STATUS_POLL_MIN_INTERVAL_MS = 30000;
+    static constexpr uint32_t STATUS_POLL_CONNECT_GRACE_MS = 30000;
+    static constexpr uint32_t STATUS_POLL_COMMAND_GRACE_MS = 10000;
     static constexpr size_t RECEIVE_BUFFER_SIZE = Tuya::MAX_PACKET_6699_SIZE;
 
     bool begin() override;
@@ -74,6 +77,12 @@ private:
 
     bool ensureSession35();
 
+    void updateStatusPolling();
+
+    void scheduleStatusPoll();
+
+    uint32_t statusPollingInterval() const;
+
     bool writePacket(
         const Tuya::Packet6699& packet);
 
@@ -103,6 +112,8 @@ private:
 
     Timer m_receiveTimer;
 
+    Timer m_statusPollTimer;
+
     TuyaState m_state = TuyaState::Disconnected;
 
     TuyaStatus m_status;
@@ -116,6 +127,12 @@ private:
     size_t m_receiveLength = 0;
 
     uint32_t m_sequence = 1;
+
+    uint32_t m_connectedAt = 0;
+
+    uint32_t m_lastCommandAt = 0;
+
+    bool m_statusPollScheduled = false;
 };
 
 extern TuyaService TuyaLan;

@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.37-first-boot-wifi-setup
+0.4.38-tuya-status-polling-policy
 ```
 
 Production target:
@@ -96,6 +96,8 @@ http://192.168.4.1/config/wifi
 - PowerService waits for Tuya LAN reconnect before `powerOn`;
 - Tuya relay commands connect on-demand;
 - automatic Tuya status query after connect disabled for unstable 3.5 devices;
+- Tuya status polling policy configurable via `/config/tuya`;
+- Tuya status polling disabled by default for stable Tuya LAN `3.5` operation;
 - Tuya LAN `3.5` AES-GCM `6699` frame layer;
 - Tuya LAN `3.5` session-key negotiation;
 - Tuya LAN `3.5` `CONTROL_NEW` relay command path;
@@ -136,6 +138,7 @@ http://192.168.4.1/config/wifi
 - fallback AP mode `ESP-Watchdog-Setup`;
 - setup portal address `192.168.4.1`;
 - Watchdog/Power actions disabled while setup portal is active;
+- safe opt-in Tuya status polling policy;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;
@@ -144,7 +147,7 @@ http://192.168.4.1/config/wifi
 
 Ще не завершено:
 
-- Tuya status polling policy;
+- Tuya LAN `3.5` status DPQuery через `6699`;
 - Web UI production polish;
 - Web API authentication;
 - OTA.
@@ -382,7 +385,9 @@ namespace Tuya
     "deviceId": "...",
     "localKey": "...",
     "version": 35,
-    "relayDps": 1
+    "relayDps": 1,
+    "statusPollingEnabled": false,
+    "statusPollingInterval": 60000
   }
 }
 ```
@@ -516,8 +521,7 @@ Hardware smoke-test
 
 ### Далі
 
-- heartbeat/status polling у `TuyaService`;
-- Tuya status polling policy;
+- Tuya LAN `3.5` status DPQuery через `6699`;
 - Web API;
 - Web UI;
 - OTA;

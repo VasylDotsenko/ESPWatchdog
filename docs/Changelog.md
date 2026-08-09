@@ -4,6 +4,55 @@
 
 ---
 
+## [0.4.38-tuya-status-polling-policy] - 09.08.2026
+
+### Статус
+
+Додано контрольовану політику Tuya status polling.
+
+Поточний hardware-verified сценарій для Tuya LAN `3.5` залишено стабільним: relay commands працюють on-demand, а автоматичний status query для `3.5` не виконується, доки не буде реалізовано окремий `6699 DPQuery`.
+
+### Оновлено
+
+- `Services/Tuya/TuyaService.h`;
+- `Services/Tuya/TuyaService.cpp`;
+- `Services/Config/Config.h`;
+- `Services/Config/ConfigDefaults.cpp`;
+- `Services/Config/ConfigJson.cpp`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `config.json`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Roadmap.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `tuya.statusPollingEnabled`;
+- `tuya.statusPollingInterval`;
+- Web UI поля на сторінці `/config/tuya`;
+- відображення polling status у configuration dashboard;
+- мінімальний безпечний polling interval: `30000 ms`;
+- grace period після TCP connect: `30000 ms`;
+- grace period після relay command: `10000 ms`.
+
+### Поведінка
+
+- polling за замовчуванням вимкнений;
+- для Tuya LAN `3.3` polling може бути увімкнений через `/config/tuya`;
+- для Tuya LAN `3.5` автоматичний polling пропускається, щоб не провокувати disconnect;
+- relay `powerOff/powerOn` path не змінено.
+
+### Версія
+
+```text
+0.4.38-tuya-status-polling-policy
+```
+
+---
+
 ## [0.4.37-first-boot-wifi-setup] - 09.08.2026
 
 ### Статус

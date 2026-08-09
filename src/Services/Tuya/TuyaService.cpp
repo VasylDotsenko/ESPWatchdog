@@ -27,6 +27,9 @@ bool TuyaService::begin()
 
     m_receiveLength = 0;
     m_sequence = 1;
+    m_connectedAt = 0;
+    m_lastCommandAt = 0;
+    m_statusPollScheduled = false;
 
     m_client.setNoDelay(true);
 
@@ -51,6 +54,8 @@ void TuyaService::loop()
     }
 
     receivePacket();
+
+    updateStatusPolling();
 }
 
 bool TuyaService::connect()
@@ -90,10 +95,15 @@ bool TuyaService::connect()
     m_state = TuyaState::Connected;
     m_status.connected = true;
     m_receiveLength = 0;
+    m_connectedAt = millis();
+    m_lastCommandAt = 0;
+    m_statusPollScheduled = false;
 
     m_receiveTimer.start(
         RECEIVE_TIMEOUT_MS,
         TimerMode::OneShot);
+
+    scheduleStatusPoll();
 
     Log.info("Tuya connected");
 
@@ -108,6 +118,9 @@ void TuyaService::disconnect()
     m_state = TuyaState::Disconnected;
     m_status.connected = false;
     m_receiveLength = 0;
+    m_connectedAt = 0;
+    m_statusPollScheduled = false;
+    m_statusPollTimer.stop();
     m_protocol.reset();
 
     Log.warning("Tuya disconnected");
@@ -219,6 +232,16 @@ bool TuyaService::sendStatusQuery()
         return false;
     }
 
+    const auto& cfg = Config.data().tuya;
+
+    if (cfg.protocolVersion == Tuya::Protocol::SUPPORTED_VERSION_35)
+    {
+        Log.warning(
+            "Tuya: 3.5 status query is disabled until 6699 DPQuery is implemented");
+
+        return false;
+    }
+
     Tuya::Packet packet;
 
     const uint32_t sequence = nextSequence();
@@ -300,6 +323,8 @@ bool TuyaService::sendCommand(bool state)
 
     m_status.commandCount++;
     m_status.relayState = state;
+    m_lastCommandAt = millis();
+    scheduleStatusPoll();
 
     Log.info(
         "Tuya: relay command sent, seq=%lu dps=%u state=%u bytes=%lu",
@@ -346,6 +371,8 @@ bool TuyaService::sendCommand35(bool state)
 
     m_status.commandCount++;
     m_status.relayState = state;
+    m_lastCommandAt = millis();
+    scheduleStatusPoll();
 
     Log.info(
         "Tuya: 3.5 relay command sent, seq=%lu dps=%u state=%u bytes=%lu",
@@ -542,6 +569,84 @@ bool TuyaService::readPacket6699(
     }
 
     return false;
+}
+
+void TuyaService::updateStatusPolling()
+{
+    const auto& cfg = Config.data().tuya;
+
+    if (!connected() ||
+        !cfg.statusPollingEnabled)
+    {
+        m_statusPollScheduled = false;
+        return;
+    }
+
+    if (cfg.protocolVersion == Tuya::Protocol::SUPPORTED_VERSION_35)
+    {
+        return;
+    }
+
+    if (!m_statusPollScheduled)
+    {
+        scheduleStatusPoll();
+        return;
+    }
+
+    if (!m_statusPollTimer.expired())
+    {
+        return;
+    }
+
+    const uint32_t now = millis();
+
+    if (m_connectedAt != 0 &&
+        (now - m_connectedAt) < STATUS_POLL_CONNECT_GRACE_MS)
+    {
+        scheduleStatusPoll();
+        return;
+    }
+
+    if (m_lastCommandAt != 0 &&
+        (now - m_lastCommandAt) < STATUS_POLL_COMMAND_GRACE_MS)
+    {
+        scheduleStatusPoll();
+        return;
+    }
+
+    sendStatusQuery();
+
+    scheduleStatusPoll();
+}
+
+void TuyaService::scheduleStatusPoll()
+{
+    const auto& cfg = Config.data().tuya;
+
+    if (!cfg.statusPollingEnabled)
+    {
+        m_statusPollScheduled = false;
+        return;
+    }
+
+    m_statusPollTimer.start(
+        statusPollingInterval(),
+        TimerMode::OneShot);
+
+    m_statusPollScheduled = true;
+}
+
+uint32_t TuyaService::statusPollingInterval() const
+{
+    const uint32_t configured =
+        Config.data().tuya.statusPollingInterval;
+
+    if (configured < STATUS_POLL_MIN_INTERVAL_MS)
+    {
+        return STATUS_POLL_MIN_INTERVAL_MS;
+    }
+
+    return configured;
 }
 
 bool TuyaService::receivePacket()

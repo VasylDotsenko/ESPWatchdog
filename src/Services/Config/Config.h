@@ -58,6 +58,10 @@ struct TuyaConfig
     uint8_t protocolVersion;
 
     uint8_t relayDps;
+
+    bool statusPollingEnabled;
+
+    uint32_t statusPollingInterval;
 };
 
 struct AppConfig

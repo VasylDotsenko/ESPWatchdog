@@ -4,6 +4,60 @@
 
 ---
 
+## [0.4.29-api-subsystem-endpoints] - 09.08.2026
+
+### Статус
+
+Додано окремі Web API endpoints для runtime subsystem-ів.
+
+Після агрегованого `/api/status` і lightweight dashboard додано точкові endpoints, щоб діагностика могла читати окремий subsystem без завантаження повного JSON.
+
+### Оновлено
+
+- `Serializers/JsonStatusSerializer.h`;
+- `Serializers/JsonStatusSerializer.cpp`;
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `GET /api/system`;
+- `GET /api/network`;
+- `GET /api/health`;
+- `GET /api/watchdog`;
+- `GET /api/power`;
+- subsystem serializer methods:
+  - `serializeSystem()`;
+  - `serializeNetwork()`;
+  - `serializeHealth()`;
+  - `serializeWatchdog()`;
+  - `serializePower()`.
+
+### Endpoints
+
+```text
+GET /api/status
+GET /api/system
+GET /api/network
+GET /api/health
+GET /api/watchdog
+GET /api/power
+GET /health
+```
+
+### Версія
+
+```text
+0.4.29-api-subsystem-endpoints
+```
+
+---
+
 ## [0.4.28-web-dashboard-lite] - 09.08.2026
 
 ### Статус

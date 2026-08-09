@@ -22,6 +22,16 @@ private:
 
     void handleApiStatus();
 
+    void handleApiSystem();
+
+    void handleApiNetwork();
+
+    void handleApiHealth();
+
+    void handleApiWatchdog();
+
+    void handleApiPower();
+
     void handleHealth();
 
     void handleNotFound();

@@ -176,6 +176,102 @@ bool JsonStatusSerializer::serialize(
         root["power"].to<JsonObject>(),
         status.power);
 
+    return finish(
+        doc,
+        output,
+        outputCapacity,
+        outputLength);
+}
+
+bool JsonStatusSerializer::serializeSystem(
+    const SystemStatusData& status,
+    char* output,
+    size_t outputCapacity,
+    size_t& outputLength)
+{
+    JsonDocument doc;
+
+    writeSystem(
+        doc.to<JsonObject>(),
+        status);
+
+    return finish(doc, output, outputCapacity, outputLength);
+}
+
+bool JsonStatusSerializer::serializeNetwork(
+    const NetworkStatusData& status,
+    char* output,
+    size_t outputCapacity,
+    size_t& outputLength)
+{
+    JsonDocument doc;
+
+    writeNetwork(
+        doc.to<JsonObject>(),
+        status);
+
+    return finish(doc, output, outputCapacity, outputLength);
+}
+
+bool JsonStatusSerializer::serializeHealth(
+    const HealthStatusData& status,
+    char* output,
+    size_t outputCapacity,
+    size_t& outputLength)
+{
+    JsonDocument doc;
+
+    writeHealth(
+        doc.to<JsonObject>(),
+        status);
+
+    return finish(doc, output, outputCapacity, outputLength);
+}
+
+bool JsonStatusSerializer::serializeWatchdog(
+    const WatchdogStatusData& status,
+    char* output,
+    size_t outputCapacity,
+    size_t& outputLength)
+{
+    JsonDocument doc;
+
+    writeWatchdog(
+        doc.to<JsonObject>(),
+        status);
+
+    return finish(doc, output, outputCapacity, outputLength);
+}
+
+bool JsonStatusSerializer::serializePower(
+    const PowerStatusData& status,
+    char* output,
+    size_t outputCapacity,
+    size_t& outputLength)
+{
+    JsonDocument doc;
+
+    writePower(
+        doc.to<JsonObject>(),
+        status);
+
+    return finish(doc, output, outputCapacity, outputLength);
+}
+
+bool JsonStatusSerializer::finish(
+    JsonDocument& doc,
+    char* output,
+    size_t outputCapacity,
+    size_t& outputLength)
+{
+    outputLength = 0;
+
+    if (output == nullptr ||
+        outputCapacity == 0)
+    {
+        return false;
+    }
+
     outputLength =
         serializeJson(
             doc,

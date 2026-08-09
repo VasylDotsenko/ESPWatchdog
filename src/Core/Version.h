@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     28
+#define FW_VERSION_PATCH     29
 
-#define FW_VERSION_STRING    "0.4.28"
-#define FW_VERSION_LABEL     "web-dashboard-lite"
-#define FW_VERSION_FULL      "0.4.28-web-dashboard-lite"
+#define FW_VERSION_STRING    "0.4.29"
+#define FW_VERSION_LABEL     "api-subsystem-endpoints"
+#define FW_VERSION_FULL      "0.4.29-api-subsystem-endpoints"
 
 //=============================================================================
 // Project

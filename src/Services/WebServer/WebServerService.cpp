@@ -101,6 +101,46 @@ void WebServerService::configureRoutes()
         });
 
     m_server.on(
+        "/api/system",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiSystem();
+        });
+
+    m_server.on(
+        "/api/network",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiNetwork();
+        });
+
+    m_server.on(
+        "/api/health",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiHealth();
+        });
+
+    m_server.on(
+        "/api/watchdog",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiWatchdog();
+        });
+
+    m_server.on(
+        "/api/power",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiPower();
+        });
+
+    m_server.on(
         "/health",
         HTTP_GET,
         [this]()
@@ -147,6 +187,91 @@ void WebServerService::handleApiStatus()
     sendJson(
         200,
         m_jsonBuffer);
+}
+
+void WebServerService::handleApiSystem()
+{
+    size_t jsonLength = 0;
+
+    if (!JsonStatusSerializer::serializeSystem(
+            App.status().system,
+            m_jsonBuffer,
+            sizeof(m_jsonBuffer),
+            jsonLength))
+    {
+        sendJson(500, "{\"error\":\"system_serialization_failed\"}");
+        return;
+    }
+
+    sendJson(200, m_jsonBuffer);
+}
+
+void WebServerService::handleApiNetwork()
+{
+    size_t jsonLength = 0;
+
+    if (!JsonStatusSerializer::serializeNetwork(
+            App.status().network,
+            m_jsonBuffer,
+            sizeof(m_jsonBuffer),
+            jsonLength))
+    {
+        sendJson(500, "{\"error\":\"network_serialization_failed\"}");
+        return;
+    }
+
+    sendJson(200, m_jsonBuffer);
+}
+
+void WebServerService::handleApiHealth()
+{
+    size_t jsonLength = 0;
+
+    if (!JsonStatusSerializer::serializeHealth(
+            App.status().health,
+            m_jsonBuffer,
+            sizeof(m_jsonBuffer),
+            jsonLength))
+    {
+        sendJson(500, "{\"error\":\"health_serialization_failed\"}");
+        return;
+    }
+
+    sendJson(200, m_jsonBuffer);
+}
+
+void WebServerService::handleApiWatchdog()
+{
+    size_t jsonLength = 0;
+
+    if (!JsonStatusSerializer::serializeWatchdog(
+            App.status().watchdog,
+            m_jsonBuffer,
+            sizeof(m_jsonBuffer),
+            jsonLength))
+    {
+        sendJson(500, "{\"error\":\"watchdog_serialization_failed\"}");
+        return;
+    }
+
+    sendJson(200, m_jsonBuffer);
+}
+
+void WebServerService::handleApiPower()
+{
+    size_t jsonLength = 0;
+
+    if (!JsonStatusSerializer::serializePower(
+            App.status().power,
+            m_jsonBuffer,
+            sizeof(m_jsonBuffer),
+            jsonLength))
+    {
+        sendJson(500, "{\"error\":\"power_serialization_failed\"}");
+        return;
+    }
+
+    sendJson(200, m_jsonBuffer);
 }
 
 void WebServerService::handleHealth()

@@ -14,7 +14,43 @@ public:
         size_t outputCapacity,
         size_t& outputLength);
 
+    static bool serializeSystem(
+        const SystemStatusData& status,
+        char* output,
+        size_t outputCapacity,
+        size_t& outputLength);
+
+    static bool serializeNetwork(
+        const NetworkStatusData& status,
+        char* output,
+        size_t outputCapacity,
+        size_t& outputLength);
+
+    static bool serializeHealth(
+        const HealthStatusData& status,
+        char* output,
+        size_t outputCapacity,
+        size_t& outputLength);
+
+    static bool serializeWatchdog(
+        const WatchdogStatusData& status,
+        char* output,
+        size_t outputCapacity,
+        size_t& outputLength);
+
+    static bool serializePower(
+        const PowerStatusData& status,
+        char* output,
+        size_t outputCapacity,
+        size_t& outputLength);
+
 private:
+    static bool finish(
+        JsonDocument& doc,
+        char* output,
+        size_t outputCapacity,
+        size_t& outputLength);
+
     static void writeSystem(
         JsonObject target,
         const SystemStatusData& status);

@@ -4,6 +4,63 @@
 
 ---
 
+## [0.4.22-watchdog-status-snapshot] - 09.08.2026
+
+### Статус
+
+Додано API-ready snapshot модель для Watchdog subsystem.
+
+Це третій snapshot-шар після `PowerStatusData` і `HealthStatusData`. Тепер майбутній Web API зможе показати не тільки стан target host і power controller, а й саме рішення watchdog: monitoring, restart required, cooldown або locked out.
+
+### Оновлено
+
+- `Models/WatchdogStatusData.h`;
+- `Services/Watchdog/WatchdogService.h`;
+- `Services/Watchdog/WatchdogService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `WatchdogStatusSummary`;
+- `WatchdogStatusConfiguration`;
+- `WatchdogStatusStatistics`;
+- `WatchdogStatusData`;
+- `WatchdogService::status()`.
+
+### Містить
+
+- поточний `WatchdogState`;
+- `enabled`;
+- `restartPending`;
+- `restartRequired`;
+- `lockedOut`;
+- `cooldown`;
+- `consecutiveFailures`;
+- watchdog configuration snapshot;
+- restart statistics;
+- timestamps останнього success/failure/restart/lockout.
+
+### Призначення
+
+`WatchdogStatusData` стане джерелом для:
+
+- `/api/watchdog/status`;
+- diagnostics endpoint;
+- Web Dashboard;
+- майбутнього MQTT telemetry.
+
+### Версія
+
+```text
+0.4.22-watchdog-status-snapshot
+```
+
+---
+
 ## [0.4.21-health-status-snapshot] - 09.08.2026
 
 ### Статус

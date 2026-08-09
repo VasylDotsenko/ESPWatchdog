@@ -127,6 +127,46 @@ const WatchdogData& WatchdogService::data() const
     return m_data;
 }
 
+WatchdogStatusData WatchdogService::status() const
+{
+    WatchdogStatusData status;
+
+    status.summary.state = m_data.state;
+    status.summary.enabled = m_data.configuration.enabled;
+    status.summary.restartPending =
+        m_data.runtime.restartPending;
+    status.summary.restartRequired =
+        m_data.state == WatchdogState::RestartRequired;
+    status.summary.lockedOut =
+        m_data.state == WatchdogState::LockedOut;
+    status.summary.cooldown =
+        m_data.state == WatchdogState::Cooldown;
+    status.summary.consecutiveFailures =
+        m_data.runtime.consecutiveFailures;
+
+    status.configuration.failureThreshold =
+        m_data.configuration.failureThreshold;
+    status.configuration.bootDelay =
+        m_data.configuration.bootDelay;
+    status.configuration.powerOffTime =
+        m_data.configuration.powerOffTime;
+    status.configuration.maxRestartPerDay =
+        m_data.configuration.maxRestartPerDay;
+
+    status.statistics.restartCount =
+        m_data.statistics.restartCount;
+    status.statistics.lastSuccess =
+        m_data.statistics.lastSuccess;
+    status.statistics.lastFailure =
+        m_data.statistics.lastFailure;
+    status.statistics.lastRestart =
+        m_data.statistics.lastRestart;
+    status.statistics.lockedOutAt =
+        m_data.statistics.lockedOutAt;
+
+    return status;
+}
+
 void WatchdogService::configureFromConfig()
 {
     const auto& watchdog = Config.data().watchdog;

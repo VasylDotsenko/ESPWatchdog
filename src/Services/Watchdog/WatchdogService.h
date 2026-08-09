@@ -5,6 +5,7 @@
 #include "Core/IService.h"
 #include "Core/Timer.h"
 #include "Models/WatchdogData.h"
+#include "Models/WatchdogStatusData.h"
 #include "Services/HealthCheck/HealthCheckInfo.h"
 
 class WatchdogService final : public IService
@@ -30,6 +31,9 @@ public:
 
     [[nodiscard]]
     const WatchdogData& data() const;
+
+    [[nodiscard]]
+    WatchdogStatusData status() const;
 
 private:
     void configureFromConfig();

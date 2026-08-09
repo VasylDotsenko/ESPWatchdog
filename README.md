@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.15-tuya35-session-retcode
+0.4.16-tuya35-command-ack
 ```
 
 Production target:

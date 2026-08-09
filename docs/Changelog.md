@@ -4,6 +4,51 @@
 
 ---
 
+## [0.4.16-tuya35-command-ack] - 09.08.2026
+
+### Статус
+
+Tuya LAN protocol `3.5` пройшов перший успішний hardware smoke-test із реальною розеткою.
+
+Runtime flow підтвердив:
+
+```text
+Tuya: 3.5 session established
+Tuya: 3.5 relay command sent, state=0
+Tuya: relay state=0
+Tuya: 3.5 relay command sent, state=1
+Tuya: relay state=1
+PowerService: restart completed
+```
+
+### Оновлено
+
+- `Services/Tuya/TuyaService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Виправлено
+
+- `CONTROL_NEW` відповідь `cmd=13` з коротким payload `4` більше не логується як помилка decrypt;
+- такий пакет трактується як короткий command ACK;
+- фактичний стан реле як і раніше береться із `STATUS cmd=8` / DPS payload;
+- runtime лог став чистішим після успішної relay-команди.
+
+### Примітка
+
+Розетка може закривати TCP socket після idle-періоду. Це не є помилкою power-cycle, оскільки `TuyaService` працює у on-demand режимі й може перепідключатися перед наступною командою.
+
+### Версія
+
+```text
+0.4.16-tuya35-command-ack
+```
+
+---
+
 ## [0.4.15-tuya35-session-retcode] - 09.08.2026
 
 ### Статус

@@ -810,6 +810,16 @@ bool TuyaService::processPacket6699(
             sizeof(json),
             jsonLength))
     {
+        if (m_packet6699.command() == Tuya::Command::ControlNew &&
+            m_packet6699.encryptedPayloadSize() == 4)
+        {
+            Log.info(
+                "Tuya: 3.5 command ACK received, seq=%lu",
+                static_cast<unsigned long>(m_packet6699.sequence()));
+
+            return true;
+        }
+
         Log.warning("Tuya: unable to decrypt 3.5 payload");
         return true;
     }

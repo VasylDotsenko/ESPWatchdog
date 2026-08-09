@@ -17,7 +17,13 @@ public:
 
     void setController(IPowerController& controller);
 
-    bool restart(uint32_t powerOffTime);
+    bool restart(
+        uint32_t powerOffTime,
+        RestartReason reason = RestartReason::WatchdogFailure);
+
+    bool powerOn();
+
+    bool powerOff();
 
     [[nodiscard]]
     bool restartInProgress() const;
@@ -42,10 +48,6 @@ private:
 
 private:
     bool shouldAttemptPowerOn(uint64_t now);
-
-    bool powerOn();
-
-    bool powerOff();
 
     void fail(const char* reason);
 

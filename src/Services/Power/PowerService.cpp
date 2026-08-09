@@ -32,6 +32,9 @@ namespace
             case RestartReason::WatchdogFailure:
                 return "watchdog_failure";
 
+            case RestartReason::ManualCommand:
+                return "manual_command";
+
             case RestartReason::ControllerUnavailable:
                 return "controller_unavailable";
 
@@ -157,7 +160,9 @@ void PowerService::setController(IPowerController& controller)
     m_controller = &controller;
 }
 
-bool PowerService::restart(uint32_t powerOffTime)
+bool PowerService::restart(
+    uint32_t powerOffTime,
+    RestartReason reason)
 {
     const uint64_t now = millis();
 
@@ -209,7 +214,7 @@ bool PowerService::restart(uint32_t powerOffTime)
 
     beginRestartHistory(
         powerOffTime,
-        RestartReason::WatchdogFailure);
+        reason);
 
     if (!powerOff())
     {
@@ -342,6 +347,8 @@ bool PowerService::powerOn()
     }
 
     m_data.statistics.lastPowerOn = millis();
+    m_data.runtime.lastOperationSucceeded = true;
+    m_data.state = PowerState::Idle;
 
     RestartHistoryEntry* entry = activeRestartEntry();
 
@@ -368,6 +375,8 @@ bool PowerService::powerOff()
     }
 
     m_data.statistics.lastPowerOff = millis();
+    m_data.runtime.restartCompleted = false;
+    m_data.runtime.lastOperationSucceeded = true;
     m_data.state = PowerState::PowerOff;
 
     RestartHistoryEntry* entry = activeRestartEntry();

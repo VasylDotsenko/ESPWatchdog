@@ -14,6 +14,7 @@ enum class RestartReason : uint8_t
 {
     Unknown = 0,
     WatchdogFailure,
+    ManualCommand,
     ControllerUnavailable,
     PowerOffFailed,
     PowerOnFailed,

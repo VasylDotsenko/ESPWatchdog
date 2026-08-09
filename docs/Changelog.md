@@ -4,6 +4,64 @@
 
 ---
 
+## [0.4.31-api-power-commands] - 09.08.2026
+
+### Статус
+
+Додано перші state-changing Web API команди для ручного керування зовнішнім Tuya LAN power controller.
+
+Цей етап переводить Web API з read-only status layer у контрольований command layer. Команди реалізовано через `POST`, щоб не виконувати небезпечні power-операції через звичайні `GET` запити браузера.
+
+### Оновлено
+
+- `Models/RestartHistoryData.h`;
+- `Services/Power/PowerService.h`;
+- `Services/Power/PowerService.cpp`;
+- `Serializers/JsonStatusSerializer.cpp`;
+- `Services/WebServer/WebServerService.h`;
+- `Services/WebServer/WebServerService.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Додано
+
+- `POST /api/power/on`;
+- `POST /api/power/off`;
+- `POST /api/power/restart`;
+- `RestartReason::ManualCommand`;
+- JSON-відповіді для power command API;
+- CORS headers для `GET`, `POST`, `OPTIONS`;
+- `OPTIONS` handlers для power command endpoints.
+
+### Поведінка
+
+- `POST /api/power/on` вмикає живлення через активний `IPowerController`;
+- `POST /api/power/off` вимикає живлення, якщо restart-cycle не виконується;
+- `POST /api/power/restart` запускає неблокуючий power-cycle;
+- якщо restart вже виконується, API повертає `409`;
+- якщо power controller недоступний, API повертає `503`;
+- ручний restart записується в restart history як `manual_command`.
+
+### Endpoints
+
+```text
+POST /api/power/on
+POST /api/power/off
+POST /api/power/restart
+POST /api/power/restart?powerOffTime=10000
+```
+
+### Версія
+
+```text
+0.4.31-api-power-commands
+```
+
+---
+
 ## [0.4.30-api-index-dashboard-links] - 09.08.2026
 
 ### Статус

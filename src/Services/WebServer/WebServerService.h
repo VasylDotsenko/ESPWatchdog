@@ -34,6 +34,14 @@ private:
 
     void handleApiPower();
 
+    void handleApiPowerOn();
+
+    void handleApiPowerOff();
+
+    void handleApiPowerRestart();
+
+    void handleApiOptions();
+
     void handleHealth();
 
     void handleNotFound();
@@ -41,6 +49,8 @@ private:
     void sendJson(
         int statusCode,
         const char* json);
+
+    uint32_t requestedPowerOffTime();
 
 private:
     ESP8266WebServer m_server { DEFAULT_PORT };

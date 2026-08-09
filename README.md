@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.30-api-index-dashboard-links
+0.4.31-api-power-commands
 ```
 
 Production target:
@@ -73,6 +73,10 @@ Power Cycle
 - on-demand Tuya LAN command session;
 - Tuya LAN `3.5` support for `TCOGCZ16-A`;
 - hardware-verified Tuya LAN power-cycle;
+- manual Web API power commands:
+  - `POST /api/power/on`;
+  - `POST /api/power/off`;
+  - `POST /api/power/restart`;
 - базовий Tuya LAN stack:
   - `TuyaCrypto`;
   - `TuyaPacket`;

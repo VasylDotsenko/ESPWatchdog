@@ -118,6 +118,9 @@ namespace
             case RestartReason::WatchdogFailure:
                 return "watchdog_failure";
 
+            case RestartReason::ManualCommand:
+                return "manual_command";
+
             case RestartReason::ControllerUnavailable:
                 return "controller_unavailable";
 

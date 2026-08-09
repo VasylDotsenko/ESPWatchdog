@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     30
+#define FW_VERSION_PATCH     31
 
-#define FW_VERSION_STRING    "0.4.30"
-#define FW_VERSION_LABEL     "api-index-dashboard-links"
-#define FW_VERSION_FULL      "0.4.30-api-index-dashboard-links"
+#define FW_VERSION_STRING    "0.4.31"
+#define FW_VERSION_LABEL     "api-power-commands"
+#define FW_VERSION_FULL      "0.4.31-api-power-commands"
 
 //=============================================================================
 // Project

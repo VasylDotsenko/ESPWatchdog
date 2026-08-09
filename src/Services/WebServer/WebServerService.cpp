@@ -1,8 +1,10 @@
 #include "WebServerService.h"
 
 #include "Core/Application.h"
+#include "Services/Config/Config.h"
 #include "Serializers/JsonStatusSerializer.h"
 #include "Services/Logger/Logger.h"
+#include "Services/Power/PowerService.h"
 
 WebServerService WebServer;
 
@@ -160,6 +162,54 @@ void WebServerService::configureRoutes()
         });
 
     m_server.on(
+        "/api/power/on",
+        HTTP_POST,
+        [this]()
+        {
+            handleApiPowerOn();
+        });
+
+    m_server.on(
+        "/api/power/off",
+        HTTP_POST,
+        [this]()
+        {
+            handleApiPowerOff();
+        });
+
+    m_server.on(
+        "/api/power/restart",
+        HTTP_POST,
+        [this]()
+        {
+            handleApiPowerRestart();
+        });
+
+    m_server.on(
+        "/api/power/on",
+        HTTP_OPTIONS,
+        [this]()
+        {
+            handleApiOptions();
+        });
+
+    m_server.on(
+        "/api/power/off",
+        HTTP_OPTIONS,
+        [this]()
+        {
+            handleApiOptions();
+        });
+
+    m_server.on(
+        "/api/power/restart",
+        HTTP_OPTIONS,
+        [this]()
+        {
+            handleApiOptions();
+        });
+
+    m_server.on(
         "/health",
         HTTP_GET,
         [this]()
@@ -224,6 +274,9 @@ void WebServerService::handleApiIndex()
         "{\"method\":\"GET\",\"path\":\"/api/health\",\"description\":\"health status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/watchdog\",\"description\":\"watchdog status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/power\",\"description\":\"power status\"},"
+        "{\"method\":\"POST\",\"path\":\"/api/power/on\",\"description\":\"turn power on\"},"
+        "{\"method\":\"POST\",\"path\":\"/api/power/off\",\"description\":\"turn power off\"},"
+        "{\"method\":\"POST\",\"path\":\"/api/power/restart\",\"description\":\"restart power output\"},"
         "{\"method\":\"GET\",\"path\":\"/health\",\"description\":\"liveness\"}"
         "]"
         "}");
@@ -314,6 +367,108 @@ void WebServerService::handleApiPower()
     sendJson(200, m_jsonBuffer);
 }
 
+void WebServerService::handleApiPowerOn()
+{
+    if (Power.restartInProgress())
+    {
+        sendJson(
+            409,
+            "{\"ok\":false,\"error\":\"restart_in_progress\"}");
+        return;
+    }
+
+    if (!Power.available())
+    {
+        sendJson(
+            503,
+            "{\"ok\":false,\"error\":\"power_controller_unavailable\"}");
+        return;
+    }
+
+    if (!Power.powerOn())
+    {
+        sendJson(
+            500,
+            "{\"ok\":false,\"error\":\"power_on_failed\"}");
+        return;
+    }
+
+    sendJson(
+        200,
+        "{\"ok\":true,\"command\":\"power_on\"}");
+}
+
+void WebServerService::handleApiPowerOff()
+{
+    if (Power.restartInProgress())
+    {
+        sendJson(
+            409,
+            "{\"ok\":false,\"error\":\"restart_in_progress\"}");
+        return;
+    }
+
+    if (!Power.available())
+    {
+        sendJson(
+            503,
+            "{\"ok\":false,\"error\":\"power_controller_unavailable\"}");
+        return;
+    }
+
+    if (!Power.powerOff())
+    {
+        sendJson(
+            500,
+            "{\"ok\":false,\"error\":\"power_off_failed\"}");
+        return;
+    }
+
+    sendJson(
+        200,
+        "{\"ok\":true,\"command\":\"power_off\"}");
+}
+
+void WebServerService::handleApiPowerRestart()
+{
+    if (Power.restartInProgress())
+    {
+        sendJson(
+            409,
+            "{\"ok\":false,\"error\":\"restart_in_progress\"}");
+        return;
+    }
+
+    const uint32_t powerOffTime = requestedPowerOffTime();
+
+    if (!Power.restart(
+            powerOffTime,
+            RestartReason::ManualCommand))
+    {
+        sendJson(
+            503,
+            "{\"ok\":false,\"error\":\"restart_not_started\"}");
+        return;
+    }
+
+    snprintf(
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer),
+        "{\"ok\":true,\"command\":\"restart\",\"powerOffTime\":%lu}",
+        static_cast<unsigned long>(powerOffTime));
+
+    sendJson(
+        202,
+        m_jsonBuffer);
+}
+
+void WebServerService::handleApiOptions()
+{
+    sendJson(
+        204,
+        "");
+}
+
 void WebServerService::handleHealth()
 {
     sendJson(
@@ -337,6 +492,14 @@ void WebServerService::sendJson(
         "*");
 
     m_server.sendHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, OPTIONS");
+
+    m_server.sendHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type");
+
+    m_server.sendHeader(
         "Cache-Control",
         "no-store");
 
@@ -344,4 +507,25 @@ void WebServerService::sendJson(
         statusCode,
         "application/json",
         json != nullptr ? json : "{}");
+}
+
+uint32_t WebServerService::requestedPowerOffTime()
+{
+    uint32_t powerOffTime =
+        Config.data().watchdog.powerOffTime;
+
+    if (m_server.hasArg("powerOffTime"))
+    {
+        const uint32_t requested =
+            static_cast<uint32_t>(
+                m_server.arg("powerOffTime").toInt());
+
+        if (requested >= 1000 &&
+            requested <= 60000)
+        {
+            powerOffTime = requested;
+        }
+    }
+
+    return powerOffTime;
 }

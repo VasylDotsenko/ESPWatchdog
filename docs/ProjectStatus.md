@@ -13,7 +13,7 @@
 - очищення runtime-логів;
 - підготовка до наступних production-модулів: Web API, diagnostics, restart history export.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.30-api-index-dashboard-links`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.31-api-power-commands`.
 
 ## Вже зроблено
 
@@ -256,7 +256,7 @@
 
 ## Наступні кроки
 
-1. Зафіксувати `v0.4.30-api-index-dashboard-links` як hardware-verified baseline.
+1. Зафіксувати `v0.4.31-api-power-commands` як hardware-verified baseline.
 2. Реалізувати Tuya status polling policy.
 3. Додати restart history Web/API export.
 4. Додати Web API для status/config/health/watchdog/power.

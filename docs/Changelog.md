@@ -4,6 +4,39 @@
 
 ---
 
+## [0.4.55-web-api-status-split] - 09.08.2026
+
+### Статус
+
+Шостий етап розділення `WebServerService.cpp`.
+
+### Оновлено
+
+- read-only status API винесено з `WebServerService.cpp`;
+- додано окремі файли:
+  - `WebApiStatus.h`;
+  - `WebApiStatus.cpp`;
+- `WebApiStatus` відповідає за:
+  - `GET /api/status`;
+  - `GET /api/system`;
+  - `GET /api/network`;
+  - `GET /api/health`;
+  - `GET /api/watchdog`;
+  - `GET /api/power`;
+- `WebServerService` залишає за собою route registration, CORS/options, authorization для command endpoints і page serving.
+
+### Чому
+
+Read-only status endpoints є окремою відповідальністю presentation/API layer. Після винесення `WebServerService.cpp` стає ближчим до ролі coordinator-а, а status serialization можна підтримувати окремо від config, logs і power commands.
+
+### Версія
+
+```text
+0.4.55-web-api-status-split
+```
+
+---
+
 ## [0.4.54-dashboard-fast-load] - 09.08.2026
 
 ### Статус

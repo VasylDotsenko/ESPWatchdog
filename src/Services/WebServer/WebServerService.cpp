@@ -1,18 +1,15 @@
 #include "WebServerService.h"
 
 #include "WebPages.h"
+#include "WebApiStatus.h"
 #include "WebApiConfig.h"
 #include "WebApiLogs.h"
 #include "WebApiPower.h"
 
-#include <ArduinoJson.h>
 #include <cstring>
 
-#include "Core/Application.h"
 #include "Services/Config/Config.h"
-#include "Serializers/JsonStatusSerializer.h"
 #include "Services/Logger/Logger.h"
-#include "Services/Power/PowerService.h"
 
 WebServerService WebServer;
 
@@ -54,6 +51,14 @@ void WebServerService::configureRoutes()
 {
     m_server.on(
         "/",
+        HTTP_GET,
+        [this]()
+        {
+            handleRoot();
+        });
+
+    m_server.on(
+        "/dashboard",
         HTTP_GET,
         [this]()
         {
@@ -297,24 +302,10 @@ void WebServerService::handleRoot()
 
 void WebServerService::handleApiStatus()
 {
-    size_t jsonLength = 0;
-
-    if (!JsonStatusSerializer::serialize(
-            App.status(),
-            m_jsonBuffer,
-            sizeof(m_jsonBuffer),
-            jsonLength))
-    {
-        sendJson(
-            500,
-            "{\"error\":\"status_serialization_failed\"}");
-
-        return;
-    }
-
-    sendJson(
-        200,
-        m_jsonBuffer);
+    WebApiStatus::handleStatus(
+        m_server,
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer));
 }
 
 void WebServerService::handleApiIndex()
@@ -326,6 +317,7 @@ void WebServerService::handleApiIndex()
         "\"version\":1,"
         "\"endpoints\":["
         "{\"method\":\"GET\",\"path\":\"/\",\"description\":\"dashboard\"},"
+        "{\"method\":\"GET\",\"path\":\"/dashboard\",\"description\":\"dashboard\"},"
         "{\"method\":\"GET\",\"path\":\"/api\",\"description\":\"api index\"},"
         "{\"method\":\"GET\",\"path\":\"/api/status\",\"description\":\"aggregate status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/system\",\"description\":\"system status\"},"
@@ -354,19 +346,10 @@ void WebServerService::handleApiIndex()
 
 void WebServerService::handleApiSystem()
 {
-    size_t jsonLength = 0;
-
-    if (!JsonStatusSerializer::serializeSystem(
-            App.status().system,
-            m_jsonBuffer,
-            sizeof(m_jsonBuffer),
-            jsonLength))
-    {
-        sendJson(500, "{\"error\":\"system_serialization_failed\"}");
-        return;
-    }
-
-    sendJson(200, m_jsonBuffer);
+    WebApiStatus::handleSystem(
+        m_server,
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer));
 }
 
 void WebServerService::handleApiSystemRestart()
@@ -397,70 +380,34 @@ void WebServerService::handleApiSystemRestart()
 
 void WebServerService::handleApiNetwork()
 {
-    size_t jsonLength = 0;
-
-    if (!JsonStatusSerializer::serializeNetwork(
-            App.status().network,
-            m_jsonBuffer,
-            sizeof(m_jsonBuffer),
-            jsonLength))
-    {
-        sendJson(500, "{\"error\":\"network_serialization_failed\"}");
-        return;
-    }
-
-    sendJson(200, m_jsonBuffer);
+    WebApiStatus::handleNetwork(
+        m_server,
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer));
 }
 
 void WebServerService::handleApiHealth()
 {
-    size_t jsonLength = 0;
-
-    if (!JsonStatusSerializer::serializeHealth(
-            App.status().health,
-            m_jsonBuffer,
-            sizeof(m_jsonBuffer),
-            jsonLength))
-    {
-        sendJson(500, "{\"error\":\"health_serialization_failed\"}");
-        return;
-    }
-
-    sendJson(200, m_jsonBuffer);
+    WebApiStatus::handleHealth(
+        m_server,
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer));
 }
 
 void WebServerService::handleApiWatchdog()
 {
-    size_t jsonLength = 0;
-
-    if (!JsonStatusSerializer::serializeWatchdog(
-            App.status().watchdog,
-            m_jsonBuffer,
-            sizeof(m_jsonBuffer),
-            jsonLength))
-    {
-        sendJson(500, "{\"error\":\"watchdog_serialization_failed\"}");
-        return;
-    }
-
-    sendJson(200, m_jsonBuffer);
+    WebApiStatus::handleWatchdog(
+        m_server,
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer));
 }
 
 void WebServerService::handleApiPower()
 {
-    size_t jsonLength = 0;
-
-    if (!JsonStatusSerializer::serializePower(
-            App.status().power,
-            m_jsonBuffer,
-            sizeof(m_jsonBuffer),
-            jsonLength))
-    {
-        sendJson(500, "{\"error\":\"power_serialization_failed\"}");
-        return;
-    }
-
-    sendJson(200, m_jsonBuffer);
+    WebApiStatus::handlePower(
+        m_server,
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer));
 }
 
 void WebServerService::handleApiConfig()

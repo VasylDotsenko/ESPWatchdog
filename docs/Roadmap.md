@@ -254,7 +254,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.4.55 — WebApiStatus split
 
-Статус: next.
+Статус: реалізовано.
 
 План:
 
@@ -268,6 +268,8 @@ URL: http://192.168.4.1/config/wifi
 - залишити `/api/status` як compatibility endpoint.
 
 ### 0.4.56 — WebServer route cleanup
+
+Статус: next.
 
 План:
 

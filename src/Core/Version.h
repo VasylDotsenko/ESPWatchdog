@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     4
-#define FW_VERSION_PATCH     14
+#define FW_VERSION_PATCH     15
 
-#define FW_VERSION_STRING    "0.4.14"
-#define FW_VERSION_LABEL     "tuya35-wdt-safe"
-#define FW_VERSION_FULL      "0.4.14-tuya35-wdt-safe"
+#define FW_VERSION_STRING    "0.4.15"
+#define FW_VERSION_LABEL     "tuya35-session-retcode"
+#define FW_VERSION_FULL      "0.4.15-tuya35-session-retcode"
 
 //=============================================================================
 // Project

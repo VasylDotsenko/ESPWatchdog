@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.4.14-tuya35-wdt-safe
+0.4.15-tuya35-session-retcode
 ```
 
 Production target:

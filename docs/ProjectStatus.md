@@ -16,7 +16,7 @@
 - hardware smoke-test із `TCOGCZ16-A`;
 - стабілізація Tuya LAN power-cycle.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.14-tuya35-wdt-safe`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.4.15-tuya35-session-retcode`.
 
 ## Вже зроблено
 

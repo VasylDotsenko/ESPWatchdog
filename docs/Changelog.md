@@ -4,6 +4,60 @@
 
 ---
 
+## [0.4.15-tuya35-session-retcode] - 09.08.2026
+
+### Статус
+
+Виправлено розбір `SESSION_KEY_RESP` для Tuya LAN protocol `3.5`.
+
+За runtime-логом розетка вже відповідала на handshake:
+
+```text
+Tuya: 3.5 packet received, cmd=4 seq=11658 payload=52
+Tuya: 3.5 session response invalid
+```
+
+`payload=52` означає, що після AES-GCM decrypt всередині відповіді є:
+
+```text
+retcode(4) + device_nonce(16) + HMAC(client_nonce)(32)
+```
+
+Попередня реалізація читала `device_nonce` з нульового байта payload і через це HMAC-перевірка завжди падала.
+
+### Оновлено
+
+- `Services/Tuya/TuyaProtocol.cpp`;
+- `Core/Version.h`;
+- `platformio.ini`;
+- `README.md`;
+- `ProjectStatus.md`;
+- `Changelog.md`.
+
+### Виправлено
+
+- `Protocol::processSessionResponse()` тепер пропускає encrypted retcode `0x00000000` у відповіді пристрою;
+- `device_nonce` читається з правильного offset;
+- HMAC перевіряється за правильним layout payload;
+- Tuya 3.5 session negotiation має перейти до `SESSION_KEY_FINISH`.
+
+### Очікуваний runtime flow
+
+```text
+Tuya: 3.5 session start sent, seq=1
+Tuya: 3.5 packet received, cmd=4 seq=... payload=52
+Tuya: 3.5 session established
+Tuya: 3.5 relay command sent
+```
+
+### Версія
+
+```text
+0.4.15-tuya35-session-retcode
+```
+
+---
+
 ## [0.4.14-tuya35-wdt-safe] - 09.08.2026
 
 ### Статус

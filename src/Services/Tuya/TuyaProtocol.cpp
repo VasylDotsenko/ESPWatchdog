@@ -377,14 +377,25 @@ namespace Tuya
             return false;
         }
 
-        if (payloadLength < TuyaCrypto::LOCAL_KEY_SIZE + TuyaCrypto::SHA256_SIZE)
+        size_t payloadOffset = 0;
+
+        if (payloadLength >= 4 + TuyaCrypto::LOCAL_KEY_SIZE + TuyaCrypto::SHA256_SIZE &&
+            payload[0] == 0x00 &&
+            payload[1] == 0x00 &&
+            payload[2] == 0x00 &&
+            payload[3] == 0x00)
+        {
+            payloadOffset = 4;
+        }
+
+        if (payloadLength < payloadOffset + TuyaCrypto::LOCAL_KEY_SIZE + TuyaCrypto::SHA256_SIZE)
         {
             return false;
         }
 
         memcpy(
             m_remoteNonce,
-            payload,
+            payload + payloadOffset,
             TuyaCrypto::LOCAL_KEY_SIZE);
 
         uint8_t expectedHmac[TuyaCrypto::SHA256_SIZE] {};
@@ -399,7 +410,7 @@ namespace Tuya
 
         if (!TuyaCrypto::constantTimeEquals(
                 expectedHmac,
-                payload + TuyaCrypto::LOCAL_KEY_SIZE,
+                payload + payloadOffset + TuyaCrypto::LOCAL_KEY_SIZE,
                 TuyaCrypto::SHA256_SIZE))
         {
             return false;

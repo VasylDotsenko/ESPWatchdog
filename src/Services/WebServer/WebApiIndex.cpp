@@ -18,6 +18,7 @@ namespace
         "{\"method\":\"GET\",\"path\":\"/api/health\",\"description\":\"health status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/watchdog\",\"description\":\"watchdog status\"},"
         "{\"method\":\"GET\",\"path\":\"/api/power\",\"description\":\"power status\"},"
+        "{\"method\":\"GET\",\"path\":\"/api/diagnostics\",\"description\":\"diagnostics summary\"},"
         "{\"method\":\"GET\",\"path\":\"/api/config\",\"description\":\"runtime configuration\"},"
         "{\"method\":\"GET\",\"path\":\"/api/logs\",\"description\":\"runtime logs\"},"
         "{\"method\":\"POST\",\"path\":\"/api/system/restart\",\"description\":\"restart ESP\"},"

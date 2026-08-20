@@ -1,6 +1,6 @@
 # ESP Watchdog — Project Status
 
-Дата: 09.08.2026
+Дата: 20.08.2026
 
 ## Поточний статус
 
@@ -9,11 +9,11 @@
 Основний напрямок роботи зараз:
 
 - перехід до production hardening `0.5.x`;
-- diagnostics baseline;
+- memory / stack audit;
 - подальша стабілізація Tuya LAN `3.5` status/runtime;
 - підготовка OTA та діагностики.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.5.0-security-baseline`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.5.3-ota-update`.
 
 ## Вже зроблено
 
@@ -161,6 +161,11 @@
 - `Application` надає агрегований API-ready `ApiStatusData` snapshot;
 - додано JSON serializer для `ApiStatusData`;
 - додано `WebServerService` з endpoint `GET /api/status`;
+- додано lightweight diagnostics endpoint `GET /api/diagnostics`;
+- додано `RuntimeGuardService` для self-recovery при degraded heap / fragmentation;
+- `/api/diagnostics` показує `runtimeGuard` state;
+- додано `OtaService` для оновлення прошивки по WiFi;
+- додано PlatformIO environment `d1_mini_ota`;
 - додано lightweight Web Dashboard на `/`;
 - додано subsystem API endpoints;
 - додано API index endpoint `/api`;

@@ -44,6 +44,8 @@ private:
 
     void handleApiPower();
 
+    void handleApiDiagnostics();
+
     void handleApiConfig();
 
     void handleApiConfigUpdate();

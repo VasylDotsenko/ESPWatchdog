@@ -50,6 +50,7 @@ footer{padding:0 16px 16px;color:var(--muted)}summary{cursor:pointer;padding:8px
 <a href="/api/health">health</a>
 <a href="/api/watchdog">watchdog</a>
 <a href="/api/power">power</a>
+<a href="/api/diagnostics">diagnostics</a>
 <a href="/api/config">config</a>
 <a href="/api/logs">logs</a>
 </div>

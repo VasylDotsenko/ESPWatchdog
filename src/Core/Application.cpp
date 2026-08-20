@@ -4,8 +4,10 @@
 #include "Services/HealthCheck/HealthCheckService.h"
 #include "Services/HealthCheck/TcpHealthCheckProvider.h"
 #include "Services/Logger/Logger.h"
+#include "Services/OTA/OtaService.h"
 #include "Services/Power/PowerService.h"
 #include "Services/Power/TuyaPowerController.h"
+#include "Services/RuntimeGuard/RuntimeGuardService.h"
 #include "Services/Storage/Storage.h"
 #include "Services/SystemInfo/SystemInfo.h"
 #include "Services/Tuya/TuyaService.h"
@@ -58,6 +60,12 @@ bool Application::begin()
         return false;
     }
 
+    if (!RuntimeGuard.begin())
+    {
+        Log.error("Application: RuntimeGuard initialization failed");
+        return false;
+    }
+
     if (!TuyaLan.begin())
     {
         Log.error("Application: Tuya initialization failed");
@@ -89,6 +97,12 @@ bool Application::begin()
     if (!WebServer.begin())
     {
         Log.error("Application: WebServer initialization failed");
+        return false;
+    }
+
+    if (!OTA.begin())
+    {
+        Log.error("Application: OTA initialization failed");
         return false;
     }
 
@@ -138,6 +152,13 @@ void Application::loop()
     }
 
     WebServer.loop();
+
+    OTA.loop();
+
+    if (!OTA.updating())
+    {
+        RuntimeGuard.loop();
+    }
 }
 
 //=============================================================================

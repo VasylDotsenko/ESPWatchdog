@@ -2,6 +2,7 @@
 
 #include "WebPages.h"
 #include "WebApiAuth.h"
+#include "WebApiDiagnostics.h"
 #include "WebApiIndex.h"
 #include "WebApiStatus.h"
 #include "WebApiConfig.h"
@@ -194,6 +195,14 @@ void WebServerService::configureStatusApiRoutes()
         [this]()
         {
             handleApiPower();
+        });
+
+    m_server.on(
+        "/api/diagnostics",
+        HTTP_GET,
+        [this]()
+        {
+            handleApiDiagnostics();
         });
 }
 
@@ -407,6 +416,14 @@ void WebServerService::handleApiWatchdog()
 void WebServerService::handleApiPower()
 {
     WebApiStatus::handlePower(
+        m_server,
+        m_jsonBuffer,
+        sizeof(m_jsonBuffer));
+}
+
+void WebServerService::handleApiDiagnostics()
+{
+    WebApiDiagnostics::handleGet(
         m_server,
         m_jsonBuffer,
         sizeof(m_jsonBuffer));

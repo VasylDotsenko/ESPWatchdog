@@ -4,6 +4,170 @@
 
 ---
 
+## [0.5.3-ota-update] - 20.08.2026
+
+### Статус
+
+Додано OTA update для оновлення WeMos D1 mini по WiFi.
+
+### Додано
+
+- `OtaService.h`;
+- `OtaService.cpp`;
+- інтеграцію `OTA.begin()` та `OTA.loop()` в `Application`;
+- PlatformIO environment:
+
+```ini
+[env:d1_mini_ota]
+extends = env:d1_mini
+upload_protocol = espota
+upload_port = 192.168.10.44
+```
+
+### Поведінка
+
+- OTA service стартує тільки після підключення до домашньої WiFi-мережі;
+- у setup portal mode OTA не активується;
+- hostname береться з `Config.data().device.hostname`;
+- якщо `security.apiAuthEnabled=true` і `security.apiToken` заданий, той самий токен використовується як OTA password;
+- під час OTA upload `RuntimeGuard` не виконує recovery restart;
+- OTA progress логується кожні 10%.
+
+### Важливо
+
+Першу прошивку з OTA підтримкою потрібно один раз залити через USB. Після цього наступні оновлення можна виконувати по мережі.
+
+### Версія
+
+```text
+0.5.3-ota-update
+```
+
+---
+
+## [0.5.2-runtime-recovery-guard] - 20.08.2026
+
+### Статус
+
+Додано runtime recovery guard для довготривалої роботи ESP8266.
+
+### Причина
+
+Після приблизно двох діб uptime WeMos D1 mini може поступово сповільнюватися і втрачати функціональність. Power-cycle пристрою відновлює роботу. Типові причини для ESP8266:
+
+- деградація heap;
+- heap fragmentation;
+- завислі TCP/Web/Tuya ресурси;
+- довготривалі побічні ефекти WiFi/LwIP;
+- важкі runtime JSON/Web запити на малому heap.
+
+### Додано
+
+- `RuntimeGuardService`;
+- інтеграцію `RuntimeGuard` в `Application`;
+- runtime guard state у `/api/diagnostics`;
+- контрольований restart тільки самого ESP, без power-cycle зовнішньої розетки.
+
+### Recovery policy
+
+Guard не реагує на одиничні провали. Restart планується тільки якщо:
+
+- uptime більше 1 години;
+- пристрій не в setup portal mode;
+- PowerService не виконує restart-cycle;
+- `freeHeap < 8000` bytes або `heapFragmentation > 60%`;
+- деградація триває не менше 10 хвилин.
+
+Після цього виконується delayed `ESP.restart()` через 3000 ms.
+
+### Diagnostics
+
+`GET /api/diagnostics` тепер додатково повертає:
+
+- `runtimeGuard.enabled`;
+- `runtimeGuard.degraded`;
+- `runtimeGuard.restartScheduled`;
+- `runtimeGuard.freeHeap`;
+- `runtimeGuard.heapFragmentation`;
+- `runtimeGuard.minFreeHeap`;
+- `runtimeGuard.maxHeapFragmentation`;
+- `runtimeGuard.degradedSince`;
+- `runtimeGuard.restartAt`.
+
+### Версія
+
+```text
+0.5.2-runtime-recovery-guard
+```
+
+---
+
+## [0.5.1-diagnostics-baseline] - 10.08.2026
+
+### Статус
+
+Додано lightweight diagnostics endpoint для польового debug.
+
+### Додано
+
+- `WebApiDiagnostics.h`;
+- `WebApiDiagnostics.cpp`;
+- endpoint:
+
+```text
+GET /api/diagnostics
+```
+
+- link `/api/diagnostics` у API index;
+- link `diagnostics` у footer Web UI.
+
+### Diagnostics snapshot
+
+Endpoint повертає компактний JSON без restart history:
+
+- `ok`;
+- `level`: `ok`, `warn`, `bad`;
+- system:
+  - `freeHeap`;
+  - `heapFragmentation`;
+  - `uptimeSeconds`;
+  - `resetReason`;
+  - heap/fragmentation warning flags;
+- network:
+  - connected;
+  - RSSI;
+  - quality;
+  - reconnect count;
+- health:
+  - available;
+  - running;
+  - response time;
+  - sent/lost;
+  - consecutive failures;
+- watchdog:
+  - enabled;
+  - restart pending;
+  - locked out;
+  - cooldown;
+  - restart count;
+- power:
+  - available;
+  - restart in progress;
+  - restart count;
+  - error count.
+
+### Чому
+
+`/api/status` уже містить повний aggregate snapshot, але для польової діагностики потрібен короткий endpoint, який швидко відповідає на питання: чи вистачає heap, чи є WiFi, чи живий HealthCheck, чи Watchdog готує restart, і чи PowerService/Tuya має помилки.
+
+### Версія
+
+```text
+0.5.1-diagnostics-baseline
+```
+
+---
+
 ## [0.5.0-security-baseline] - 09.08.2026
 
 ### Статус

@@ -1,11 +1,11 @@
 # ESP Watchdog — Roadmap
 
-Дата оновлення: 09.08.2026
+Дата оновлення: 20.08.2026
 
 Поточний baseline:
 
 ```text
-0.5.0-security-baseline
+0.5.3-ota-update
 ```
 
 Production target:
@@ -33,7 +33,10 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - API token protection для state-changing commands;
 - mobile-friendly Web UI для dashboard/config/logs;
 - route fallback для Web UI config pages;
-- Web API security baseline.
+- Web API security baseline;
+- diagnostics baseline;
+- runtime recovery guard;
+- OTA update over WiFi.
 
 Поточний етап — **перехід до production hardening `0.5.x`**.
 
@@ -358,6 +361,8 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.5.1 — Diagnostics baseline
 
+Статус: реалізовано.
+
 - heap diagnostics;
 - uptime diagnostics;
 - reset reason diagnostics;
@@ -368,14 +373,27 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.5.2 — Recovery behavior
 
+Статус: реалізовано частково.
+
 - WiFi reconnect behavior;
 - Tuya unavailable behavior;
 - config invalid behavior;
 - LittleFS write failure behavior;
 - repeated watchdog failures behavior;
 - restart-loop protection review.
+- RuntimeGuard для degraded heap / heap fragmentation.
 
-### 0.5.3 — Memory / stack audit
+### 0.5.3 — OTA update
+
+Статус: реалізовано.
+
+- ArduinoOTA service;
+- OTA upload через PlatformIO `espota`;
+- OTA hostname з config;
+- OTA password через `security.apiToken`;
+- RuntimeGuard pause під час OTA upload.
+
+### 0.5.4 — Memory / stack audit
 
 - audit `JsonDocument` usage;
 - audit stack buffers;

@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.5.0-security-baseline
+0.5.3-ota-update
 ```
 
 Production target:
@@ -146,6 +146,7 @@ http://192.168.4.1/config/wifi
   - `WebApiLogs`;
   - `WebApiPower`;
   - `WebApiStatus`;
+  - `WebApiDiagnostics`;
 - first-boot WiFi setup portal;
 - fallback AP mode `ESP-Watchdog-Setup`;
 - setup portal address `192.168.4.1`;
@@ -199,8 +200,14 @@ http://192.168.4.1/config/wifi
 - API-ready system status snapshot;
 - API-ready network status snapshot;
 - aggregate API status snapshot;
+- lightweight diagnostics snapshot;
 - JSON serializer для aggregate API status;
 - Web API status module for `/api/status` and subsystem status endpoints;
+- Web API diagnostics endpoint `/api/diagnostics`;
+- RuntimeGuard для довготривалої роботи ESP8266;
+- контрольований self-restart ESP при sustained heap degradation;
+- OTA update over WiFi;
+- PlatformIO `d1_mini_ota` upload environment;
 - lightweight Web Dashboard на `/`;
 - fast Dashboard load with cached configuration data;
 - subsystem API endpoints;
@@ -580,11 +587,26 @@ lib_deps =
 pio run
 ```
 
-Заливка прошивки:
+Заливка прошивки через USB:
 
 ```bash
 pio run --target upload
 ```
+
+OTA update після першої USB-прошивки з підтримкою OTA:
+
+```bash
+pio run -e d1_mini_ota --target upload
+```
+
+Якщо `security.apiAuthEnabled=true` і задано `security.apiToken`, додай цей token у `upload_flags` для `[env:d1_mini_ota]`:
+
+```ini
+upload_flags =
+    --auth=your-api-token
+```
+
+Перший раз OTA неможливо використати без вже встановленої OTA-прошивки — один стартовий USB upload все одно потрібен.
 
 Заливка LittleFS:
 
@@ -605,7 +627,7 @@ pio device monitor -b 74880
 ### Наступний етап
 
 ```text
-Diagnostics baseline
+Memory / stack audit
 ```
 
 Поточний WebServer вже розділено на окремі модулі:
@@ -633,7 +655,7 @@ Responsive/mobile polish уже виконано для dashboard/config/logs:
 
 ### Далі
 
-- diagnostics baseline;
+- memory / stack audit;
 - Tuya LAN `3.5` status DPQuery через `6699`;
 - OTA;
 - diagnostics;

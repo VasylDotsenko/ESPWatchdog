@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     5
-#define FW_VERSION_PATCH     0
+#define FW_VERSION_PATCH     3
 
-#define FW_VERSION_STRING    "0.5.0"
-#define FW_VERSION_LABEL     "security-baseline"
-#define FW_VERSION_FULL      "0.5.0-security-baseline"
+#define FW_VERSION_STRING    "0.5.3"
+#define FW_VERSION_LABEL     "ota-update"
+#define FW_VERSION_FULL      "0.5.3-ota-update"
 
 //=============================================================================
 // Project

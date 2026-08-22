@@ -1,11 +1,11 @@
 # ESP Watchdog — Roadmap
 
-Дата оновлення: 20.08.2026
+Дата оновлення: 21.08.2026
 
 Поточний baseline:
 
 ```text
-0.5.3-ota-update
+0.5.6-log-time-backfill
 ```
 
 Production target:
@@ -395,11 +395,38 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.5.4 — Memory / stack audit
 
+Статус: реалізовано частково.
+
 - audit `JsonDocument` usage;
 - audit stack buffers;
 - перевірити WebServer handlers під навантаженням;
 - прибрати зайві великі локальні буфери;
 - перевірити 24h heap stability.
+- `/api/diagnostics` переведено на streaming JSON без runtime `JsonDocument`;
+- постійний WebServer JSON buffer зменшено з 8192 до 6144 bytes;
+- `SystemInfo` більше не оновлює firmware/reset strings щосекунди.
+- runtime log buffer зменшено до 16 entries;
+- RuntimeGuard diagnostics синхронізовано з поточним heap.
+
+### 0.5.5 — Real-time logs
+
+Статус: реалізовано.
+
+- додано `TimeService`;
+- NTP sync після підключення до WiFi;
+- timezone для Europe/Kyiv;
+- Serial logs після NTP показують реальний час події;
+- `/api/logs` віддає `wallTime` та `wallTimeText`;
+- Web logs page показує real-time timestamp, якщо час синхронізований.
+
+### 0.5.6 — Log time backfill
+
+Статус: реалізовано.
+
+- стартові log entries отримують real-time timestamp після NTP sync;
+- `Logger::synchronizeWallTime()` заповнює `wallTime` / `wallTimeText` для вже наявних записів;
+- timezone налаштовується через ESP8266-native `configTime(TZ, ...)`;
+- виправлено некоректне відображення стартового логу після синхронізації часу.
 
 ---
 

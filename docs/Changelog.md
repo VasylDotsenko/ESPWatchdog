@@ -4,6 +4,105 @@
 
 ---
 
+## [0.5.6-log-time-backfill] - 22.08.2026
+
+### Статус
+
+Hotfix для real-time runtime logs.
+
+### Виправлено
+
+- стартові записи логу більше не залишаються у форматі `[000000xxxx]` після NTP-синхронізації;
+- після отримання валідного NTP часу `Logger::synchronizeWallTime()` ретроактивно заповнює:
+  - `wallTime`;
+  - `wallTimeText`.
+- timezone для Europe/Kyiv застосовується через ESP8266-native `configTime(TZ, ...)`.
+
+### Поведінка
+
+Під час boot до NTP sync Serial може тимчасово показувати uptime-format:
+
+```text
+[0000004008][INFO ] WiFi: connected
+```
+
+Після NTP sync `/api/logs` та Web logs page повинні показувати вже дорахований реальний час для цих самих стартових подій.
+
+---
+
+## [0.5.5-real-time-logs] - 21.08.2026
+
+### Статус
+
+Додано реальний час події у runtime logs.
+
+### Додано
+
+- `TimeService.h`;
+- `TimeService.cpp`;
+- NTP synchronization після підключення до домашньої WiFi-мережі;
+- timezone `Europe/Kyiv`;
+- `LogEntry::wallTime`;
+- `LogEntry::wallTimeText`;
+- поля `wallTime` та `wallTimeText` у `/api/logs`;
+- відображення real-time timestamp на сторінці `/logs`.
+
+### Поведінка
+
+До NTP-синхронізації лог лишається у форматі uptime:
+
+```text
+[0000004021][INFO ] WiFi: connected
+```
+
+Після NTP-синхронізації лог переходить у формат реального часу:
+
+```text
+[2026-08-21 14:35:10][INFO ] TimeService: time synchronized
+```
+
+### Причина
+
+Для довготривалого тестування після 24h / 7d роботи `millis()` у логах вже незручний. Реальний час події дозволяє напряму зіставляти watchdog events, Tuya power-cycle, Web-команди та network issues із фактичним часом.
+
+---
+
+## [0.5.4-memory-stack-audit] - 20.08.2026
+
+### Статус
+
+Перший етап memory / stack hardening після довготривалого тесту WeMos D1 mini.
+
+### Змінено
+
+- `/api/diagnostics` переведено на streaming JSON без runtime `JsonDocument`;
+- постійний `WebServerService::m_jsonBuffer` зменшено з `8192` до `6144` bytes;
+- `SystemInfo` більше не оновлює firmware/reset strings щосекунди;
+- `updateFirmware()` виконується один раз під час старту `SystemInfoService`.
+- runtime log buffer зменшено з `32 x 120` до `16 x 96` символів;
+- `RuntimeGuard.status()` тепер повертає актуальні `freeHeap` та `heapFragmentation`.
+
+### Причина
+
+Після роботи пристрою більше двох діб спостерігалось суттєве сповільнення Web Dashboard та часткова деградація функціоналу.
+
+Основний фокус цього релізу:
+
+- зменшити постійне RAM-навантаження;
+- прибрати зайві heap-операції у періодичних задачах;
+- зменшити ризик heap fragmentation;
+- підготувати базу для подальшого 24h / 7d stability audit.
+
+### Очікуваний ефект
+
+- менше heap pressure під час роботи Web API;
+- стабільніший `/api/diagnostics`;
+- менше динамічних алокацій у `SystemInfo`;
+- приблизно кілька KB RAM повернуто з runtime log buffer;
+- краща поведінка після багатоденної роботи.
+
+---
+
 ## [0.5.3-ota-update] - 20.08.2026
 
 ### Статус

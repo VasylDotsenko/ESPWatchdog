@@ -33,6 +33,7 @@ bool SystemInfoService::begin()
     m_uptimeMs = 0;
     m_lastMillis = millis();
 
+    updateFirmware();
     update();
 
     m_updateTimer.start(
@@ -113,7 +114,6 @@ void SystemInfoService::update()
     updateUptime();
     updateMemory();
     updateCpu();
-    updateFirmware();
 }
 
 void SystemInfoService::updateUptime()

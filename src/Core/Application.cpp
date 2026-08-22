@@ -10,6 +10,7 @@
 #include "Services/RuntimeGuard/RuntimeGuardService.h"
 #include "Services/Storage/Storage.h"
 #include "Services/SystemInfo/SystemInfo.h"
+#include "Services/Time/TimeService.h"
 #include "Services/Tuya/TuyaService.h"
 #include "Services/Watchdog/WatchdogService.h"
 #include "Services/WebServer/WebServerService.h"
@@ -57,6 +58,12 @@ bool Application::begin()
     if (!System.begin())
     {
         Log.error("Application: System initialization failed");
+        return false;
+    }
+
+    if (!TimeSync.begin())
+    {
+        Log.error("Application: TimeService initialization failed");
         return false;
     }
 
@@ -120,6 +127,8 @@ void Application::loop()
     Network.loop();
 
     System.loop();
+
+    TimeSync.loop();
 
     if (Network.setupMode())
     {

@@ -45,9 +45,21 @@ void WebApiLogs::handleGet(
         snprintf(
             chunk,
             sizeof(chunk),
-            "%s{\"timestamp\":%lu,\"level\":%u,\"levelText\":\"",
+            "%s{\"timestamp\":%lu,\"wallTime\":%lu,\"wallTimeText\":\"",
             i == 0 ? "" : ",",
             static_cast<unsigned long>(entry.timestamp),
+            static_cast<unsigned long>(entry.wallTime));
+
+        server.sendContent(chunk);
+
+        WebJsonUtils::sendEscaped(
+            server,
+            entry.wallTimeText);
+
+        snprintf(
+            chunk,
+            sizeof(chunk),
+            "\",\"level\":%u,\"levelText\":\"",
             static_cast<unsigned int>(entry.level));
 
         server.sendContent(chunk);

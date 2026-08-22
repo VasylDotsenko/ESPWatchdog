@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.5.3-ota-update
+0.5.6-log-time-backfill
 ```
 
 Production target:

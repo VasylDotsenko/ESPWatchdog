@@ -114,7 +114,8 @@ function logsCard(data){
  const entries=(data&&data.entries)||[];
  const lines=entries.length?entries.slice().reverse().map(e=>{
   const c=e.levelText==='ERROR'?'bad':(e.levelText==='WARN '?'warn':'');
-  return logLine(`[${String(e.timestamp||0).padStart(10,'0')}][${e.levelText||'-'}] ${esc(e.message||'')}`,c);
+  const ts=e.wallTimeText||String(e.timestamp||0).padStart(10,'0');
+  return logLine(`[${ts}][${e.levelText||'-'}] ${esc(e.message||'')}`,c);
  }).join(''):logLine('No runtime logs yet');
  return `<section class="card wide"><h2>Runtime logs</h2><div class="btns"><button onclick="load()">REFRESH</button></div><div class="log">${lines}</div></section>`;
 }

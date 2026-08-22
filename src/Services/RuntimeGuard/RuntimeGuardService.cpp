@@ -54,7 +54,16 @@ void RuntimeGuardService::loop()
 
 RuntimeGuardStatus RuntimeGuardService::status() const
 {
-    return m_status;
+    RuntimeGuardStatus status =
+        m_status;
+
+    status.freeHeap =
+        ESP.getFreeHeap();
+
+    status.heapFragmentation =
+        ESP.getHeapFragmentation();
+
+    return status;
 }
 
 void RuntimeGuardService::check()

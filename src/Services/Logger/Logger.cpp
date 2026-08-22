@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <time.h>
 
 Logger Log;
 
@@ -177,6 +178,51 @@ void Logger::clear()
     }
 }
 
+void Logger::synchronizeWallTime()
+{
+    const time_t now =
+        time(nullptr);
+
+    if (now < static_cast<time_t>(1600000000UL))
+    {
+        return;
+    }
+
+    const uint32_t nowMillis =
+        millis();
+
+    for (uint8_t i = 0; i < LOG_CAPACITY; ++i)
+    {
+        LogEntry& entry =
+            m_entries[i];
+
+        if (entry.message[0] == '\0' ||
+            entry.wallTime != 0)
+        {
+            continue;
+        }
+
+        const uint32_t elapsedMs =
+            static_cast<uint32_t>(
+                nowMillis - entry.timestamp);
+
+        const time_t entryTime =
+            now - static_cast<time_t>(elapsedMs / 1000UL);
+
+        if (!formatWallTimeAt(
+                entryTime,
+                entry.wallTimeText,
+                sizeof(entry.wallTimeText)))
+        {
+            entry.wallTimeText[0] = '\0';
+            continue;
+        }
+
+        entry.wallTime =
+            static_cast<uint32_t>(entryTime);
+    }
+}
+
 void Logger::print(
     LogLevel level,
     const char* prefix,
@@ -231,16 +277,22 @@ void Logger::writeLine(
     const uint32_t now =
         millis();
 
+    char timestamp[LogEntry::WALL_TIME_LENGTH] {};
+    uint32_t epoch = 0;
+
+    if (!formatWallTime(
+            timestamp,
+            sizeof(timestamp),
+            epoch))
+    {
+        snprintf(
+            timestamp,
+            sizeof(timestamp),
+            "%010lu",
+            static_cast<unsigned long>(now));
+    }
+
     Serial.print('[');
-
-    char timestamp[11] {};
-
-    snprintf(
-        timestamp,
-        sizeof(timestamp),
-        "%010lu",
-        static_cast<unsigned long>(now));
-
     Serial.print(timestamp);
     Serial.print("][");
     Serial.print(prefix != nullptr ? prefix : "INFO ");
@@ -260,8 +312,25 @@ void Logger::append(
 
     entry.timestamp =
         millis();
+    entry.wallTime = 0;
     entry.level =
         level;
+
+    uint32_t epoch = 0;
+
+    if (formatWallTime(
+            entry.wallTimeText,
+            sizeof(entry.wallTimeText),
+            epoch))
+    {
+        entry.wallTime =
+            epoch;
+    }
+    else
+    {
+        entry.wallTimeText[0] =
+            '\0';
+    }
 
     strncpy(
         entry.levelText,
@@ -285,4 +354,76 @@ void Logger::append(
     {
         ++m_count;
     }
+}
+
+bool Logger::formatWallTime(
+    char* output,
+    size_t outputSize,
+    uint32_t& epoch)
+{
+    epoch = 0;
+
+    if (output == nullptr ||
+        outputSize == 0)
+    {
+        return false;
+    }
+
+    output[0] = '\0';
+
+    const time_t now =
+        time(nullptr);
+
+    if (now < static_cast<time_t>(1600000000UL))
+    {
+        return false;
+    }
+
+    if (!formatWallTimeAt(
+            now,
+            output,
+            outputSize))
+    {
+        output[0] = '\0';
+        return false;
+    }
+
+    epoch =
+        static_cast<uint32_t>(now);
+
+    return true;
+}
+
+bool Logger::formatWallTimeAt(
+    time_t timestamp,
+    char* output,
+    size_t outputSize)
+{
+    if (output == nullptr ||
+        outputSize == 0)
+    {
+        return false;
+    }
+
+    output[0] = '\0';
+
+    if (timestamp < static_cast<time_t>(1600000000UL))
+    {
+        return false;
+    }
+
+    struct tm localTime {};
+
+    if (localtime_r(
+            &timestamp,
+            &localTime) == nullptr)
+    {
+        return false;
+    }
+
+    return strftime(
+        output,
+        outputSize,
+        "%Y-%m-%d %H:%M:%S",
+        &localTime) != 0;
 }

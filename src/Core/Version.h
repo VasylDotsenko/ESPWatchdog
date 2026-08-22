@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     5
-#define FW_VERSION_PATCH     3
+#define FW_VERSION_PATCH     6
 
-#define FW_VERSION_STRING    "0.5.3"
-#define FW_VERSION_LABEL     "ota-update"
-#define FW_VERSION_FULL      "0.5.3-ota-update"
+#define FW_VERSION_STRING    "0.5.6"
+#define FW_VERSION_LABEL     "log-time-backfill"
+#define FW_VERSION_FULL      "0.5.6-log-time-backfill"
 
 //=============================================================================
 // Project

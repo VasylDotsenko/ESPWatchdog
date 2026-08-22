@@ -1,6 +1,6 @@
 # ESP Watchdog — Project Status
 
-Дата: 20.08.2026
+Дата: 21.08.2026
 
 ## Поточний статус
 
@@ -11,9 +11,12 @@
 - перехід до production hardening `0.5.x`;
 - memory / stack audit;
 - подальша стабілізація Tuya LAN `3.5` status/runtime;
-- підготовка OTA та діагностики.
+- OTA update;
+- memory / stack hardening.
+- зменшення постійного RAM footprint Web/Logger.
+- real-time runtime logs через NTP.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.5.3-ota-update`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.5.6-log-time-backfill`.
 
 ## Вже зроблено
 

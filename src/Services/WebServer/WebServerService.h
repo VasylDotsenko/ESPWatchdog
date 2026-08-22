@@ -9,7 +9,7 @@ class WebServerService final : public IService
 {
 public:
     static constexpr uint16_t DEFAULT_PORT = 80;
-    static constexpr size_t JSON_BUFFER_SIZE = 8192;
+    static constexpr size_t JSON_BUFFER_SIZE = 6144;
 
     bool begin() override;
 

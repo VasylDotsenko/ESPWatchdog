@@ -1,11 +1,11 @@
 # ESP Watchdog — Roadmap
 
-Дата оновлення: 21.08.2026
+Дата оновлення: 27.08.2026
 
 Поточний baseline:
 
 ```text
-0.5.7-long-run-observability
+0.9.0-feature-freeze
 ```
 
 Production target:
@@ -38,7 +38,7 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - runtime recovery guard;
 - OTA update over WiFi.
 
-Поточний етап — **перехід до production hardening `0.5.x`**.
+Поточний етап — **Release Candidate `0.9.x` / Feature Freeze**.
 
 ---
 
@@ -442,19 +442,69 @@ URL: http://192.168.4.1/config/wifi
 - dashboard отримав картку `Runtime trend`;
 - спрощено контроль 24h / 7d stability без ручного порівняння JSON-зрізів.
 
+### 0.5.8 — Tuya runtime observability
+
+Статус: реалізовано.
+
+- додано Tuya runtime timestamps:
+  - `connectedAt`;
+  - `lastDisconnectedAt`;
+  - `lastCommandAt`;
+  - `lastPacketAt`;
+  - `lastErrorAt`.
+- додано лічильники Tuya `3.5` session negotiation:
+  - `sessionStartCount`;
+  - `sessionEstablishedCount`;
+  - `sessionFailureCount`.
+- `/api/diagnostics` отримав секцію `tuya`;
+- dashboard отримав картку `Tuya runtime`;
+- Tuya RX path отримав додаткові `yield()` під час читання пакетів.
+
+### 0.5.9 — RC readiness
+
+Статус: реалізовано.
+
+- поточний baseline синхронізовано з фактичним станом прошивки;
+- README більше не позначає security baseline та OTA як незавершені;
+- зафіксовано реальні перед-RC blockers:
+  - Tuya LAN `3.5` status DPQuery через `6699`;
+  - long-run verification після останніх `0.5.x` змін;
+  - фінальна перевірка документації / baseline config перед `0.9.0`.
+- наступний великий milestone визначено як `0.9.0 Feature freeze`.
+
+### 0.5.10 — Tuya 3.5 status DPQuery
+
+Статус: реалізовано, потребує hardware verification.
+
+- додано `Tuya::Protocol::buildStatusQuery(..., Packet6699&)`;
+- для Tuya LAN `3.5` status query тепер іде через:
+  - `ensureSession35()`;
+  - command `DPQueryNew`;
+  - encrypted `6699` packet;
+  - relay DPS з `config.json`.
+- `statusPollingEnabled` тепер може запускати polling і для протоколу `3.5`;
+- relay command path залишено без функціональних змін.
+
 ---
 
 ## Release Candidate — 0.9.x
 
 ### 0.9.0 — Feature freeze
 
+Статус: реалізовано.
+
 - заборона великих архітектурних змін;
 - тільки bugfix/stability;
 - документація актуалізована;
 - повна збірка без warnings/error;
 - baseline config.json перевірений.
+- додано `ReleaseChecklist.md`;
+- production feature set зафіксовано для `1.0.0`;
+- нові функції переносяться після `1.0.0`, якщо вони не блокують hardware verification.
 
 ### 0.9.1 — Hardware verification
+
+Статус: наступний етап.
 
 Перевірити на реальному hardware:
 

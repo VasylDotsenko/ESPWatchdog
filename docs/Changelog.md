@@ -4,6 +4,121 @@
 
 ---
 
+## [0.9.0-feature-freeze] - 27.08.2026
+
+### Статус
+
+Проєкт переведено у Release Candidate гілку `0.9.x`.
+
+### Змінено
+
+- зафіксовано Feature Freeze перед `1.0.0`;
+- `Version.h` та `platformio.ini` оновлено до `0.9.0-feature-freeze`;
+- README синхронізовано зі станом Release Candidate;
+- Roadmap переведено з production hardening `0.5.x` у RC phase `0.9.x`;
+- ProjectStatus оновлено до поточного RC-стану;
+- додано `ReleaseChecklist.md`.
+
+### Політика Feature Freeze
+
+До `1.0.0` дозволені тільки:
+
+- bugfix;
+- hardware verification fixes;
+- security / stability fixes;
+- документація;
+- baseline config correction.
+
+### Наступний етап
+
+- `0.9.1` — hardware verification;
+- `0.9.2` — long-run test.
+
+---
+
+## [0.5.10-tuya-dpquery35] - 22.08.2026
+
+### Статус
+
+Додано першу реалізацію Tuya LAN `3.5` status DPQuery через encrypted `6699` packet.
+
+### Додано
+
+- `Tuya::Protocol::buildStatusQuery(..., Packet6699&)`;
+- `DPQueryNew` command path для Tuya `3.5`;
+- status query для `3.5` через:
+  - session negotiation;
+  - encrypted 6699 packet;
+  - relay DPS з `config.json`.
+- `TuyaService::sendStatusQuery()` більше не блокує протокол `3.5`;
+- `updateStatusPolling()` більше не пропускає polling для `3.5`.
+
+### Не змінено
+
+- relay OFF/ON command path залишено без функціональних змін;
+- status polling лишається opt-in через `tuya.statusPollingEnabled`.
+
+### Потрібно перевірити на hardware
+
+- увімкнути `tuya.statusPollingEnabled`;
+- перевірити, що розетка відповідає status packet;
+- перевірити, що `Tuya: relay state=...` оновлюється без power command.
+
+---
+
+## [0.5.9-rc-readiness] - 22.08.2026
+
+### Статус
+
+Підготовлено проєкт до переходу в Release Candidate гілку `0.9.x`.
+
+### Оновлено
+
+- синхронізовано `Version.h` та `platformio.ini`;
+- README оновлено відповідно до фактичного стану:
+  - Web API security baseline вже реалізовано;
+  - OTA update over WiFi вже працює;
+  - поточний наступний етап — Release Candidate readiness.
+- Roadmap отримав пункт `0.5.9 — RC readiness`;
+- ProjectStatus отримав актуальні перед-RC кроки.
+
+### Перед-RC blockers
+
+- прийняти рішення по Tuya LAN `3.5` status DPQuery через `6699`;
+- провести long-run verification після останніх `0.5.x` змін;
+- перевірити baseline `config.json`, README, Roadmap та Changelog перед `0.9.0`.
+
+---
+
+## [0.5.8-tuya-runtime-observability] - 22.08.2026
+
+### Статус
+
+Додано спостереження за Tuya LAN runtime без зміни робочого протоколу керування розеткою.
+
+### Додано
+
+- runtime timestamps для Tuya:
+  - `connectedAt`;
+  - `lastDisconnectedAt`;
+  - `lastCommandAt`;
+  - `lastPacketAt`;
+  - `lastErrorAt`.
+- лічильники Tuya 3.5 session negotiation:
+  - `sessionStartCount`;
+  - `sessionEstablishedCount`;
+  - `sessionFailureCount`.
+- секцію `tuya` у `/api/diagnostics`;
+- картку `Tuya runtime` на dashboard;
+- додаткові `yield()` під час читання Tuya socket RX buffer, щоб зменшити ризик WDT/stack pressure при пакетних відповідях.
+
+### Не змінено
+
+- Tuya LAN protocol `3.5` relay command path залишено без функціональних змін;
+- status query для `3.5` і далі не виконується автоматично, доки не буде реалізовано окремий `6699 DPQuery`.
+
+---
+
 ## [0.5.7-long-run-observability] - 22.08.2026
 
 ### Статус

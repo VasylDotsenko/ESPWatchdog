@@ -227,7 +227,7 @@ async function loadDashboardConfig(force=false){
  configLoadedAt=now;
  return configCache;
 }
-function render(s,c){
+function render(s,c,d={}){
  if(currentPage()==='logs'){
   renderLogs();
   return;
@@ -247,12 +247,16 @@ function render(s,c){
  const h=s.health||{}, hs=h.summary||{}, hst=h.statistics||{};
  const w=s.watchdog||{}, ws=w.summary||{}, wc=w.configuration||{}, wst=w.statistics||{};
  const p=s.power||{}, ps=p.summary||{}, pst=p.statistics||{}, ph=p.history||{};
+ const rg=(d&&d.runtimeGuard)||{};
+ const tu=(d&&d.tuya)||{};
  app.innerHTML=[
   card('System',[row('Version',fw.version||'-'),row('Build',`${fw.buildDate||''} ${fw.buildTime||''}`),row('Uptime',`${up.days||0}d ${up.hours||0}h ${up.minutes||0}m`),row('Heap',mem.freeHeap||0),row('CPU',`${cpu.frequencyMHz||0} MHz`),'<div class="btns"><button class="warnBtn" onclick="restartEsp()">RESTART ESP</button></div>']),
+  card('Runtime trend',[row('Level',(d&&d.level)||'-',(d&&d.level)==='ok'?'ok':((d&&d.level)==='warn'?'warn':'bad')),row('Heap now',rg.freeHeap||0),row('Heap at boot',rg.heapAtBoot||0),row('Min heap seen',rg.minFreeHeapSeen||0),row('Heap drop',rg.heapDropFromBoot||0),row('Max frag seen',`${rg.maxHeapFragmentationSeen||0}%`),row('Guard',rg.degraded?'degraded':'ok',rg.degraded?'warn':'ok')]),
   card('Network',[row('State',ns.stateText||'-',cls(ns.connected)),row('IP',ip(na.ip)),row('SSID',nc.ssid||'-'),row('RSSI',`${sig.rssi||0} dBm`),row('Quality',`${sig.quality||0}%`)]),
   card('Health',[row('Available',hs.available?'online':'offline',cls(hs.available)),row('Last status',hs.lastStatusText||'-'),row('RTT',ms(hs.responseTime)),row('Sent',hst.sent||0),row('Lost',hst.lost||0),row('Fails',hst.consecutiveFails||0)]),
   card('Watchdog',[row('State',ws.stateText||'-',ws.lockedOut?'bad':ws.cooldown?'warn':'ok'),row('Enabled',ws.enabled?'yes':'no',cls(ws.enabled)),row('Failures',`${ws.consecutiveFailures||0}/${wc.failureThreshold||0}`),row('Restarts',wst.restartCount||0),row('Power off',ms(wc.powerOffTime))]),
   card('Power',[row('State',ps.stateText||'-',ps.available?'ok':'warn'),row('Controller',ps.available?'available':'unavailable',cls(ps.available)),row('Restarting',ps.restartInProgress?'yes':'no',ps.restartInProgress?'warn':''),row('Restarts',pst.restartCount||0),row('Errors',pst.errorCount||0),row('History',`${ph.succeeded||0} ok / ${ph.failed||0} failed`)]),
+  card('Tuya runtime',[row('Connected',tu.connected?'yes':'no',cls(tu.connected)),row('Relay',tu.relayState?'on':'off',tu.relayState?'ok':'warn'),row('Commands',tu.commandCount||0),row('Errors',tu.errorCount||0,(tu.errorCount||0)>0?'warn':'ok'),row('Reconnects',tu.reconnectCount||0),row('Sessions',`${tu.sessionEstablishedCount||0}/${tu.sessionStartCount||0}`,(tu.sessionFailureCount||0)>0?'warn':'ok'),row('Last packet',ms(tu.lastPacketAt||0)),row('Last error',ms(tu.lastErrorAt||0))]),
   ...configCards(c),
   controls(ps,wc),
   restartHistory(ph),
@@ -260,7 +264,7 @@ function render(s,c){
  ].join('');
  updated.textContent=new Date().toLocaleTimeString();
 }
-async function load(){if(loading)return;loading=true;try{if(currentPage()==='logs'){await renderLogs();return}if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const section=currentSection();if(section){render({},await getJson('/api/config'));return}const s=await loadDashboardStatus();render(s,configCache);if(!configLoadedAt||Date.now()-configLoadedAt>30000){loadDashboardConfig().then(c=>{if(!currentPage()&&!currentSection())render(s,c)})}}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status',esc(e.message||'unable to load'),'bad')])}finally{loading=false}}
+async function load(){if(loading)return;loading=true;try{if(currentPage()==='logs'){await renderLogs();return}if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const section=currentSection();if(section){render({},await getJson('/api/config'));return}const [s,d]=await Promise.all([loadDashboardStatus(),tryGetJson('/api/diagnostics',{})]);render(s,configCache,d);if(!configLoadedAt||Date.now()-configLoadedAt>30000){loadDashboardConfig().then(c=>{if(!currentPage()&&!currentSection())render(s,c,d)})}}catch(e){updated.textContent='offline';app.innerHTML=card('Error',[row('Status',esc(e.message||'unable to load'),'bad')])}finally{loading=false}}
 load();setInterval(load,5000);
 </script>
 </body>

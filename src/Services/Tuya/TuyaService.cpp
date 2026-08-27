@@ -66,11 +66,15 @@ bool TuyaService::connect()
     const auto& cfg = Config.data().tuya;
 
     if (strlen(cfg.ipAddress) == 0)
+    {
+        m_status.lastErrorAt = millis();
         return false;
+    }
 
     if (!initializeProtocol())
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         Log.warning("Tuya: protocol not configured");
         return false;
     }
@@ -86,6 +90,7 @@ bool TuyaService::connect()
         m_state = TuyaState::Disconnected;
         m_status.connected = false;
         m_status.reconnectCount++;
+        m_status.lastErrorAt = millis();
 
         Log.warning("Unable to connect to Tuya");
 
@@ -96,6 +101,7 @@ bool TuyaService::connect()
     m_status.connected = true;
     m_receiveLength = 0;
     m_connectedAt = millis();
+    m_status.connectedAt = m_connectedAt;
     m_lastCommandAt = 0;
     m_statusPollScheduled = false;
 
@@ -117,6 +123,7 @@ void TuyaService::disconnect()
 
     m_state = TuyaState::Disconnected;
     m_status.connected = false;
+    m_status.lastDisconnectedAt = millis();
     m_receiveLength = 0;
     m_connectedAt = 0;
     m_statusPollScheduled = false;
@@ -196,6 +203,7 @@ bool TuyaService::sendHeartbeat()
             packet))
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
 
@@ -207,6 +215,7 @@ bool TuyaService::sendHeartbeat()
     if (written != packet.size())
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
 
@@ -229,6 +238,7 @@ bool TuyaService::sendStatusQuery()
         !initializeProtocol())
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
 
@@ -236,10 +246,44 @@ bool TuyaService::sendStatusQuery()
 
     if (cfg.protocolVersion == Tuya::Protocol::SUPPORTED_VERSION_35)
     {
-        Log.warning(
-            "Tuya: 3.5 status query is disabled until 6699 DPQuery is implemented");
+        if (!ensureSession35())
+        {
+            m_status.errorCount++;
+            m_status.lastErrorAt = millis();
+            Log.warning("Tuya: 3.5 status query session failed");
+            return false;
+        }
 
-        return false;
+        m_packet6699.clear();
+
+        const uint32_t sequence = nextSequence();
+
+        if (!m_protocol.buildStatusQuery(
+                sequence,
+                cfg.relayDps,
+                m_packet6699))
+        {
+            m_status.errorCount++;
+            m_status.lastErrorAt = millis();
+            Log.warning("Tuya: unable to build 3.5 status query");
+            return false;
+        }
+
+        if (!writePacket(m_packet6699))
+        {
+            m_status.errorCount++;
+            m_status.lastErrorAt = millis();
+            Log.warning("Tuya: 3.5 status query write failed");
+            return false;
+        }
+
+        Log.info(
+            "Tuya: 3.5 status query sent, seq=%lu dps=%u bytes=%lu",
+            static_cast<unsigned long>(sequence),
+            cfg.relayDps,
+            static_cast<unsigned long>(m_packet6699.size()));
+
+        return true;
     }
 
     Tuya::Packet packet;
@@ -251,6 +295,7 @@ bool TuyaService::sendStatusQuery()
             packet))
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
 
@@ -262,6 +307,7 @@ bool TuyaService::sendStatusQuery()
     if (written != packet.size())
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
 
@@ -284,6 +330,7 @@ bool TuyaService::sendCommand(bool state)
         !initializeProtocol())
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
 
@@ -317,6 +364,7 @@ bool TuyaService::sendCommand(bool state)
     if (written != packet.size())
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         Log.warning("Tuya: command write failed");
         return false;
     }
@@ -324,6 +372,7 @@ bool TuyaService::sendCommand(bool state)
     m_status.commandCount++;
     m_status.relayState = state;
     m_lastCommandAt = millis();
+    m_status.lastCommandAt = m_lastCommandAt;
     scheduleStatusPoll();
 
     Log.info(
@@ -341,6 +390,7 @@ bool TuyaService::sendCommand35(bool state)
     if (!ensureSession35())
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         Log.warning("Tuya: 3.5 session negotiation failed");
         return false;
     }
@@ -358,6 +408,7 @@ bool TuyaService::sendCommand35(bool state)
             m_packet6699))
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         Log.warning("Tuya: unable to build 3.5 relay command");
         return false;
     }
@@ -365,6 +416,7 @@ bool TuyaService::sendCommand35(bool state)
     if (!writePacket(m_packet6699))
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         Log.warning("Tuya: 3.5 command write failed");
         return false;
     }
@@ -372,6 +424,7 @@ bool TuyaService::sendCommand35(bool state)
     m_status.commandCount++;
     m_status.relayState = state;
     m_lastCommandAt = millis();
+    m_status.lastCommandAt = m_lastCommandAt;
     scheduleStatusPoll();
 
     Log.info(
@@ -399,13 +452,19 @@ bool TuyaService::ensureSession35()
             startSequence,
             m_packet6699))
     {
+        m_status.sessionFailureCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
 
     if (!writePacket(m_packet6699))
     {
+        m_status.sessionFailureCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
+
+    m_status.sessionStartCount++;
 
     yield();
 
@@ -419,6 +478,8 @@ bool TuyaService::ensureSession35()
             m_packet6699,
             SESSION_RESPONSE_TIMEOUT_MS))
     {
+        m_status.sessionFailureCount++;
+        m_status.lastErrorAt = millis();
         Log.warning(
             "Tuya: 3.5 session response timeout, rx=%lu connected=%u",
             static_cast<unsigned long>(m_receiveLength),
@@ -428,6 +489,8 @@ bool TuyaService::ensureSession35()
 
     if (!m_protocol.processSessionResponse(m_packet6699))
     {
+        m_status.sessionFailureCount++;
+        m_status.lastErrorAt = millis();
         Log.warning("Tuya: 3.5 session response invalid");
         return false;
     }
@@ -440,15 +503,21 @@ bool TuyaService::ensureSession35()
             finishSequence,
             m_packet6699))
     {
+        m_status.sessionFailureCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
 
     if (!writePacket(m_packet6699))
     {
+        m_status.sessionFailureCount++;
+        m_status.lastErrorAt = millis();
         return false;
     }
 
     yield();
+
+    m_status.sessionEstablishedCount++;
 
     Log.info(
         "Tuya: 3.5 session established");
@@ -481,12 +550,15 @@ bool TuyaService::readPacket6699(
             return false;
         }
 
+        uint8_t readBudget = 0;
+
         while (m_client.available())
         {
             if (m_receiveLength >= RECEIVE_BUFFER_SIZE)
             {
                 m_receiveLength = 0;
                 m_status.errorCount++;
+                m_status.lastErrorAt = millis();
                 return false;
             }
 
@@ -499,6 +571,12 @@ bool TuyaService::readPacket6699(
 
             m_receiveBuffer[m_receiveLength++] =
                 static_cast<uint8_t>(value);
+
+            if (++readBudget >= 32)
+            {
+                readBudget = 0;
+                yield();
+            }
         }
 
         while (m_receiveLength >= Tuya::HEADER_6699_SIZE)
@@ -526,6 +604,8 @@ bool TuyaService::readPacket6699(
             if (packetSize > Tuya::MAX_PACKET_6699_SIZE)
             {
                 m_receiveLength = 0;
+                m_status.errorCount++;
+                m_status.lastErrorAt = millis();
                 return false;
             }
 
@@ -539,6 +619,8 @@ bool TuyaService::readPacket6699(
                     packetSize))
             {
                 m_receiveLength = 0;
+                m_status.errorCount++;
+                m_status.lastErrorAt = millis();
                 return false;
             }
 
@@ -554,6 +636,7 @@ bool TuyaService::readPacket6699(
             }
 
             m_receiveLength = remaining;
+            m_status.lastPacketAt = millis();
 
             Log.info(
                 "Tuya: 3.5 packet received, cmd=%lu seq=%lu payload=%lu",
@@ -579,11 +662,6 @@ void TuyaService::updateStatusPolling()
         !cfg.statusPollingEnabled)
     {
         m_statusPollScheduled = false;
-        return;
-    }
-
-    if (cfg.protocolVersion == Tuya::Protocol::SUPPORTED_VERSION_35)
-    {
         return;
     }
 
@@ -660,6 +738,7 @@ bool TuyaService::receivePacket()
         {
             m_receiveLength = 0;
             m_status.errorCount++;
+            m_status.lastErrorAt = millis();
             Log.warning("Tuya: receive buffer overflow");
             return false;
         }
@@ -673,6 +752,11 @@ bool TuyaService::receivePacket()
 
         m_receiveBuffer[m_receiveLength++] =
             static_cast<uint8_t>(value);
+
+        if ((m_receiveLength % 32) == 0)
+        {
+            yield();
+        }
     }
 
     processReceiveBuffer();
@@ -758,6 +842,7 @@ bool TuyaService::processReceiveBuffer()
         {
             m_receiveLength = 0;
             m_status.errorCount++;
+            m_status.lastErrorAt = millis();
             return false;
         }
 
@@ -773,6 +858,7 @@ bool TuyaService::processReceiveBuffer()
         {
             m_receiveLength = 0;
             m_status.errorCount++;
+            m_status.lastErrorAt = millis();
             Log.warning("Tuya: invalid packet size");
             return false;
         }
@@ -794,6 +880,7 @@ bool TuyaService::processReceiveBuffer()
         if (!ok)
         {
             m_status.errorCount++;
+            m_status.lastErrorAt = millis();
         }
 
         const size_t remaining =
@@ -824,9 +911,12 @@ bool TuyaService::processPacket(
             data,
             size))
     {
+        m_status.lastErrorAt = millis();
         Log.warning("Tuya: invalid packet");
         return false;
     }
+
+    m_status.lastPacketAt = millis();
 
     Log.info(
         "Tuya: packet received, cmd=%lu seq=%lu payload=%lu",
@@ -882,9 +972,12 @@ bool TuyaService::processPacket6699(
             data,
             size))
     {
+        m_status.lastErrorAt = millis();
         Log.warning("Tuya: invalid 3.5 packet");
         return false;
     }
+
+    m_status.lastPacketAt = millis();
 
     Log.info(
         "Tuya: 3.5 packet received, cmd=%lu seq=%lu payload=%lu",
@@ -944,6 +1037,7 @@ void TuyaService::processJsonPayload(const char* json)
     if (error)
     {
         m_status.errorCount++;
+        m_status.lastErrorAt = millis();
         Log.warning("Tuya: invalid JSON payload");
         return;
     }

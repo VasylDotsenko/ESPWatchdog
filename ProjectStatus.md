@@ -1,22 +1,20 @@
 # ESP Watchdog — Project Status
 
-Дата: 21.08.2026
+Дата: 27.08.2026
 
 ## Поточний статус
 
-Проєкт знаходиться у стані інтеграційної стабілізації після завершення базового runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control та першого Web Dashboard / Web API шару.
+Проєкт знаходиться у стані Release Candidate / Feature Freeze після завершення базового runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control, Web Dashboard / Web API шару та Tuya LAN `3.5` DPQuery реалізації.
 
 Основний напрямок роботи зараз:
 
-- перехід до production hardening `0.5.x`;
-- memory / stack audit;
-- подальша стабілізація Tuya LAN `3.5` status/runtime;
-- OTA update;
-- memory / stack hardening.
-- зменшення постійного RAM footprint Web/Logger.
-- real-time runtime logs через NTP.
+- hardware verification;
+- перевірка Tuya LAN `3.5` status DPQuery на реальній розетці;
+- 24h / 7d long-run verification;
+- bugfix/stability only;
+- підготовка до `1.0.0`.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.5.7-long-run-observability`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.9.0-feature-freeze`.
 
 ## Вже зроблено
 
@@ -223,10 +221,10 @@
 - `TuyaService::relaySet()` підключається до Tuya device on-demand перед відправкою relay-команди;
 - автоматичний status query після connect вимкнено, щоб не провокувати disconnect на Tuya LAN `3.5`;
 - додано явну політику Tuya status polling:
-  - `tuya.statusPollingEnabled`;
-  - `tuya.statusPollingInterval`;
-  - polling disabled by default;
-  - `3.5` automatic polling пропускається до реалізації окремого `6699 DPQuery`.
+	  - `tuya.statusPollingEnabled`;
+	  - `tuya.statusPollingInterval`;
+	  - polling disabled by default;
+	  - для `3.5` polling використовує encrypted `6699 DPQueryNew`.
 - додано Web API authentication для state-changing endpoints:
   - `security.apiAuthEnabled`;
   - `security.apiToken`;
@@ -267,7 +265,9 @@
 - додано AES-GCM encrypt/decrypt;
 - додано session-key negotiation START/RESP/FINISH;
 - додано `CONTROL_NEW` relay command path для `3.5`;
-- додано safe opt-in status polling policy для legacy `3.3` path.
+- додано safe opt-in status polling policy;
+- додано Tuya LAN `3.5` status DPQuery через encrypted `6699 DPQueryNew`;
+- `3.5` status polling потребує hardware verification на цільовій розетці.
 
 ## Поточні готові файли для інтеграції
 
@@ -335,7 +335,7 @@
 - Tuya protocol `3.4` поки не підтримується;
 - Tuya protocol `3.5` hardware-verified на `TCOGCZ16-A`;
 - потрібні реальні `ip`, `deviceId`, `localKey`, `version`, `relayDps`;
-- для Tuya LAN `3.5` status polling поки не виконує `6699 DPQuery`;
+- Tuya LAN `3.5` status DPQuery через `6699` потребує hardware verification;
 - `localKey` не можна логувати або дублювати у відкритих звітах;
 - `security.apiToken` не можна логувати або дублювати у відкритих звітах;
 - потрібно перевірити, що Serial Monitor і `Log.begin(...)` використовують однакову швидкість;
@@ -344,6 +344,7 @@
 ## Наступні кроки
 
 1. Hardware-verify TCP/SSH HealthCheck на реальному контрольованому хості.
-2. Реалізувати Tuya LAN `3.5` status DPQuery через `6699`.
-3. Підготувати production Web Dashboard polish.
-4. Поступово винести форматування в `Formatters/LogFormatter`.
+2. Hardware-verify Tuya LAN `3.5` status DPQuery через `6699`.
+3. Перевірити OTA update на RC build.
+4. Провести фінальний 24h / 7d long-run verification.
+5. Перевірити baseline `config.json`, README, Roadmap, ProjectStatus, ReleaseChecklist та Changelog перед `1.0.0`.

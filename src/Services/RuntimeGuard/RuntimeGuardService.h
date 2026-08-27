@@ -11,9 +11,15 @@ struct RuntimeGuardStatus
     uint32_t freeHeap = 0;
     uint32_t heapFragmentation = 0;
 
+    uint32_t heapAtBoot = 0;
+    uint32_t minFreeHeapSeen = 0;
+    uint32_t heapDropFromBoot = 0;
+    uint8_t maxHeapFragmentationSeen = 0;
+
     uint32_t minFreeHeap = 0;
     uint8_t maxHeapFragmentation = 0;
 
+    uint32_t lastCheckAt = 0;
     uint32_t degradedSince = 0;
     uint32_t restartAt = 0;
 };
@@ -39,6 +45,10 @@ private:
 
 private:
     void check();
+
+    void updateObservedMetrics(
+        uint32_t freeHeap,
+        uint8_t heapFragmentation);
 
     void scheduleRestart(
         const char* reason);

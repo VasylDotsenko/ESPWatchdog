@@ -4,6 +4,7 @@
 
 #include "Core/Application.h"
 #include "Services/RuntimeGuard/RuntimeGuardService.h"
+#include "Services/Tuya/TuyaService.h"
 #include "WebApiResponse.h"
 #include "WebJsonUtils.h"
 
@@ -99,6 +100,9 @@ void WebApiDiagnostics::handleGet(
     const RuntimeGuardStatus guardStatus =
         RuntimeGuard.status();
 
+    const TuyaStatus tuyaStatus =
+        TuyaLan.data();
+
     WebApiResponse::applyHeaders(server);
 
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
@@ -173,18 +177,53 @@ void WebApiDiagnostics::handleGet(
     snprintf(
         jsonBuffer,
         jsonBufferSize,
+        "\"tuya\":{\"connected\":%s,\"relayState\":%s,"
+        "\"reconnectCount\":%lu,\"commandCount\":%lu,"
+        "\"errorCount\":%lu,\"connectedAt\":%lu,"
+        "\"lastDisconnectedAt\":%lu,\"lastCommandAt\":%lu,"
+        "\"lastPacketAt\":%lu,\"lastErrorAt\":%lu,"
+        "\"sessionStartCount\":%lu,"
+        "\"sessionEstablishedCount\":%lu,"
+        "\"sessionFailureCount\":%lu},",
+        tuyaStatus.connected ? "true" : "false",
+        tuyaStatus.relayState ? "true" : "false",
+        static_cast<unsigned long>(tuyaStatus.reconnectCount),
+        static_cast<unsigned long>(tuyaStatus.commandCount),
+        static_cast<unsigned long>(tuyaStatus.errorCount),
+        static_cast<unsigned long>(tuyaStatus.connectedAt),
+        static_cast<unsigned long>(tuyaStatus.lastDisconnectedAt),
+        static_cast<unsigned long>(tuyaStatus.lastCommandAt),
+        static_cast<unsigned long>(tuyaStatus.lastPacketAt),
+        static_cast<unsigned long>(tuyaStatus.lastErrorAt),
+        static_cast<unsigned long>(tuyaStatus.sessionStartCount),
+        static_cast<unsigned long>(tuyaStatus.sessionEstablishedCount),
+        static_cast<unsigned long>(tuyaStatus.sessionFailureCount));
+
+    server.sendContent(jsonBuffer);
+
+    snprintf(
+        jsonBuffer,
+        jsonBufferSize,
         "\"runtimeGuard\":{\"enabled\":%s,\"degraded\":%s,"
         "\"restartScheduled\":%s,\"freeHeap\":%lu,"
-        "\"heapFragmentation\":%u,\"minFreeHeap\":%lu,"
-        "\"maxHeapFragmentation\":%u,\"degradedSince\":%lu,"
+        "\"heapFragmentation\":%u,\"heapAtBoot\":%lu,"
+        "\"minFreeHeapSeen\":%lu,\"heapDropFromBoot\":%lu,"
+        "\"maxHeapFragmentationSeen\":%u,\"minFreeHeap\":%lu,"
+        "\"maxHeapFragmentation\":%u,\"lastCheckAt\":%lu,"
+        "\"degradedSince\":%lu,"
         "\"restartAt\":%lu}}",
         guardStatus.enabled ? "true" : "false",
         guardStatus.degraded ? "true" : "false",
         guardStatus.restartScheduled ? "true" : "false",
         static_cast<unsigned long>(guardStatus.freeHeap),
         guardStatus.heapFragmentation,
+        static_cast<unsigned long>(guardStatus.heapAtBoot),
+        static_cast<unsigned long>(guardStatus.minFreeHeapSeen),
+        static_cast<unsigned long>(guardStatus.heapDropFromBoot),
+        guardStatus.maxHeapFragmentationSeen,
         static_cast<unsigned long>(guardStatus.minFreeHeap),
         guardStatus.maxHeapFragmentation,
+        static_cast<unsigned long>(guardStatus.lastCheckAt),
         static_cast<unsigned long>(guardStatus.degradedSince),
         static_cast<unsigned long>(guardStatus.restartAt));
 

@@ -14,6 +14,14 @@ struct TuyaStatus
     uint32_t reconnectCount = 0;
     uint32_t commandCount = 0;
     uint32_t errorCount = 0;
+    uint32_t connectedAt = 0;
+    uint32_t lastDisconnectedAt = 0;
+    uint32_t lastCommandAt = 0;
+    uint32_t lastPacketAt = 0;
+    uint32_t lastErrorAt = 0;
+    uint32_t sessionStartCount = 0;
+    uint32_t sessionEstablishedCount = 0;
+    uint32_t sessionFailureCount = 0;
 };
 
 enum class TuyaState : uint8_t

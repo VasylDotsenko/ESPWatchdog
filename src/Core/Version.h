@@ -7,12 +7,12 @@
 #define FW_NAME              "ESP Watchdog"
 
 #define FW_VERSION_MAJOR     0
-#define FW_VERSION_MINOR     5
-#define FW_VERSION_PATCH     6
+#define FW_VERSION_MINOR     9
+#define FW_VERSION_PATCH     0
 
-#define FW_VERSION_STRING    "0.5.6"
-#define FW_VERSION_LABEL     "log-time-backfill"
-#define FW_VERSION_FULL      "0.5.6-log-time-backfill"
+#define FW_VERSION_STRING    "0.9.0"
+#define FW_VERSION_LABEL     "feature-freeze"
+#define FW_VERSION_FULL      "0.9.0-feature-freeze"
 
 //=============================================================================
 // Project

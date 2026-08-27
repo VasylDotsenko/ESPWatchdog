@@ -59,6 +59,11 @@ namespace Tuya
             uint32_t sequence,
             Packet& packet);
 
+        bool buildStatusQuery(
+            uint32_t sequence,
+            uint8_t dps,
+            Packet6699& packet);
+
         bool buildSetDps(
             uint32_t sequence,
             uint8_t dps,

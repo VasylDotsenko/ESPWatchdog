@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.5.6-log-time-backfill
+0.9.0-feature-freeze
 ```
 
 Production target:
@@ -80,7 +80,15 @@ http://192.168.4.1/config/wifi
 
 ## Поточний статус
 
-Проєкт перебуває на етапі інтеграційної стабілізації.
+Проєкт перебуває на етапі Release Candidate / Feature Freeze.
+
+Нові функції для `1.0.0` більше не додаються. Далі дозволені тільки:
+
+- bugfix;
+- hardware verification fixes;
+- security / stability fixes;
+- документація;
+- baseline config correction.
 
 Вже підтверджено:
 
@@ -176,9 +184,9 @@ http://192.168.4.1/config/wifi
 
 Ще не завершено:
 
-- Tuya LAN `3.5` status DPQuery через `6699`;
-- security hardening baseline;
-- OTA.
+- hardware verification Tuya LAN `3.5` status DPQuery через `6699`;
+- long-run verification після останніх `0.5.x` змін;
+- фінальна перевірка документації / baseline config перед `1.0.0`.
 
 ---
 
@@ -236,6 +244,7 @@ http://192.168.4.1/config/wifi
 - `Changelog.md` — журнал змін;
 - `ProjectStatus.md` — фактичний стан реалізації;
 - `Roadmap.md` — подальший план розвитку до `1.0.0`.
+- `ReleaseChecklist.md` — RC checklist для hardware verification.
 - Tuya LAN crypto / packet / protocol / service layers;
 - hardware-verified power-cycle через `TCOGCZ16-A`.
 
@@ -627,7 +636,7 @@ pio device monitor -b 74880
 ### Наступний етап
 
 ```text
-Memory / stack audit
+Hardware verification
 ```
 
 Поточний WebServer вже розділено на окремі модулі:
@@ -656,9 +665,10 @@ Responsive/mobile polish уже виконано для dashboard/config/logs:
 ### Далі
 
 - memory / stack audit;
-- Tuya LAN `3.5` status DPQuery через `6699`;
-- OTA;
-- diagnostics;
+- hardware verification Tuya LAN `3.5` status DPQuery через `6699`;
+- OTA hardening / documentation;
+- diagnostics expansion;
+- Release Candidate verification;
 - restart history Web/API export;
 - average RTT;
 - availability history.

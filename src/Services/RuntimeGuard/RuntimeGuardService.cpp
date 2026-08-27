@@ -13,6 +13,11 @@ bool RuntimeGuardService::begin()
 {
     m_status = RuntimeGuardStatus {};
     m_status.enabled = true;
+    m_status.freeHeap = ESP.getFreeHeap();
+    m_status.heapFragmentation = ESP.getHeapFragmentation();
+    m_status.heapAtBoot = m_status.freeHeap;
+    m_status.minFreeHeapSeen = m_status.freeHeap;
+    m_status.maxHeapFragmentationSeen = m_status.heapFragmentation;
     m_status.minFreeHeap = MIN_FREE_HEAP_BYTES;
     m_status.maxHeapFragmentation = MAX_HEAP_FRAGMENTATION;
     m_lastCheck = 0;
@@ -63,6 +68,16 @@ RuntimeGuardStatus RuntimeGuardService::status() const
     status.heapFragmentation =
         ESP.getHeapFragmentation();
 
+    if (status.heapAtBoot > status.freeHeap)
+    {
+        status.heapDropFromBoot =
+            status.heapAtBoot - status.freeHeap;
+    }
+    else
+    {
+        status.heapDropFromBoot = 0;
+    }
+
     return status;
 }
 
@@ -88,6 +103,13 @@ void RuntimeGuardService::check()
 
     m_status.heapFragmentation =
         system.memory.heapFragmentation;
+
+    updateObservedMetrics(
+        system.memory.freeHeap,
+        system.memory.heapFragmentation);
+
+    m_status.lastCheckAt =
+        millis();
 
     if (system.uptime.milliseconds < MIN_UPTIME_BEFORE_RECOVERY_MS)
     {
@@ -130,6 +152,38 @@ void RuntimeGuardService::check()
             heapLow
                 ? "low_heap"
                 : "heap_fragmentation");
+    }
+}
+
+void RuntimeGuardService::updateObservedMetrics(
+    uint32_t freeHeap,
+    uint8_t heapFragmentation)
+{
+    if (m_status.heapAtBoot == 0)
+    {
+        m_status.heapAtBoot = freeHeap;
+    }
+
+    if (m_status.minFreeHeapSeen == 0 ||
+        freeHeap < m_status.minFreeHeapSeen)
+    {
+        m_status.minFreeHeapSeen = freeHeap;
+    }
+
+    if (heapFragmentation > m_status.maxHeapFragmentationSeen)
+    {
+        m_status.maxHeapFragmentationSeen =
+            heapFragmentation;
+    }
+
+    if (m_status.heapAtBoot > freeHeap)
+    {
+        m_status.heapDropFromBoot =
+            m_status.heapAtBoot - freeHeap;
+    }
+    else
+    {
+        m_status.heapDropFromBoot = 0;
     }
 }
 

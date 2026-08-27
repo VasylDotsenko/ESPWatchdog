@@ -170,6 +170,94 @@ namespace Tuya
             packet);
     }
 
+    bool Protocol::buildStatusQuery(
+        uint32_t sequence,
+        uint8_t dps,
+        Packet6699& packet)
+    {
+        if (!sessionReady() ||
+            m_protocolVersion != SUPPORTED_VERSION_35)
+        {
+            return false;
+        }
+
+        if (dps == 0)
+        {
+            return false;
+        }
+
+        JsonDocument doc;
+
+        doc["protocol"] = 5;
+
+        char timestamp[16] {};
+
+        snprintf(
+            timestamp,
+            sizeof(timestamp),
+            "%lu",
+            static_cast<unsigned long>(millis() / 1000));
+
+        doc["t"] = timestamp;
+
+        JsonObject dataObject =
+            doc["data"].to<JsonObject>();
+
+        char dpsKey[4] {};
+
+        snprintf(
+            dpsKey,
+            sizeof(dpsKey),
+            "%u",
+            dps);
+
+        dataObject["dps"] = dpsKey;
+
+        char json[MAX_JSON_SIZE] {};
+
+        const size_t jsonLength =
+            serializeJson(
+                doc,
+                json,
+                sizeof(json));
+
+        if (jsonLength == 0 ||
+            jsonLength >= sizeof(json))
+        {
+            return false;
+        }
+
+        uint8_t plaintext[VERSION_35_HEADER_SIZE + MAX_JSON_SIZE] {};
+        size_t plaintextLength = 0;
+
+        if (!appendVersion35Header(
+                plaintext,
+                sizeof(plaintext),
+                plaintextLength))
+        {
+            return false;
+        }
+
+        if (plaintextLength + jsonLength > sizeof(plaintext))
+        {
+            return false;
+        }
+
+        memcpy(
+            plaintext + plaintextLength,
+            json,
+            jsonLength);
+
+        plaintextLength += jsonLength;
+
+        return packet.buildEncrypted(
+            Command::DPQueryNew,
+            sequence,
+            plaintext,
+            plaintextLength,
+            m_sessionCrypto);
+    }
+
     bool Protocol::buildSetDps(
         uint32_t sequence,
         uint8_t dps,

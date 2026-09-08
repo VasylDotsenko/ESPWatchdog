@@ -1,0 +1,696 @@
+# ESP Watchdog
+
+**ESP Watchdog** — автономний мережевий watchdog на базі **ESP8266 / WeMos D1 mini** для контролю доступності обладнання та автоматичного перезапуску живлення через зовнішній Tuya LAN power controller.
+
+Поточний інтеграційний стан:
+
+```text
+0.9.1-hardware-verification
+```
+
+Production target:
+
+```text
+1.0.0
+```
+
+---
+
+## Призначення
+
+Пристрій періодично перевіряє доступність цільового вузла через TCP connect. Для SSH-based перевірки використовується порт `22`. Якщо вузол не відповідає задану кількість разів поспіль, watchdog ініціює power-cycle зовнішнього реле / Wi-Fi power controller.
+
+Цільовий hardware для power control:
+
+```text
+TCOGCZ16-A через Tuya LAN protocol
+```
+
+Типовий сценарій:
+
+```text
+Target Host
+    │
+    │ TCP/SSH connect
+    ▼
+ESP Watchdog
+    │
+    │ Tuya LAN
+    ▼
+TCOGCZ16-A
+    │
+    ▼
+Power Cycle
+```
+
+---
+
+## Перший старт / підключення до домашньої мережі
+
+Якщо `wifi.ssid` ще не налаштований або WeMos не може підключитися до домашньої мережі, ESP Watchdog автоматично переходить у setup portal mode.
+
+Пристрій піднімає WiFi AP:
+
+```text
+SSID: ESP-Watchdog-Setup
+Password: 12345678
+IP: 192.168.4.1
+```
+
+Далі:
+
+1. Підключитися телефоном/ноутбуком до `ESP-Watchdog-Setup`.
+2. Відкрити:
+
+```text
+http://192.168.4.1/config/wifi
+```
+
+3. Ввести домашній WiFi SSID/password.
+4. За потреби налаштувати:
+   - `/config/watchdog`;
+   - `/config/tuya`;
+   - `/config/device`.
+5. Натиснути `Restart ESP`.
+6. Після reboot пристрій має підключитися до домашньої мережі.
+
+У setup mode `Watchdog` і `PowerService` не виконують power-cycle, щоб пристрій не перезапускав розетку під час первинного налаштування.
+
+---
+
+## Поточний статус
+
+Проєкт перебуває на етапі Release Candidate / Hardware Verification.
+
+Нові функції для `1.0.0` більше не додаються. Далі дозволені тільки:
+
+- bugfix;
+- hardware verification fixes;
+- security / stability fixes;
+- документація;
+- baseline config correction.
+
+Вже підтверджено:
+
+- boot на ESP8266;
+- Logger;
+- LittleFS Storage;
+- Config loading;
+- WiFi connection;
+- TCP/SSH HealthCheck;
+- HealthCheck `ONLINE`;
+- Watchdog decision-layer;
+- PowerService abstraction;
+- PowerService waits for Tuya LAN reconnect before `powerOn`;
+- Tuya relay commands connect on-demand;
+- automatic Tuya status query after connect disabled for unstable 3.5 devices;
+- Tuya status polling policy configurable via `/config/tuya`;
+- Tuya status polling disabled by default for stable Tuya LAN `3.5` operation;
+- Tuya LAN `3.5` AES-GCM `6699` frame layer;
+- Tuya LAN `3.5` session-key negotiation;
+- Tuya LAN `3.5` `CONTROL_NEW` relay command path;
+- IPowerController;
+- TuyaPowerController;
+- зв'язка `WatchdogService -> PowerService -> TuyaService`;
+- Tuya LAN command diagnostics;
+- on-demand Tuya LAN command session;
+- Tuya LAN `3.5` support for `TCOGCZ16-A`;
+- hardware-verified Tuya LAN power-cycle;
+- manual Web API power commands:
+  - `POST /api/power/on`;
+  - `POST /api/power/off`;
+  - `POST /api/power/restart`;
+- dashboard power controls:
+  - `ON`;
+  - `OFF`;
+  - `RESTART`;
+- dashboard command log;
+- dashboard restart history log;
+- dashboard controlled host configuration;
+- dashboard Tuya socket configuration with masked local key;
+- `GET /api/config`;
+- `POST /api/config`;
+- dashboard configuration editor for all `config.json` sections;
+- separate configuration pages:
+  - `/config/device`;
+  - `/config/wifi`;
+  - `/config/watchdog`;
+  - `/config/relay`;
+  - `/config/tuya`;
+- `POST /api/system/restart`;
+- dashboard `Restart ESP` button;
+- runtime log ring-buffer in `Logger`;
+- `GET /api/logs`;
+- separate logs page `/logs`;
+- fast Dashboard load via `/api/status` with split endpoint fallback;
+- resilient Dashboard loading when `/api/config` or one status endpoint is temporarily unavailable;
+- WebServerService split into smaller Web API modules:
+  - `WebPages`;
+  - `WebJsonUtils`;
+  - `WebApiResponse`;
+  - `WebApiAuth`;
+  - `WebApiIndex`;
+  - `WebApiConfig`;
+  - `WebApiLogs`;
+  - `WebApiPower`;
+  - `WebApiStatus`;
+  - `WebApiDiagnostics`;
+- first-boot WiFi setup portal;
+- fallback AP mode `ESP-Watchdog-Setup`;
+- setup portal address `192.168.4.1`;
+- Watchdog/Power actions disabled while setup portal is active;
+- safe opt-in Tuya status polling policy;
+- Web API token protection for state-changing commands;
+- Web API security baseline:
+  - `Authorization: Bearer <token>`;
+  - no query-token fallback;
+  - misconfigured auth blocks dangerous commands;
+  - setup portal auth bypass for first boot;
+- centralized Web API response headers;
+- centralized Web API command authorization;
+- polished Web UI command messages;
+- visible `restartRecommended` warning after config save;
+- config apply policy in `POST /api/config`;
+- section-level `requiresRestart` / `applyMode`;
+- mobile-friendly Web UI layout;
+- touch-friendly dashboard/config controls;
+- collapsible API endpoint footer;
+- Web UI route fallback для `/config/...`, `/dashboard/...`, `/logs/...`;
+- базовий Tuya LAN stack:
+  - `TuyaCrypto`;
+  - `TuyaPacket`;
+  - `TuyaProtocol`;
+  - `TuyaService`.
+
+Ще не завершено:
+
+- hardware verification Tuya LAN `3.5` status DPQuery через `6699`;
+- long-run verification після останніх `0.5.x` змін;
+- фінальна перевірка документації / baseline config перед `1.0.0`.
+
+---
+
+## Основні можливості
+
+- неблокуюча сервісна архітектура;
+- централізований `Application` lifecycle;
+- конфігурація через LittleFS JSON;
+- стабільний `Logger` із `printf`-style API;
+- WiFi reconnect state machine;
+- TCP HealthCheck через `WiFiClient.connect()`;
+- ICMP HealthCheck через native ESP8266 SDK ping як fallback provider;
+- накопичення health statistics;
+- Watchdog decision-layer;
+- restart history у `PowerService`;
+- API-ready power status snapshot;
+- API-ready health status snapshot;
+- API-ready watchdog status snapshot;
+- API-ready system status snapshot;
+- API-ready network status snapshot;
+- aggregate API status snapshot;
+- lightweight diagnostics snapshot;
+- JSON serializer для aggregate API status;
+- Web API status module for `/api/status` and subsystem status endpoints;
+- Web API diagnostics endpoint `/api/diagnostics`;
+- RuntimeGuard для довготривалої роботи ESP8266;
+- контрольований self-restart ESP при sustained heap degradation;
+- OTA update over WiFi;
+- PlatformIO `d1_mini_ota` upload environment;
+- lightweight Web Dashboard на `/`;
+- fast Dashboard load with cached configuration data;
+- subsystem API endpoints;
+- API index endpoint `/api`;
+- dashboard links до API endpoints;
+- dashboard power controls;
+- dashboard command log;
+- dashboard restart history;
+- dashboard configuration viewer/editor;
+- mobile-friendly dashboard/config/logs layout;
+- touch-friendly config/action buttons;
+- collapsible footer with API endpoint links;
+- `GET /api/config`;
+- `POST /api/config`;
+- захист від restart-loop через `maxRestartPerDay`;
+- production power-control abstraction через `PowerService`;
+- Tuya LAN power controller adapter;
+
+---
+
+## Документація поточного етапу
+
+Актуальні документи:
+
+- `README.md` — загальний опис проєкту;
+- `Changelog.md` — журнал змін;
+- `ProjectStatus.md` — фактичний стан реалізації;
+- `Roadmap.md` — подальший план розвитку до `1.0.0`.
+- `ReleaseChecklist.md` — RC checklist для hardware verification.
+- `HardwareVerification.md` — покроковий сценарій перевірки на реальному пристрої.
+- Tuya LAN crypto / packet / protocol / service layers;
+- hardware-verified power-cycle через `TCOGCZ16-A`.
+
+---
+
+## Архітектура
+
+```text
+main.cpp
+    │
+    ▼
+Application
+    │
+    ├── Logger
+    ├── Storage
+    ├── Config
+    ├── WiFiService
+    ├── SystemInfo
+    ├── TuyaService
+    ├── PowerService
+    ├── HealthCheckService
+    └── WatchdogService
+```
+
+Production power-control layer:
+
+```text
+WatchdogService
+    │
+    ▼
+PowerService
+    │
+    ▼
+IPowerController
+    │
+    ▼
+TuyaPowerController
+    │
+    ▼
+TuyaService
+    │
+    ▼
+TCOGCZ16-A
+```
+
+---
+
+## HealthCheck
+
+```text
+HealthCheckService
+    │
+    ▼
+IHealthCheckProvider
+    │
+    ▼
+IcmpHealthCheckProvider
+    │
+    ▼
+IcmpSession
+    │
+    ▼
+ESP8266 SDK ping_start()
+```
+
+HealthCheck відповідає лише за:
+
+- запуск перевірок;
+- state machine;
+- статистику;
+- визначення `online/offline`.
+
+Провайдер відповідає за конкретний спосіб перевірки.
+
+---
+
+## Tuya LAN stack
+
+```text
+TuyaService
+    │
+    ▼
+TuyaProtocol
+    │
+    ├── TuyaCrypto
+    │
+    └── TuyaPacket
+```
+
+### TuyaCrypto
+
+Реалізовано:
+
+- AES-128-ECB;
+- PKCS#7 padding;
+- decrypt із padding validation;
+- MD5 helper;
+- hex encoder;
+- constant-time compare;
+- робота з 16-byte `localKey`.
+
+### TuyaPacket
+
+Реалізовано:
+
+- Tuya binary packet framing;
+- big-endian `uint32_t`;
+- `PREFIX = 0x000055AA`;
+- `SUFFIX = 0x0000AA55`;
+- packet length validation;
+- CRC32;
+- payload extraction.
+
+### TuyaProtocol
+
+Реалізовано для Tuya LAN `3.3`:
+
+- heartbeat packet;
+- status query packet;
+- DPS control packet;
+- encrypted JSON payload;
+- payload decrypt.
+
+### TuyaService
+
+Реалізовано:
+
+- TCP connection до Tuya device;
+- reconnect timer;
+- sequence counter;
+- `relaySet(true/false)`;
+- TCP receive buffer;
+- packet parser;
+- decrypt response payload;
+- оновлення `TuyaStatus.relayState`.
+
+Глобальний екземпляр:
+
+```cpp
+TuyaService TuyaLan;
+```
+
+Назва `TuyaLan` використовується навмисно, щоб не конфліктувати з namespace:
+
+```cpp
+namespace Tuya
+```
+
+---
+
+## Конфігурація
+
+Файл:
+
+```text
+/config.json
+```
+
+Основні секції:
+
+```json
+{
+  "version": 3,
+  "device": {
+    "hostname": "ESP-Watchdog"
+  },
+  "wifi": {
+    "ssid": "...",
+    "password": "...",
+    "reconnectInterval": 10000,
+    "connectTimeout": 15000
+  },
+  "watchdog": {
+    "targetHost": "192.168.10.50",
+    "targetPort": 22,
+    "pingInterval": 5000,
+    "pingTimeout": 1000,
+    "failCount": 5,
+    "bootDelay": 120000,
+    "powerOffTime": 10000,
+    "maxRestartPerDay": 20
+  },
+  "tuya": {
+    "ip": "192.168.10.xx",
+    "port": 6668,
+    "deviceId": "...",
+    "localKey": "...",
+    "version": 35,
+    "relayDps": 1,
+    "statusPollingEnabled": false,
+    "statusPollingInterval": 60000
+  },
+  "security": {
+    "apiAuthEnabled": false,
+    "apiToken": ""
+  }
+}
+```
+
+Важливо:
+
+- `localKey` не логувати;
+- `security.apiToken` не логувати;
+
+---
+
+## Web API authentication
+
+State-changing endpoints можуть бути захищені API token:
+
+```text
+POST /api/config
+POST /api/system/restart
+POST /api/power/on
+POST /api/power/off
+POST /api/power/restart
+```
+
+Налаштування:
+
+```json
+"security": {
+  "apiAuthEnabled": true,
+  "apiToken": "change-this-token"
+}
+```
+
+Web UI передає токен через стандартний header:
+
+```text
+Authorization: Bearer change-this-token
+```
+
+Для ручного тесту:
+
+```text
+curl -X POST http://192.168.10.44/api/power/restart \
+  -H "Authorization: Bearer change-this-token"
+```
+
+Query-token fallback `?token=...` не використовується, щоб токен не потрапляв у browser history або logs.
+
+За замовчуванням auth вимкнений, щоб не ламати first-boot setup portal. Якщо `apiAuthEnabled=true`, але `apiToken` порожній, небезпечні команди блокуються.
+- `localKey` не публікувати;
+- Tuya `3.4` поки не підтримується;
+- Tuya `3.5` підтримується для `TCOGCZ16-A`;
+- `localKey` має бути актуальним для конкретного пристрою.
+
+---
+
+## Структура проєкту
+
+```text
+src/
+├── Core/
+│   ├── Application.h
+│   ├── Application.cpp
+│   ├── IService.h
+│   ├── Timer.h
+│   ├── Timer.cpp
+│   ├── Version.h
+│   └── BuildInfo.h
+│
+├── Models/
+│   ├── Common.h
+│   ├── NetworkData.h
+│   ├── SystemData.h
+│   ├── HealthCheckData.h
+│   ├── WatchdogData.h
+│   ├── PowerData.h
+│   └── RelayData.h
+│
+├── Network/
+│   ├── Common/
+│   │   ├── INetworkSession.h
+│   │   ├── NetworkResult.h
+│   │   └── NetworkTypes.h
+│   └── Icmp/
+│       ├── IcmpSession.h
+│       └── IcmpSession.cpp
+│
+└── Services/
+    ├── Config/
+    ├── HealthCheck/
+    ├── Logger/
+    ├── Power/
+    ├── Storage/
+    ├── SystemInfo/
+    ├── Tuya/
+    ├── WebServer/
+    │   ├── WebServerService.h
+    │   ├── WebServerService.cpp
+    │   ├── WebPages.h
+    │   ├── WebPages.cpp
+    │   ├── WebJsonUtils.h
+    │   ├── WebJsonUtils.cpp
+    │   ├── WebApiResponse.h
+    │   ├── WebApiResponse.cpp
+    │   ├── WebApiAuth.h
+    │   ├── WebApiAuth.cpp
+    │   ├── WebApiIndex.h
+    │   ├── WebApiIndex.cpp
+    │   ├── WebApiConfig.h
+    │   ├── WebApiConfig.cpp
+    │   ├── WebApiLogs.h
+    │   ├── WebApiLogs.cpp
+    │   ├── WebApiPower.h
+    │   ├── WebApiPower.cpp
+    │   ├── WebApiStatus.h
+    │   └── WebApiStatus.cpp
+    ├── Watchdog/
+    └── WiFi/
+```
+
+---
+
+## Залежності
+
+PlatformIO:
+
+```ini
+[env:d1_mini]
+platform = espressif8266
+board = d1_mini
+framework = arduino
+
+monitor_speed = 74880
+upload_speed = 921600
+
+board_build.filesystem = littlefs
+
+lib_deps =
+    bblanchon/ArduinoJson
+```
+
+Використовується:
+
+- ESP8266 Arduino Core;
+- ArduinoJson;
+- LittleFS;
+- ESP8266 native SDK ping;
+- BearSSL із ESP8266 Arduino Core.
+
+---
+
+## Збірка
+
+```bash
+pio run
+```
+
+Заливка прошивки через USB:
+
+```bash
+pio run --target upload
+```
+
+OTA update після першої USB-прошивки з підтримкою OTA:
+
+```bash
+pio run -e d1_mini_ota --target upload
+```
+
+Якщо `security.apiAuthEnabled=true` і задано `security.apiToken`, додай цей token у `upload_flags` для `[env:d1_mini_ota]`:
+
+```ini
+upload_flags =
+    --auth=your-api-token
+```
+
+Перший раз OTA неможливо використати без вже встановленої OTA-прошивки — один стартовий USB upload все одно потрібен.
+
+Заливка LittleFS:
+
+```bash
+pio run --target uploadfs
+```
+
+Serial monitor:
+
+```bash
+pio device monitor -b 74880
+```
+
+---
+
+## Поточний roadmap
+
+### Наступний етап
+
+```text
+Hardware verification
+```
+
+Поточний WebServer вже розділено на окремі модулі:
+
+- `WebPages`;
+- `WebJsonUtils`;
+- `WebApiResponse`;
+- `WebApiAuth`;
+- `WebApiIndex`;
+- `WebApiConfig`;
+- `WebApiLogs`;
+- `WebApiPower`;
+- `WebApiStatus`.
+
+Route registration уже згруповано в `WebServerService`.
+Response/auth helpers уже винесено з `WebServerService`.
+Web UI command messages і restart recommendation вже приведені до читабельного вигляду.
+Config apply policy уже повертає `section`, `applyMode`, `requiresRestart` і `restartRecommended`.
+Responsive/mobile polish уже виконано для dashboard/config/logs:
+
+- покращити spacing і touch targets;
+- зменшити шум footer API links;
+- перевірити overflow для довгих значень.
+- приховати API endpoint links у collapsible footer.
+
+### Далі
+
+- memory / stack audit;
+- hardware verification Tuya LAN `3.5` status DPQuery через `6699`;
+- OTA hardening / documentation;
+- diagnostics expansion;
+- Release Candidate verification;
+- restart history Web/API export;
+- average RTT;
+- availability history.
+
+---
+
+## Поточні обмеження
+
+- проєкт ще не є production `v1.0.0`;
+- Tuya LAN `3.4` ще не підтримується;
+- GPIO `RelayService` залишився як проміжний модуль, але не є фінальним рішенням для `TCOGCZ16-A`;
+- TCP socket Tuya LAN може закриватися пристроєм після idle-періоду; це нормально для on-demand режиму.
+
+---
+
+## Автор
+
+Vasyl Dotsenko
+
+---
+
+## Ліцензія
+
+Проєкт розробляється як відкритий модульний watchdog для ESP8266.

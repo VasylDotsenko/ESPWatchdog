@@ -10,6 +10,9 @@ namespace
 {
 constexpr char SETUP_AP_SSID[] = "ESP-Watchdog-Setup";
 constexpr char SETUP_AP_PASSWORD[] = "12345678";
+constexpr uint32_t SETUP_PORTAL_RETRY_AFTER_MS = 5UL * 60UL * 1000UL;
+constexpr uint32_t SETUP_PORTAL_RESTART_AFTER_MS = 20UL * 60UL * 1000UL;
+constexpr uint32_t RESTART_SETTLE_MS = 100;
 
 void copyText(char* destination, size_t destinationSize, const char* source)
 {
@@ -130,6 +133,13 @@ void WiFiService::disconnect()
 
 void WiFiService::loop()
 {
+    if (m_setupPortalRecoveryEnabled &&
+        m_setupPortalRestartTimer.expired())
+    {
+        restartDevice("wifi_recovery_timeout");
+        return;
+    }
+
     switch (m_state)
     {
         case NetworkState::Disconnected:
@@ -143,6 +153,11 @@ void WiFiService::loop()
             if (WiFi.status() == WL_CONNECTED)
             {
                 m_connectTimeout.stop();
+                stopSetupPortal();
+                m_setupPortalRetryTimer.stop();
+                m_setupPortalRestartTimer.stop();
+                m_setupPortalRecoveryEnabled = false;
+
                 m_state = NetworkState::Connected;
                 m_data.state = NetworkState::Connected;
                 updateData();
@@ -177,6 +192,7 @@ void WiFiService::loop()
 
         case NetworkState::SetupPortal:
             updateData();
+            handleSetupPortal();
             break;
     }
 }
@@ -277,6 +293,8 @@ void WiFiService::clearAddressData()
 
 bool WiFiService::startSetupPortal(const char* reason)
 {
+    const bool recoveryMode = hasConfiguredStation();
+
     WiFi.disconnect(false);
 
     WiFi.mode(WIFI_AP_STA);
@@ -305,6 +323,27 @@ bool WiFiService::startSetupPortal(const char* reason)
 
     m_connectTimeout.stop();
     m_reconnectTimer.stop();
+    m_setupPortalRetryTimer.stop();
+
+    if (recoveryMode)
+    {
+        m_setupPortalRetryTimer.start(
+            SETUP_PORTAL_RETRY_AFTER_MS,
+            TimerMode::OneShot);
+
+        if (!m_setupPortalRecoveryEnabled)
+        {
+            m_setupPortalRestartTimer.start(
+                SETUP_PORTAL_RESTART_AFTER_MS,
+                TimerMode::OneShot);
+        }
+    }
+    else
+    {
+        m_setupPortalRestartTimer.stop();
+    }
+
+    m_setupPortalRecoveryEnabled = recoveryMode;
 
     m_state = NetworkState::SetupPortal;
     m_data.connected = false;
@@ -318,9 +357,65 @@ bool WiFiService::startSetupPortal(const char* reason)
     updateData();
 
     Log.warning(
-        "WiFi: setup portal started, reason=%s ssid=%s ip=192.168.4.1",
+        "WiFi: setup portal started, reason=%s ssid=%s ip=192.168.4.1 recovery=%u",
         reason != nullptr ? reason : "unknown",
-        SETUP_AP_SSID);
+        SETUP_AP_SSID,
+        m_setupPortalRecoveryEnabled ? 1 : 0);
 
     return true;
+}
+
+bool WiFiService::hasConfiguredStation() const
+{
+    return Config.data().wifi.ssid[0] != '\0';
+}
+
+void WiFiService::handleSetupPortal()
+{
+    if (!m_setupPortalRecoveryEnabled)
+    {
+        return;
+    }
+
+    if (!m_setupPortalRetryTimer.expired())
+    {
+        return;
+    }
+
+    Log.info(
+        "WiFi: setup portal timeout, retrying configured network");
+
+    stopSetupPortal();
+    clearAddressData();
+
+    m_data.connected = false;
+    m_data.state = NetworkState::Disconnected;
+    m_state = NetworkState::Disconnected;
+
+    copyText(
+        m_data.configuration.ssid,
+        sizeof(m_data.configuration.ssid),
+        Config.data().wifi.ssid);
+
+    connect();
+}
+
+void WiFiService::stopSetupPortal()
+{
+    if (WiFi.getMode() == WIFI_AP ||
+        WiFi.getMode() == WIFI_AP_STA)
+    {
+        WiFi.softAPdisconnect(true);
+        WiFi.mode(WIFI_STA);
+    }
+}
+
+void WiFiService::restartDevice(const char* reason)
+{
+    Log.error(
+        "WiFi: recovery failed, restarting ESP, reason=%s",
+        reason != nullptr ? reason : "unknown");
+
+    delay(RESTART_SETTLE_MS);
+    ESP.restart();
 }

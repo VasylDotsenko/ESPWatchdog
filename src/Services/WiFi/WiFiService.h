@@ -24,13 +24,20 @@ public:
 
 private:
     bool startSetupPortal(const char* reason);
+    bool hasConfiguredStation() const;
+    void handleSetupPortal();
+    void stopSetupPortal();
+    void restartDevice(const char* reason);
     void updateData();
     void clearAddressData();
 
     NetworkData m_data;
     Timer m_reconnectTimer;
     Timer m_connectTimeout;
+    Timer m_setupPortalRetryTimer;
+    Timer m_setupPortalRestartTimer;
     NetworkState m_state = NetworkState::Disconnected;
+    bool m_setupPortalRecoveryEnabled = false;
 };
 
 extern WiFiService Network;

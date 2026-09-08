@@ -1,11 +1,11 @@
 # ESP Watchdog — Hardware Verification
 
-Дата: 27.08.2026
+Дата: 08.09.2026
 
 Поточний baseline:
 
 ```text
-0.9.1-hardware-verification
+0.9.2-wifi-ap-recovery
 ```
 
 Production target:
@@ -36,7 +36,7 @@ Production target:
 Очікувана версія:
 
 ```text
-0.9.1-hardware-verification
+0.9.2-wifi-ap-recovery
 ```
 
 Перевірити у dashboard або через:
@@ -96,6 +96,50 @@ HealthCheck: ONLINE
 - немає `Stack smashing detected`;
 - немає reboot loop;
 - dashboard доступний після WiFi connect.
+
+---
+
+## 1A. WiFi AP Recovery Verification
+
+### Мета
+
+Перевірити, що ESP не залишається назавжди в AP mode після втрати домашньої WiFi-мережі.
+
+### Сценарій A — перший старт без WiFi config
+
+1. Тимчасово очистити `wifi.ssid` у `config.json`.
+2. Перезапустити ESP.
+
+Очікування:
+
+- стартує AP `ESP-Watchdog-Setup`;
+- сторінка `http://192.168.4.1/config/wifi` доступна;
+- ESP не виконує автоматичний restart через 20 хвилин.
+
+### Сценарій B — домашня WiFi-мережа недоступна
+
+1. Залишити валідний `wifi.ssid` у `config.json`.
+2. Вимкнути домашню WiFi-мережу або тимчасово заблокувати підключення ESP до роутера.
+3. Перезапустити ESP.
+
+Очікуваний потік:
+
+```text
+WiFi: connection timeout
+WiFi: setup portal started, ... recovery=1
+через 5 хвилин:
+WiFi: setup portal timeout, retrying configured network
+WiFi: connecting to ...
+якщо WiFi все ще недоступний:
+WiFi: recovery failed, restarting ESP, reason=wifi_recovery_timeout
+```
+
+### Pass
+
+- AP rescue mode працює не довше 5 хвилин між спробами STA;
+- якщо WiFi повернувся, ESP підключається до домашньої мережі та вимикає AP;
+- якщо WiFi не повернувся, ESP виконує контрольований restart приблизно через 20 хвилин;
+- Watchdog / Power-cycle не запускаються під час setup portal.
 
 ---
 

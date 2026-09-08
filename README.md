@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.9.1-hardware-verification
+0.9.2-wifi-ap-recovery
 ```
 
 Production target:
@@ -76,6 +76,22 @@ http://192.168.4.1/config/wifi
 
 У setup mode `Watchdog` і `PowerService` не виконують power-cycle, щоб пристрій не перезапускав розетку під час первинного налаштування.
 
+### WiFi recovery після втрати домашньої мережі
+
+Якщо `wifi.ssid` уже заданий, але домашня WiFi-мережа зникла або підключення завершується timeout, setup portal працює як тимчасовий rescue mode:
+
+```text
+WiFi unavailable
+    ↓
+ESP-Watchdog-Setup AP на 5 хвилин
+    ↓
+повторна спроба підключення до налаштованого WiFi
+    ↓
+якщо WiFi не відновився протягом 20 хвилин — restart ESP
+```
+
+Це не змінює `config.json` і не заважає першому старту: якщо `wifi.ssid` порожній, AP залишається активним для первинного налаштування без автоматичного restart.
+
 ---
 
 ## Поточний статус
@@ -97,6 +113,7 @@ http://192.168.4.1/config/wifi
 - LittleFS Storage;
 - Config loading;
 - WiFi connection;
+- WiFi AP recovery після втрати домашньої мережі;
 - TCP/SSH HealthCheck;
 - HealthCheck `ONLINE`;
 - Watchdog decision-layer;

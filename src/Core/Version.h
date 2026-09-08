@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     9
-#define FW_VERSION_PATCH     1
+#define FW_VERSION_PATCH     2
 
-#define FW_VERSION_STRING    "0.9.1"
-#define FW_VERSION_LABEL     "hardware-verification"
-#define FW_VERSION_FULL      "0.9.1-hardware-verification"
+#define FW_VERSION_STRING    "0.9.2"
+#define FW_VERSION_LABEL     "wifi-ap-recovery"
+#define FW_VERSION_FULL      "0.9.2-wifi-ap-recovery"
 
 //=============================================================================
 // Project

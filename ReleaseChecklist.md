@@ -1,11 +1,11 @@
 # ESP Watchdog — Release Checklist
 
-Дата: 27.08.2026
+Дата: 08.09.2026
 
 Поточний baseline:
 
 ```text
-0.9.1-hardware-verification
+0.9.2-wifi-ap-recovery
 ```
 
 Production target:
@@ -56,6 +56,10 @@ Production target:
 - [ ] setup portal відкривається на `192.168.4.1`;
 - [ ] у setup mode Watchdog / Power-cycle не виконуються;
 - [ ] після збереження WiFi config та reboot пристрій підключається до домашньої мережі.
+- [ ] якщо домашня WiFi-мережа недоступна, але `wifi.ssid` заданий, AP працює як rescue portal;
+- [ ] через 5 хвилин rescue AP вимикається і пристрій повторно пробує STA-підключення;
+- [ ] якщо WiFi не відновився протягом 20 хвилин, ESP виконує контрольований restart;
+- [ ] якщо `wifi.ssid` порожній, AP не перезавантажує ESP і лишається доступним для першого налаштування.
 
 ### HealthCheck
 
@@ -118,7 +122,7 @@ Production target:
 
 ---
 
-## 0.9.2 — Long-run Test
+## 0.9.3 — Long-run Test
 
 - [ ] 24h runtime без unexpected reset;
 - [ ] 48h runtime без деградації Web UI;

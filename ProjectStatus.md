@@ -1,20 +1,21 @@
 # ESP Watchdog — Project Status
 
-Дата: 27.08.2026
+Дата: 08.09.2026
 
 ## Поточний статус
 
-Проєкт знаходиться у стані Release Candidate / Hardware Verification після завершення базового runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control, Web Dashboard / Web API шару та Tuya LAN `3.5` DPQuery реалізації.
+Проєкт знаходиться у стані Release Candidate / Hardware Verification після завершення базового runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control, Web Dashboard / Web API шару, Tuya LAN `3.5` DPQuery реалізації та WiFi AP recovery hotfix.
 
 Основний напрямок роботи зараз:
 
 - hardware verification;
+- перевірка WiFi AP recovery після втрати домашньої мережі;
 - перевірка Tuya LAN `3.5` status DPQuery на реальній розетці;
 - 24h / 7d long-run verification;
 - bugfix/stability only;
 - підготовка до `1.0.0`.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.9.1-hardware-verification`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.9.2-wifi-ap-recovery`.
 
 ## Вже зроблено
 
@@ -81,6 +82,11 @@
 - `WiFiService` синхронізовано з новою моделлю `NetworkData`;
 - глобальний екземпляр сервісу зафіксовано як `Network`;
 - прибрано конфлікт із глобальним `ESP8266WiFi::WiFi`;
+- додано AP recovery policy для unattended режиму:
+  - якщо `wifi.ssid` порожній, setup portal залишається активним для первинного налаштування;
+  - якщо `wifi.ssid` заданий, але домашня мережа недоступна, AP працює 5 хвилин як rescue portal;
+  - після 5 хвилин пристрій повторно пробує підключитися до домашньої WiFi-мережі;
+  - якщо підключення не відновилось протягом 20 хвилин, ESP виконує контрольований restart;
 - прибрано логування через `String`;
 - IP-адреси переводяться у власний `IPv4Address`;
 - додано збереження:
@@ -212,6 +218,7 @@
 - додано first-boot WiFi setup portal;
 - якщо `wifi.ssid` порожній, ESP піднімає AP `ESP-Watchdog-Setup`;
 - якщо підключення до WiFi завершується timeout, ESP переходить у setup portal;
+- setup portal більше не залишається активним назавжди після втрати домашньої WiFi-мережі;
 - setup portal доступний за адресою `192.168.4.1`;
 - у setup mode `Application.loop()` не запускає HealthCheck/Watchdog/Power-cycle логіку;
 - `PowerService` має throttling повторних restart-спроб при недоступному Tuya LAN controller;

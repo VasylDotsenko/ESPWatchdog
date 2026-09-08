@@ -1,11 +1,11 @@
 # ESP Watchdog — Roadmap
 
-Дата оновлення: 27.08.2026
+Дата оновлення: 08.09.2026
 
 Поточний baseline:
 
 ```text
-0.9.1-hardware-verification
+0.9.2-wifi-ap-recovery
 ```
 
 Production target:
@@ -22,6 +22,7 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 
 - завантаження конфігурації з LittleFS;
 - first-boot WiFi setup portal;
+- WiFi AP recovery після втрати домашньої мережі;
 - TCP/SSH HealthCheck;
 - Watchdog decision-layer;
 - Tuya LAN `3.5` power-control для розетки `TCOGCZ16-A`;
@@ -38,7 +39,7 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - runtime recovery guard;
 - OTA update over WiFi.
 
-Поточний етап — **Release Candidate `0.9.x` / Hardware Verification**.
+Поточний етап — **Release Candidate `0.9.x` / Hardware Verification bugfix**.
 
 ---
 
@@ -504,7 +505,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.9.1 — Hardware verification
 
-Статус: у роботі.
+Статус: реалізовано / триває польова перевірка.
 
 Підготовлено:
 
@@ -527,7 +528,23 @@ URL: http://192.168.4.1/config/wifi
 - ESP restart з Web UI;
 - reboot after config change.
 
-### 0.9.2 — Long run test
+### 0.9.2 — WiFi AP recovery
+
+Статус: реалізовано.
+
+Причина:
+
+- під час unattended роботи, якщо домашня WiFi-мережа зникала, пристрій міг залишатися в `ESP-Watchdog-Setup` AP mode надто довго;
+- для production watchdog це небажано, бо пристрій має самостійно відновлювати STA-підключення або перезапускатися.
+
+Реалізовано:
+
+- setup portal rescue window — 5 хвилин;
+- після 5 хвилин AP вимикається і пристрій повторно пробує підключитися до налаштованої WiFi-мережі;
+- якщо WiFi не відновився протягом 20 хвилин, ESP виконує контрольований restart;
+- first-boot сценарій із порожнім `wifi.ssid` не перезапускає ESP і залишається доступним для первинного налаштування.
+
+### 0.9.3 — Long run test
 
 - 24h runtime;
 - memory stability;
@@ -547,6 +564,7 @@ URL: http://192.168.4.1/config/wifi
 - config створюється/читається/зберігається;
 - WiFi reconnect працює;
 - first boot setup працює;
+- AP rescue mode не зависає назавжди після втрати домашньої WiFi-мережі;
 - TCP/SSH HealthCheck стабільний;
 - Watchdog не створює restart-loop;
 - Tuya LAN power-cycle hardware-verified;

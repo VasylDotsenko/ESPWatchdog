@@ -15,6 +15,7 @@
 - поточний firmware label оновлено до `0.9.2-long-run-test`;
 - `Version.h` та `platformio.ini` синхронізовано з long-run етапом;
 - README, Roadmap, ProjectStatus, ReleaseChecklist та HardwareVerification оновлено під поточний статус;
+- додано `LongRunReport.md` для фіксації 1h / 24h / 48h / 7d контрольних знімків;
 - WiFi AP recovery hotfix включено як обов'язкову передумову long-run тестування.
 
 ### Мета етапу

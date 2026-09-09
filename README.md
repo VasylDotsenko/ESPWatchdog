@@ -106,7 +106,7 @@ ESP-Watchdog-Setup AP на 5 хвилин
 - документація;
 - baseline config correction.
 
-Long-run сценарій описано в `LongRunTest.md`.
+Long-run сценарій описано в `LongRunTest.md`, журнал спостережень — у `LongRunReport.md`.
 
 Вже підтверджено:
 

@@ -546,7 +546,10 @@ URL: http://192.168.4.1/config/wifi
 
 ### 0.9.2 — Long run test
 
-Основний документ етапу: `LongRunTest.md`.
+Основні документи етапу:
+
+- `LongRunTest.md`;
+- `LongRunReport.md`.
 
 - 24h runtime;
 - memory stability;

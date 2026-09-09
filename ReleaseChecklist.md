@@ -124,7 +124,10 @@ Production target:
 
 ## 0.9.2 — Long-run Test
 
-Основний сценарій: `LongRunTest.md`.
+Основні документи:
+
+- `LongRunTest.md`;
+- `LongRunReport.md`.
 
 - [ ] 24h runtime без unexpected reset;
 - [ ] 48h runtime без деградації Web UI;

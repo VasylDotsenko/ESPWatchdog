@@ -52,8 +52,8 @@ curl -s http://192.168.10.44/api/diagnostics | jq
 
 Date/time:
 
-```text
-
+```
+2026-09-09T11:51
 ```
 
 Diagnostics:
@@ -67,13 +67,13 @@ Result:
 - [х] Dashboard opens normally
 - [х] Logs page opens normally
 - [х] Config pages open normally
-- [ ] `freeHeap` is above RuntimeGuard threshold
-- [ ] `heapFragmentation` is below RuntimeGuard threshold
-- [ ] `runtimeGuard.degraded=false`
-- [ ] `runtimeGuard.restartScheduled=false`
-- [ ] `network.connected=true`
-- [ ] `health.available=true`
-- [ ] `power.available=true`
+- [х] `freeHeap` is above RuntimeGuard threshold
+- [х] `heapFragmentation` is below RuntimeGuard threshold
+- [х] `runtimeGuard.degraded=false`
+- [х] `runtimeGuard.restartScheduled=false`
+- [х] `network.connected=true`
+- [х] `health.available=true`
+- [х] `power.available=true`
 
 Notes:
 

@@ -64,9 +64,9 @@ Diagnostics:
 
 Result:
 
-- [ ] Dashboard opens normally
-- [ ] Logs page opens normally
-- [ ] Config pages open normally
+- [х] Dashboard opens normally
+- [х] Logs page opens normally
+- [х] Config pages open normally
 - [ ] `freeHeap` is above RuntimeGuard threshold
 - [ ] `heapFragmentation` is below RuntimeGuard threshold
 - [ ] `runtimeGuard.degraded=false`

@@ -11,8 +11,8 @@
 #define FW_VERSION_PATCH     2
 
 #define FW_VERSION_STRING    "0.9.2"
-#define FW_VERSION_LABEL     "wifi-ap-recovery"
-#define FW_VERSION_FULL      "0.9.2-wifi-ap-recovery"
+#define FW_VERSION_LABEL     "long-run-test"
+#define FW_VERSION_FULL      "0.9.2-long-run-test"
 
 //=============================================================================
 // Project

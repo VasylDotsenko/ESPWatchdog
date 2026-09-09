@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.9.2-wifi-ap-recovery
+0.9.2-long-run-test
 ```
 
 Production target:
@@ -122,7 +122,9 @@ Production target:
 
 ---
 
-## 0.9.3 — Long-run Test
+## 0.9.2 — Long-run Test
+
+Основний сценарій: `LongRunTest.md`.
 
 - [ ] 24h runtime без unexpected reset;
 - [ ] 48h runtime без деградації Web UI;

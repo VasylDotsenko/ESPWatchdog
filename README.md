@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.9.2-wifi-ap-recovery
+0.9.2-long-run-test
 ```
 
 Production target:
@@ -96,7 +96,7 @@ ESP-Watchdog-Setup AP на 5 хвилин
 
 ## Поточний статус
 
-Проєкт перебуває на етапі Release Candidate / Hardware Verification.
+Проєкт перебуває на етапі Release Candidate / Long-run Test.
 
 Нові функції для `1.0.0` більше не додаються. Далі дозволені тільки:
 
@@ -105,6 +105,8 @@ ESP-Watchdog-Setup AP на 5 хвилин
 - security / stability fixes;
 - документація;
 - baseline config correction.
+
+Long-run сценарій описано в `LongRunTest.md`.
 
 Вже підтверджено:
 

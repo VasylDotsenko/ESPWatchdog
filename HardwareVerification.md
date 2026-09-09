@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.9.2-wifi-ap-recovery
+0.9.2-long-run-test
 ```
 
 Production target:
@@ -36,7 +36,7 @@ Production target:
 Очікувана версія:
 
 ```text
-0.9.2-wifi-ap-recovery
+0.9.2-long-run-test
 ```
 
 Перевірити у dashboard або через:

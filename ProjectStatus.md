@@ -4,18 +4,21 @@
 
 ## Поточний статус
 
-Проєкт знаходиться у стані Release Candidate / Hardware Verification після завершення базового runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control, Web Dashboard / Web API шару, Tuya LAN `3.5` DPQuery реалізації та WiFi AP recovery hotfix.
+Проєкт знаходиться у стані Release Candidate / Long-run Test після завершення базового runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control, Web Dashboard / Web API шару, Tuya LAN `3.5` DPQuery реалізації, WiFi AP recovery hotfix та hardware verification baseline.
 
 Основний напрямок роботи зараз:
 
-- hardware verification;
-- перевірка WiFi AP recovery після втрати домашньої мережі;
-- перевірка Tuya LAN `3.5` status DPQuery на реальній розетці;
-- 24h / 7d long-run verification;
+- 24h / 48h / 7d long-run verification;
+- контроль heap / fragmentation / RuntimeGuard;
+- перевірка деградації Web Dashboard після тривалого uptime;
+- перевірка WiFi reconnect та WiFi AP recovery після втрати домашньої мережі;
+- перевірка стабільності Tuya LAN `3.5` command path після idle-period;
 - bugfix/stability only;
 - підготовка до `1.0.0`.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.9.2-wifi-ap-recovery`.
+Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.9.2-long-run-test`.
+
+Основний документ поточного етапу: `LongRunTest.md`.
 
 ## Вже зроблено
 

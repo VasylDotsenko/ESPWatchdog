@@ -4,6 +4,36 @@
 
 ---
 
+## [0.9.2-long-run-test] - 08.09.2026
+
+### Статус
+
+Проєкт переведено у Release Candidate long-run verification.
+
+### Змінено
+
+- поточний firmware label оновлено до `0.9.2-long-run-test`;
+- `Version.h` та `platformio.ini` синхронізовано з long-run етапом;
+- README, Roadmap, ProjectStatus, ReleaseChecklist та HardwareVerification оновлено під поточний статус;
+- WiFi AP recovery hotfix включено як обов'язкову передумову long-run тестування.
+
+### Мета етапу
+
+- підтвердити стабільність роботи протягом 24h / 48h / 7d;
+- перевірити, що Web Dashboard не деградує після тривалого uptime;
+- перевірити heap / fragmentation / RuntimeGuard;
+- підтвердити стабільність WiFi reconnect та Tuya LAN command path;
+- підтвердити відсутність restart-loop.
+
+### Не змінено
+
+- формат `config.json`;
+- Web API contract;
+- Tuya LAN relay command path;
+- Watchdog decision logic.
+
+---
+
 ## [0.9.2-wifi-ap-recovery] - 08.09.2026
 
 ### Статус
@@ -20,7 +50,7 @@ Hardware verification hotfix для роботи без користувачів
 
 ### Змінено
 
-- `Version.h` та `platformio.ini` оновлено до `0.9.2-wifi-ap-recovery`;
+- WiFi recovery policy підготовлено як обов'язковий fix перед long-run етапом;
 - документацію оновлено під нову WiFi recovery policy.
 
 ### Не змінено

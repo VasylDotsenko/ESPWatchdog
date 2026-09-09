@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.9.2-wifi-ap-recovery
+0.9.2-long-run-test
 ```
 
 Production target:
@@ -39,7 +39,7 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - runtime recovery guard;
 - OTA update over WiFi.
 
-Поточний етап — **Release Candidate `0.9.x` / Hardware Verification bugfix**.
+Поточний етап — **Release Candidate `0.9.x` / Long-run Test**.
 
 ---
 
@@ -528,7 +528,7 @@ URL: http://192.168.4.1/config/wifi
 - ESP restart з Web UI;
 - reboot after config change.
 
-### 0.9.2 — WiFi AP recovery
+### WiFi AP recovery hotfix
 
 Статус: реалізовано.
 
@@ -544,7 +544,9 @@ URL: http://192.168.4.1/config/wifi
 - якщо WiFi не відновився протягом 20 хвилин, ESP виконує контрольований restart;
 - first-boot сценарій із порожнім `wifi.ssid` не перезапускає ESP і залишається доступним для первинного налаштування.
 
-### 0.9.3 — Long run test
+### 0.9.2 — Long run test
+
+Основний документ етапу: `LongRunTest.md`.
 
 - 24h runtime;
 - memory stability;

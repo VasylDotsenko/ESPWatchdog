@@ -52,8 +52,8 @@ curl -s http://192.168.10.44/api/diagnostics | jq
 
 Date/time:
 
-```
-2026-09-09T11:51
+```text
+
 ```
 
 Diagnostics:
@@ -64,16 +64,16 @@ Diagnostics:
 
 Result:
 
-- [х] Dashboard opens normally
-- [х] Logs page opens normally
-- [х] Config pages open normally
-- [х] `freeHeap` is above RuntimeGuard threshold
-- [х] `heapFragmentation` is below RuntimeGuard threshold
-- [х] `runtimeGuard.degraded=false`
-- [х] `runtimeGuard.restartScheduled=false`
-- [х] `network.connected=true`
-- [х] `health.available=true`
-- [х] `power.available=true`
+- [ ] Dashboard opens normally
+- [ ] Logs page opens normally
+- [ ] Config pages open normally
+- [ ] `freeHeap` is above RuntimeGuard threshold
+- [ ] `heapFragmentation` is below RuntimeGuard threshold
+- [ ] `runtimeGuard.degraded=false`
+- [ ] `runtimeGuard.restartScheduled=false`
+- [ ] `network.connected=true`
+- [ ] `health.available=true`
+- [ ] `power.available=true`
 
 Notes:
 
@@ -111,6 +111,41 @@ Notes:
 
 ```text
 
+```
+
+---
+
+### T+33h
+
+Date/time:
+
+```text
+2026-09-10
+```
+
+Diagnostics:
+
+```json
+{"ok":true,"level":"warn","system":{"freeHeap":10992,"heapFragmentation":25,"uptimeSeconds":119557,"resetReason":"Software/System restart","heapWarning":true,"fragmentationWarning":false},"network":{"connected":true,"rssi":-67,"quality":66,"reconnectCount":0,"warning":false},"health":{"available":true,"running":false,"responseTime":5,"sent":23889,"lost":23,"consecutiveFails":0,"warning":false},"watchdog":{"enabled":true,"restartPending":false,"lockedOut":false,"cooldown":false,"restartCount":1,"warning":false},"power":{"available":true,"restartInProgress":false,"restartCount":1,"errorCount":0,"warning":false},"tuya":{"connected":false,"relayState":true,"reconnectCount":0,"commandCount":2,"errorCount":0,"connectedAt":22693953,"lastDisconnectedAt":22734321,"lastCommandAt":22704195,"lastPacketAt":22714296,"lastErrorAt":0,"sessionStartCount":1,"sessionEstablishedCount":1,"sessionFailureCount":0},"runtimeGuard":{"enabled":true,"degraded":false,"restartScheduled":false,"freeHeap":11480,"heapFragmentation":28,"heapAtBoot":19640,"minFreeHeapSeen":11096,"heapDropFromBoot":8160,"maxHeapFragmentationSeen":35,"minFreeHeap":8000,"maxHeapFragmentation":60,"lastCheckAt":119534691,"degradedSince":0,"restartAt":0}}
+```
+
+Result:
+
+- [x] Runtime is alive after 33h+
+- [x] Dashboard/API diagnostics responds
+- [x] WiFi remains connected
+- [x] HealthCheck remains online
+- [x] Watchdog is not pending restart
+- [x] PowerService is available
+- [x] RuntimeGuard is not degraded
+- [ ] System level is `warn` due to heap warning
+
+Notes:
+
+```text
+Uptime is about 33h 12m 37s. HealthCheck packet loss is low: 23 / 23889 ≈ 0.096%.
+Main observation: system.freeHeap=10992 and heapWarning=true, but RuntimeGuard still reports degraded=false and restartScheduled=false.
+Continue toward T+48h. Watch heap trend, minFreeHeapSeen and dashboard responsiveness.
 ```
 
 ---
@@ -274,4 +309,3 @@ Release candidate can move toward `1.0.0` if:
 - OTA remains usable;
 - Tuya LAN power-cycle remains usable;
 - WiFi AP recovery behaves as expected.
-

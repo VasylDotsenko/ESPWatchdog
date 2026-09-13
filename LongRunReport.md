@@ -182,6 +182,47 @@ Notes:
 
 ---
 
+### T+105h
+
+Date/time:
+
+```text
+2026-09-13
+```
+
+Diagnostics:
+
+```json
+{"ok":true,"level":"warn","system":{"freeHeap":11376,"heapFragmentation":27,"uptimeSeconds":380556,"resetReason":"Software/System restart","heapWarning":true,"fragmentationWarning":false},"network":{"connected":true,"rssi":-65,"quality":70,"reconnectCount":0,"warning":false},"health":{"available":true,"running":false,"responseTime":3,"sent":76062,"lost":55,"consecutiveFails":0,"warning":false},"watchdog":{"enabled":true,"restartPending":false,"lockedOut":false,"cooldown":false,"restartCount":2,"warning":false},"power":{"available":true,"restartInProgress":false,"restartCount":2,"errorCount":0,"warning":false},"tuya":{"connected":false,"relayState":true,"reconnectCount":0,"commandCount":4,"errorCount":0,"connectedAt":185338986,"lastDisconnectedAt":185379370,"lastCommandAt":185349232,"lastPacketAt":185359337,"lastErrorAt":0,"sessionStartCount":2,"sessionEstablishedCount":2,"sessionFailureCount":0},"runtimeGuard":{"enabled":true,"degraded":false,"restartScheduled":false,"freeHeap":10936,"heapFragmentation":24,"heapAtBoot":19640,"minFreeHeapSeen":10992,"heapDropFromBoot":8704,"maxHeapFragmentationSeen":36,"minFreeHeap":8000,"maxHeapFragmentation":60,"lastCheckAt":380551304,"degradedSince":0,"restartAt":0}}
+```
+
+Result:
+
+- [x] Runtime is alive after 105h+
+- [x] Dashboard/API diagnostics responds
+- [x] WiFi remains connected
+- [x] WiFi reconnect count remains 0
+- [x] HealthCheck remains online
+- [x] Watchdog is not pending restart
+- [x] PowerService is available
+- [x] Tuya command path has no recorded errors
+- [x] RuntimeGuard is not degraded
+- [x] RuntimeGuard restart is not scheduled
+- [ ] System level remains `warn` due to heap warning
+
+Notes:
+
+```text
+Uptime is about 105h 42m 36s, or about 4.4 days.
+HealthCheck packet loss is 55 / 76062 ≈ 0.072%, which is lower than the T+33h ratio.
+Heap appears stable: system.freeHeap=11376 vs 10992 at T+33h, runtimeGuard.freeHeap=10936, minFreeHeapSeen=10992, maxHeapFragmentationSeen=36%.
+The device remains below warning comfort level but above RuntimeGuard hard thresholds: minFreeHeap=8000, maxHeapFragmentation=60.
+Watchdog/Power restart counters increased from 1 to 2, and Tuya commandCount increased from 2 to 4 with errorCount=0. This suggests another controlled power-cycle completed without Tuya errors.
+Continue toward T+7d. Main thing to watch: whether minFreeHeapSeen drops below 10 KB or RuntimeGuard enters degraded state.
+```
+
+---
+
 ### T+7d
 
 Date/time:

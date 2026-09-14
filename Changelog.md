@@ -4,6 +4,67 @@
 
 ---
 
+## [0.9.3-crashinfo] - 14.09.2026
+
+### Статус
+
+Діагностичний hotfix після interrupted long-run test.
+
+### Причина
+
+Під час `0.9.2-long-run-test` пристрій відновився після reboot із:
+
+```text
+resetReason = Exception
+```
+
+Поточний `/api/diagnostics` показував лише короткий `resetReason`, але цього недостатньо для root-cause аналізу без Serial crash log.
+
+### Додано
+
+- `SystemFirmware::resetInfo`;
+- `SystemFirmware::exceptionReset`;
+- `SystemStatusFirmware::resetInfo`;
+- `SystemStatusFirmware::exceptionReset`;
+- збір `ESP.getResetInfo()` у `SystemInfoService`;
+- автоматичне визначення exception reset за:
+  - `resetReason`;
+  - `resetInfo`;
+  - наявністю `epc1=`;
+  - наявністю `excvaddr=`.
+
+### Web API
+
+`/api/diagnostics` тепер повертає:
+
+```json
+"crashInfo": {
+  "exception": true,
+  "resetReason": "Exception",
+  "resetInfo": "..."
+}
+```
+
+`/api/status/system` / system serializer тепер містить:
+
+```json
+"firmware": {
+  "resetReason": "...",
+  "resetInfo": "...",
+  "exceptionReset": true
+}
+```
+
+### Не змінено
+
+- формат `config.json`;
+- RuntimeGuard thresholds;
+- Watchdog logic;
+- Tuya LAN command path;
+- Web UI behavior.
+
+---
+
 ## [0.9.2-long-run-test] - 08.09.2026
 
 ### Статус

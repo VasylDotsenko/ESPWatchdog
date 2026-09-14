@@ -130,13 +130,30 @@ void WebApiDiagnostics::handleGet(
         jsonBuffer,
         jsonBufferSize,
         "\",\"heapWarning\":%s,\"fragmentationWarning\":%s},"
-        "\"network\":{\"connected\":%s,\"rssi\":%d,\"quality\":%u,"
+        "\"crashInfo\":{\"exception\":%s,\"resetReason\":\"",
+        heapWarning ? "true" : "false",
+        fragmentationWarning ? "true" : "false",
+        status.system.firmware.exceptionReset ? "true" : "false");
+
+    server.sendContent(jsonBuffer);
+    WebJsonUtils::sendEscaped(server, status.system.firmware.resetReason);
+
+    snprintf(
+        jsonBuffer,
+        jsonBufferSize,
+        "\",\"resetInfo\":\"");
+
+    server.sendContent(jsonBuffer);
+    WebJsonUtils::sendEscaped(server, status.system.firmware.resetInfo);
+
+    snprintf(
+        jsonBuffer,
+        jsonBufferSize,
+        "\"},\"network\":{\"connected\":%s,\"rssi\":%d,\"quality\":%u,"
         "\"reconnectCount\":%lu,\"warning\":%s},"
         "\"health\":{\"available\":%s,\"running\":%s,"
         "\"responseTime\":%lu,\"sent\":%lu,\"lost\":%lu,"
         "\"consecutiveFails\":%lu,\"warning\":%s},",
-        heapWarning ? "true" : "false",
-        fragmentationWarning ? "true" : "false",
         status.network.summary.connected ? "true" : "false",
         status.network.signal.rssi,
         status.network.signal.quality,

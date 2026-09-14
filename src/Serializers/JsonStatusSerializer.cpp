@@ -308,6 +308,8 @@ void JsonStatusSerializer::writeSystem(
     firmware["buildDate"] = status.firmware.buildDate;
     firmware["buildTime"] = status.firmware.buildTime;
     firmware["resetReason"] = status.firmware.resetReason;
+    firmware["resetInfo"] = status.firmware.resetInfo;
+    firmware["exceptionReset"] = status.firmware.exceptionReset;
 
     JsonObject uptime =
         target["uptime"].to<JsonObject>();

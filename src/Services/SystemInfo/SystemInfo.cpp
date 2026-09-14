@@ -90,6 +90,14 @@ SystemStatusData SystemInfoService::status() const
         m_data.firmware.resetReason,
         sizeof(status.firmware.resetReason));
 
+    std::memcpy(
+        status.firmware.resetInfo,
+        m_data.firmware.resetInfo,
+        sizeof(status.firmware.resetInfo));
+
+    status.firmware.exceptionReset =
+        m_data.firmware.exceptionReset;
+
     status.uptime.milliseconds = m_data.uptime.milliseconds;
     status.uptime.seconds = m_data.uptime.seconds;
     status.uptime.days = m_data.uptime.days;
@@ -169,4 +177,13 @@ void SystemInfoService::updateFirmware()
 
     const String resetReason = ESP.getResetReason();
     copyText(firmware.resetReason, sizeof(firmware.resetReason), resetReason.c_str());
+
+    const String resetInfo = ESP.getResetInfo();
+    copyText(firmware.resetInfo, sizeof(firmware.resetInfo), resetInfo.c_str());
+
+    firmware.exceptionReset =
+        resetReason.indexOf("Exception") >= 0 ||
+        resetInfo.indexOf("Exception") >= 0 ||
+        resetInfo.indexOf("epc1=") >= 0 ||
+        resetInfo.indexOf("excvaddr=") >= 0;
 }

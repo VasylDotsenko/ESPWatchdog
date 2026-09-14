@@ -5,7 +5,7 @@
 Поточний baseline:
 
 ```text
-0.9.2-long-run-test
+0.9.3-crashinfo
 ```
 
 Production target:
@@ -134,7 +134,7 @@ POST /api/power/restart
 
 ## Критерії проходження етапу
 
-Етап `0.9.2-long-run-test` вважається пройденим, якщо:
+Поточний long-run етап вважається пройденим, якщо:
 
 - 24h runtime пройдено без crash;
 - 48h runtime пройдено без деградації Web UI;
@@ -143,4 +143,3 @@ POST /api/power/restart
 - Tuya command path підтверджено після idle-period;
 - RuntimeGuard не створює restart-loop;
 - документація та baseline config актуальні.
-

@@ -1,11 +1,11 @@
 # ESP Watchdog — Roadmap
 
-Дата оновлення: 08.09.2026
+Дата оновлення: 14.09.2026
 
 Поточний baseline:
 
 ```text
-0.9.2-long-run-test
+0.9.3-crashinfo
 ```
 
 Production target:
@@ -36,10 +36,11 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - route fallback для Web UI config pages;
 - Web API security baseline;
 - diagnostics baseline;
+- CrashInfo diagnostics для `Exception` reset;
 - runtime recovery guard;
 - OTA update over WiFi.
 
-Поточний етап — **Release Candidate `0.9.x` / Long-run Test**.
+Поточний етап — **Release Candidate `0.9.x` / CrashInfo hotfix після interrupted long-run test**.
 
 ---
 

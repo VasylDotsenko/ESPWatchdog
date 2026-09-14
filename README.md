@@ -5,7 +5,7 @@
 Поточний інтеграційний стан:
 
 ```text
-0.9.2-long-run-test
+0.9.3-crashinfo
 ```
 
 Production target:
@@ -96,7 +96,7 @@ ESP-Watchdog-Setup AP на 5 хвилин
 
 ## Поточний статус
 
-Проєкт перебуває на етапі Release Candidate / Long-run Test.
+Проєкт перебуває на етапі Release Candidate / CrashInfo hotfix після interrupted long-run test.
 
 Нові функції для `1.0.0` більше не додаються. Далі дозволені тільки:
 
@@ -107,6 +107,13 @@ ESP-Watchdog-Setup AP на 5 хвилин
 - baseline config correction.
 
 Long-run сценарій описано в `LongRunTest.md`, журнал спостережень — у `LongRunReport.md`.
+
+Після unexpected reboot з `resetReason="Exception"` додано CrashInfo diagnostics:
+
+- `/api/diagnostics` містить `crashInfo.exception`;
+- `/api/diagnostics` містить `crashInfo.resetReason`;
+- `/api/diagnostics` містить `crashInfo.resetInfo`;
+- `/api/status/system` містить `firmware.resetInfo` та `firmware.exceptionReset`.
 
 Вже підтверджено:
 

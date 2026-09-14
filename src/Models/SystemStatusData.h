@@ -12,6 +12,8 @@ struct SystemStatusFirmware
     char buildDate[Model::BUILD_DATE_LENGTH] {};
     char buildTime[Model::BUILD_TIME_LENGTH] {};
     char resetReason[Model::RESET_REASON_LENGTH] {};
+    char resetInfo[192] {};
+    bool exceptionReset = false;
 };
 
 struct SystemStatusUptime

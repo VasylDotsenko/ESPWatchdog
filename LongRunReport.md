@@ -255,6 +255,83 @@ Notes:
 
 ---
 
+## Exception reset event
+
+Date/time:
+
+```text
+2026-09-14
+```
+
+Diagnostics after reboot:
+
+```json
+{"ok":true,"level":"ok","system":{"freeHeap":12240,"heapFragmentation":29,"uptimeSeconds":79622,"resetReason":"Exception","heapWarning":false,"fragmentationWarning":false},"network":{"connected":true,"rssi":-65,"quality":70,"reconnectCount":2,"warning":false},"health":{"available":true,"running":false,"responseTime":46,"sent":15864,"lost":7,"consecutiveFails":0,"warning":false},"watchdog":{"enabled":true,"restartPending":false,"lockedOut":false,"cooldown":false,"restartCount":0,"warning":false},"power":{"available":true,"restartInProgress":false,"restartCount":0,"errorCount":0,"warning":false},"tuya":{"connected":false,"relayState":false,"reconnectCount":0,"commandCount":0,"errorCount":0,"connectedAt":0,"lastDisconnectedAt":0,"lastCommandAt":0,"lastPacketAt":0,"lastErrorAt":0,"sessionStartCount":0,"sessionEstablishedCount":0,"sessionFailureCount":0},"runtimeGuard":{"enabled":true,"degraded":false,"restartScheduled":false,"freeHeap":10304,"heapFragmentation":20,"heapAtBoot":19640,"minFreeHeapSeen":10784,"heapDropFromBoot":9336,"maxHeapFragmentationSeen":34,"minFreeHeap":8000,"maxHeapFragmentation":60,"lastCheckAt":79589768,"degradedSince":0,"restartAt":0}}
+```
+
+Result:
+
+- [x] Device recovered after reboot
+- [x] Current diagnostics level is `ok`
+- [x] WiFi is connected
+- [x] HealthCheck is online
+- [x] PowerService is available
+- [x] RuntimeGuard is not degraded
+- [ ] Long-run test cannot be marked as passed because reset reason is `Exception`
+- [ ] Root cause is unknown without exception decoder / serial crash log
+
+Notes:
+
+```text
+Previous snapshot was T+105h on 2026-09-13. Current uptime is 79622s ≈ 22h 07m after an unexpected reboot.
+The device recovered cleanly, but resetReason="Exception" means the long-run test must be considered interrupted.
+Heap after reboot is healthy enough: system.freeHeap=12240, runtimeGuard.freeHeap=10304, minFreeHeapSeen=10784, maxHeapFragmentationSeen=34%.
+This does not look like RuntimeGuard-driven recovery: restartScheduled=false, degraded=false.
+Need serial crash block / exception decoder output from the reboot event, or persistent crash storage in firmware for future runs.
+```
+
+---
+
+## CrashInfo hotfix follow-up
+
+Date/time:
+
+```text
+2026-09-14
+```
+
+Firmware prepared:
+
+```text
+0.9.3-crashinfo
+```
+
+Purpose:
+
+- expose `ESP.getResetInfo()` after reboot;
+- expose `exceptionReset` flag;
+- add compact `crashInfo` object to `/api/diagnostics`;
+- preserve full reset info in `/api/status/system`.
+
+Expected diagnostics after the next reboot:
+
+```json
+"crashInfo": {
+  "exception": true,
+  "resetReason": "Exception",
+  "resetInfo": "..."
+}
+```
+
+Notes:
+
+```text
+The previous 0.9.2 long-run was interrupted by resetReason="Exception".
+The next long-run attempt should be performed with 0.9.3-crashinfo so the next unexpected reboot contains enough post-reboot crash context for root-cause analysis.
+```
+
+---
+
 ## WiFi AP recovery test
 
 Date/time:
@@ -339,7 +416,7 @@ Notes:
 ## Final decision
 
 ```text
-PENDING
+INTERRUPTED — exception reset detected before 7d pass
 ```
 
 Release candidate can move toward `1.0.0` if:

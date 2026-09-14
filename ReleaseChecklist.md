@@ -1,11 +1,11 @@
 # ESP Watchdog — Release Checklist
 
-Дата: 08.09.2026
+Дата: 14.09.2026
 
 Поточний baseline:
 
 ```text
-0.9.2-long-run-test
+0.9.3-crashinfo
 ```
 
 Production target:
@@ -43,6 +43,9 @@ Production target:
 ### Boot / Storage / Config
 
 - [ ] cold boot проходить без crash;
+- [ ] `/api/diagnostics` показує `crashInfo.exception`;
+- [ ] `/api/diagnostics` показує `crashInfo.resetInfo`;
+- [ ] `/api/status/system` показує `firmware.exceptionReset`;
 - [ ] LittleFS монтується;
 - [ ] `/config.json` читається;
 - [ ] при відсутньому config створюється default config;

@@ -8,11 +8,11 @@
 
 #define FW_VERSION_MAJOR     0
 #define FW_VERSION_MINOR     9
-#define FW_VERSION_PATCH     2
+#define FW_VERSION_PATCH     3
 
-#define FW_VERSION_STRING    "0.9.2"
-#define FW_VERSION_LABEL     "long-run-test"
-#define FW_VERSION_FULL      "0.9.2-long-run-test"
+#define FW_VERSION_STRING    "0.9.3"
+#define FW_VERSION_LABEL     "crashinfo"
+#define FW_VERSION_FULL      "0.9.3-crashinfo"
 
 //=============================================================================
 // Project

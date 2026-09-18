@@ -3,13 +3,13 @@
 Baseline:
 
 ```text
-0.9.2-long-run-test
+0.9.3-crashinfo
 ```
 
 Start date:
 
 ```text
-2026-09-09
+2026-09-14
 ```
 
 Device:
@@ -347,6 +347,51 @@ The previous 0.9.2 long-run was interrupted by resetReason="Exception".
 0.9.3-crashinfo was verified after normal software/system restart: crashInfo is present and exception=false.
 Heap warning is still present at boot because system.freeHeap=11152 is below the diagnostics warning threshold of 12000, but fragmentation is low and RuntimeGuard is not degraded.
 The next long-run attempt should continue with 0.9.3-crashinfo so any future unexpected reboot contains enough post-reboot crash context for root-cause analysis.
+```
+
+---
+
+## 0.9.3-crashinfo long-run snapshot
+
+### T+91h
+
+Date/time:
+
+```text
+2026-09-18
+```
+
+Diagnostics:
+
+```json
+{"ok":true,"level":"warn","system":{"freeHeap":10904,"heapFragmentation":22,"uptimeSeconds":327781,"resetReason":"Software/System restart","heapWarning":true,"fragmentationWarning":false},"crashInfo":{"exception":false,"resetReason":"Software/System restart","resetInfo":"Software/System restart"},"network":{"connected":true,"rssi":-60,"quality":80,"reconnectCount":2,"warning":false},"health":{"available":true,"running":false,"responseTime":4,"sent":65426,"lost":76,"consecutiveFails":0,"warning":false},"watchdog":{"enabled":true,"restartPending":false,"lockedOut":false,"cooldown":false,"restartCount":3,"warning":false},"power":{"available":true,"restartInProgress":false,"restartCount":3,"errorCount":0,"warning":false},"tuya":{"connected":false,"relayState":true,"reconnectCount":0,"commandCount":6,"errorCount":0,"connectedAt":213923858,"lastDisconnectedAt":213964054,"lastCommandAt":213933919,"lastPacketAt":213944024,"lastErrorAt":0,"sessionStartCount":3,"sessionEstablishedCount":3,"sessionFailureCount":0},"runtimeGuard":{"enabled":true,"degraded":false,"restartScheduled":false,"freeHeap":10352,"heapFragmentation":18,"heapAtBoot":19128,"minFreeHeapSeen":10536,"heapDropFromBoot":8776,"maxHeapFragmentationSeen":35,"minFreeHeap":8000,"maxHeapFragmentation":60,"lastCheckAt":327726780,"degradedSince":0,"restartAt":0}}
+```
+
+Result:
+
+- [x] Runtime is alive after 91h+
+- [x] CrashInfo is present
+- [x] `crashInfo.exception=false`
+- [x] Reset reason is normal software/system restart
+- [x] WiFi remains connected
+- [x] HealthCheck remains online
+- [x] Watchdog is not pending restart
+- [x] PowerService is available
+- [x] Tuya command path has no recorded errors
+- [x] RuntimeGuard is not degraded
+- [x] RuntimeGuard restart is not scheduled
+- [ ] diagnostics level remains `warn` due to heap warning
+
+Notes:
+
+```text
+Uptime is about 91h 03m 01s, or about 3.8 days on 0.9.3-crashinfo.
+HealthCheck packet loss is 76 / 65426 ≈ 0.116%, still acceptable.
+Heap remains in the known yellow zone but above RuntimeGuard threshold: system.freeHeap=10904, runtimeGuard.freeHeap=10352, minFreeHeapSeen=10536, minFreeHeap threshold=8000.
+Fragmentation is not concerning: system.heapFragmentation=22%, runtimeGuard.heapFragmentation=18%, maxHeapFragmentationSeen=35%, threshold=60%.
+WiFi reconnectCount=2, but network is currently connected and RSSI/quality improved compared to previous snapshots.
+Watchdog/Power restartCount=3 and Tuya commandCount=6 with errorCount=0, sessionEstablishedCount=3 and sessionFailureCount=0. This suggests controlled power-cycle path remains healthy.
+Continue toward 7d on 0.9.3-crashinfo. Current state does not indicate memory leak or crash recurrence.
 ```
 
 ---

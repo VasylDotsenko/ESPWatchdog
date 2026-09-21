@@ -1,0 +1,41 @@
+{
+  "version": 3,
+  "device": {
+    "hostname": "ESP-Watchdog"
+  },
+  "wifi": {
+    "ssid": "YOUR_WIFI_SSID",
+    "password": "YOUR_WIFI_PASSWORD",
+    "reconnectInterval": 10000,
+    "connectTimeout": 15000
+  },
+  "watchdog": {
+    "targetHost": "192.168.1.100",
+    "targetPort": 22,
+    "pingInterval": 5000,
+    "pingTimeout": 1000,
+    "failCount": 5,
+    "bootDelay": 120000,
+    "powerOffTime": 10000,
+    "maxRestartPerDay": 20
+  },
+  "relay": {
+    "enabled": false,
+    "pin": 5,
+    "activeHigh": true
+  },
+  "tuya": {
+    "ip": "192.168.1.50",
+    "port": 6668,
+    "deviceId": "YOUR_TUYA_DEVICE_ID",
+    "localKey": "YOUR_16_CHAR_LOCAL_KEY",
+    "version": 35,
+    "relayDps": 1,
+    "statusPollingEnabled": false,
+    "statusPollingInterval": 60000
+  },
+  "security": {
+    "apiAuthEnabled": true,
+    "apiToken": "CHANGE_THIS_TO_A_STRONG_TOKEN"
+  }
+}

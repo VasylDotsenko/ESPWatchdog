@@ -2,13 +2,7 @@
 
 **ESP Watchdog** — автономний мережевий watchdog на базі **ESP8266 / WeMos D1 mini** для контролю доступності обладнання та автоматичного перезапуску живлення через зовнішній Tuya LAN power controller.
 
-Поточний інтеграційний стан:
-
-```text
-0.9.3-crashinfo
-```
-
-Production target:
+Поточний production-реліз:
 
 ```text
 1.0.0
@@ -94,11 +88,30 @@ ESP-Watchdog-Setup AP на 5 хвилин
 
 ---
 
+## Підготовка GitHub-репозиторію
+
+Реальний `data/config.json` містить WiFi пароль, Tuya `localKey` та API token. Його не можна commit-ити у GitHub.
+
+- `config.example.json` — безпечний шаблон для репозиторію;
+- `.gitignore` виключає реальний `data/config.json` та локальні build artifacts;
+- OTA пароль береться з environment variable `ESPWATCHDOG_OTA_PASSWORD`, а не з `platformio.ini`.
+
+Перед OTA upload у macOS terminal:
+
+```bash
+export ESPWATCHDOG_OTA_PASSWORD='your-ota-password'
+pio run -e d1_mini_ota -t upload
+```
+
+Якщо токен або ключ уже потрапляв у commit, його потрібно замінити в `config.json` і на Tuya/API стороні; простого додавання у `.gitignore` для цього недостатньо.
+
+---
+
 ## Поточний статус
 
-Проєкт перебуває на етапі Release Candidate / CrashInfo hotfix після interrupted long-run test.
+Проєкт випущено як production `v1.0.0` після успішної 7-денної long-run validation. `CrashInfo` залишається частиною release diagnostics для можливого аналізу майбутніх exception reset.
 
-Нові функції для `1.0.0` більше не додаються. Далі дозволені тільки:
+Для maintenance `1.0.x` дозволені тільки:
 
 - bugfix;
 - hardware verification fixes;
@@ -208,11 +221,11 @@ Long-run сценарій описано в `LongRunTest.md`, журнал сп�
   - `TuyaProtocol`;
   - `TuyaService`.
 
-Ще не завершено:
+Release baseline зафіксовано:
 
-- hardware verification Tuya LAN `3.5` status DPQuery через `6699`;
-- long-run verification після останніх `0.5.x` змін;
-- фінальна перевірка документації / baseline config перед `1.0.0`.
+- Tuya LAN `3.5` control/status path пройшов hardware verification;
+- 7-day long-run validation завершено без нового Exception reset;
+- документацію та baseline config синхронізовано для `v1.0.0`.
 
 ---
 
@@ -695,7 +708,7 @@ Responsive/mobile polish уже виконано для dashboard/config/logs:
 - hardware verification Tuya LAN `3.5` status DPQuery через `6699`;
 - OTA hardening / documentation;
 - diagnostics expansion;
-- Release Candidate verification;
+- production monitoring;
 - restart history Web/API export;
 - average RTT;
 - availability history.
@@ -704,7 +717,7 @@ Responsive/mobile polish уже виконано для dashboard/config/logs:
 
 ## Поточні обмеження
 
-- проєкт ще не є production `v1.0.0`;
+- поточний production-реліз — `v1.0.0`;
 - Tuya LAN `3.4` ще не підтримується;
 - GPIO `RelayService` залишився як проміжний модуль, але не є фінальним рішенням для `TCOGCZ16-A`;
 - TCP socket Tuya LAN може закриватися пристроєм після idle-періоду; це нормально для on-demand режиму.

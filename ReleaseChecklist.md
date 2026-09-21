@@ -2,23 +2,23 @@
 
 Дата: 21.09.2026
 
-Поточний baseline:
+Поточний release:
 
 ```text
-0.9.3-crashinfo
+1.0.0-production
 ```
 
-Production target:
+Наступний milestone:
 
 ```text
-1.0.0
+1.1.0
 ```
 
 ---
 
-## Feature Freeze Policy
+## Maintenance Policy
 
-До `1.0.0` не додаємо нові великі функції.
+Для `1.0.x` не додаємо нові великі функції.
 
 Дозволено:
 
@@ -28,7 +28,7 @@ Production target:
 - документація;
 - baseline config correction.
 
-Відкласти після `1.0.0`, якщо не блокує реліз:
+Планувати для `1.1.0`, якщо не потрібне як critical fix:
 
 - average RTT;
 - availability history;
@@ -148,7 +148,9 @@ Production target:
 
 ## Release Decision
 
-`1.0.0` можна випускати, якщо:
+Статус: `1.0.0 Production` випущено 21.09.2026 після успішної 7-денної long-run validation.
+
+Release baseline включає:
 
 - hardware verification пройдено;
 - long-run test пройдено;

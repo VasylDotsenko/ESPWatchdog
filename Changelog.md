@@ -4,6 +4,41 @@
 
 ---
 
+## [1.0.0] - 21.09.2026
+
+### Статус
+
+Перший production-реліз ESP Watchdog.
+
+### Release validation
+
+- `0.9.3-crashinfo` успішно завершив 7-day long-run validation;
+- uptime контрольного snapshot: `611407` секунд (`7d 01h 50m`);
+- новий `Exception` reset не зафіксовано: `crashInfo.exception=false`;
+- RuntimeGuard не був degraded і не планував recovery restart;
+- мінімальний observed free heap: `10080` bytes при guard threshold `8000` bytes;
+- максимальна observed fragmentation: `36%` при guard threshold `60%`;
+- HealthCheck packet loss: близько `0.072%` (`88 / 122139`);
+- Tuya LAN command/session error counters залишилися нульовими.
+
+### Included baseline
+
+- TCP/SSH HealthCheck;
+- Watchdog decision-layer і restart history;
+- Tuya LAN `3.5` power-control для `TCOGCZ16-A`;
+- WiFi first-boot setup portal та AP recovery;
+- Web Dashboard, Web API, редактор конфігурації, logs і diagnostics;
+- API token protection для state-changing routes;
+- OTA update;
+- RuntimeGuard;
+- CrashInfo diagnostics.
+
+### Maintenance policy
+
+Наступні зміни виходять лише як compatibility-preserving `1.0.x` bugfix/security/stability updates. Нові функції плануються для `1.1.0`.
+
+---
+
 ## [0.9.3-crashinfo] - 14.09.2026
 
 ### Статус
@@ -3827,11 +3862,11 @@ IcmpHealthCheckProvider IcmpProvider;
 
 ---
 
-## Production Target
+## Original production scope
 
-### [1.0.0] - planned
+### [1.0.0] - completed 21.09.2026
 
-`v1.0.0` залишається цільовим production-релізом ESP Watchdog.
+Цей перелік описує scope, який увійшов до production-релізу `v1.0.0`.
 
 До нього повинні увійти:
 

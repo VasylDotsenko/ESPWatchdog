@@ -1,9 +1,15 @@
 # ESP Watchdog — Long-run Report
 
-Baseline:
+Release promoted from baseline:
 
 ```text
 0.9.3-crashinfo
+```
+
+Production release:
+
+```text
+1.0.0
 ```
 
 Start date:
@@ -518,12 +524,12 @@ Notes:
 ## Final decision
 
 ```text
-PASS — 0.9.3-crashinfo completed the 7-day stability validation
+PASS — 0.9.3-crashinfo completed the 7-day stability validation; baseline promoted to 1.0.0 Production
 ```
 
 The preceding `0.9.2` run was interrupted by an Exception reset. The `0.9.3-crashinfo` rerun completed 7 days without a recorded exception or RuntimeGuard recovery.
 
-Release candidate can move toward `1.0.0` after the remaining hardware/UI acceptance checks:
+The release baseline was promoted to `1.0.0 Production` on 21.09.2026. Future observations belong to production monitoring:
 
 - 24h / 48h / 7d checks pass;
 - no crash / stack smashing / WDT reset;

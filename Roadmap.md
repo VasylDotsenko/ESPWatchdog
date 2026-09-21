@@ -2,16 +2,16 @@
 
 Дата оновлення: 21.09.2026
 
-Поточний baseline:
-
-```text
-0.9.3-crashinfo
-```
-
-Production target:
+Поточний production-реліз:
 
 ```text
 1.0.0
+```
+
+Наступний milestone:
+
+```text
+1.1.0
 ```
 
 ---
@@ -40,7 +40,7 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - runtime recovery guard;
 - OTA update over WiFi.
 
-Поточний етап — **Release Candidate `0.9.3-crashinfo`: 7-day long-run validation пройдено; залишилися фінальні acceptance checks перед `1.0.0`**.
+Поточний етап — **`1.0.0 Production`: 7-day long-run validation пройдено, baseline зафіксовано**.
 
 ---
 
@@ -564,6 +564,8 @@ URL: http://192.168.4.1/config/wifi
 
 ## Production release — 1.0.0
 
+Статус: випущено 21.09.2026.
+
 Критерії готовності:
 
 - firmware стабільно стартує;
@@ -580,7 +582,7 @@ URL: http://192.168.4.1/config/wifi
 - dashboard дозволяє змінювати config;
 - logs/diagnostics доступні;
 - документація актуальна;
-- 24h runtime test пройдено.
+- 7-day runtime test пройдено.
 
 ---
 

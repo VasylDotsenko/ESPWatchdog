@@ -4,20 +4,20 @@
 
 ## Поточний статус
 
-Проєкт знаходиться у стані Release Candidate після успішної 7-денної long-run validation на `v0.9.3-crashinfo`. Базовий runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control, Web Dashboard / Web API шар, Tuya LAN `3.5` DPQuery, WiFi AP recovery та hardware verification baseline вже реалізовані.
+Проєкт випущено як `v1.0.0 Production` після успішної 7-денної long-run validation. Базовий runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control, Web Dashboard / Web API шар, Tuya LAN `3.5` DPQuery, WiFi AP recovery та hardware verification baseline реалізовані й підтверджені поточним release baseline.
 
 Основний напрямок роботи зараз:
 
-- закриття залишкових hardware/UI acceptance checks;
+- long-run monitoring production-пристрою;
 - збір `resetInfo` лише у разі нового `Exception` reset;
 - контроль heap / fragmentation / RuntimeGuard;
 - перевірка деградації Web Dashboard після тривалого uptime;
 - перевірка WiFi reconnect та WiFi AP recovery після втрати домашньої мережі;
 - перевірка стабільності Tuya LAN `3.5` command path після idle-period;
 - bugfix/stability only;
-- підготовка до `1.0.0`.
+- maintenance only до наступного feature-релізу `1.1.0`.
 
-Проєкт ще не є фінальним production-релізом. Поточний стан позначено як `v0.9.3-crashinfo`.
+Поточний стан: `v1.0.0 Production`.
 
 Основні документи поточного етапу:
 
@@ -360,5 +360,5 @@
 1. Hardware-verify TCP/SSH HealthCheck на реальному контрольованому хості.
 2. Hardware-verify Tuya LAN `3.5` status DPQuery через `6699`.
 3. Перевірити OTA update на RC build.
-4. Підтвердити фінальні hardware/UI acceptance checks.
-5. Перевірити baseline `config.json`, README, Roadmap, ProjectStatus, ReleaseChecklist та Changelog перед `1.0.0`.
+4. Підтримувати 7d+ production monitoring та збирати diagnostics після кожної аномалії.
+5. Планувати лише non-breaking improvements для `1.1.0`.

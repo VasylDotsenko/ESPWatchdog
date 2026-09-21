@@ -1,15 +1,15 @@
 # ESP Watchdog — Project Status
 
-Дата: 14.09.2026
+Дата: 21.09.2026
 
 ## Поточний статус
 
-Проєкт знаходиться у стані Release Candidate / CrashInfo hotfix після interrupted long-run test. Базовий runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control, Web Dashboard / Web API шар, Tuya LAN `3.5` DPQuery, WiFi AP recovery та hardware verification baseline вже реалізовані.
+Проєкт знаходиться у стані Release Candidate після успішної 7-денної long-run validation на `v0.9.3-crashinfo`. Базовий runtime, HealthCheck, Watchdog decision-layer, Tuya LAN power-control, Web Dashboard / Web API шар, Tuya LAN `3.5` DPQuery, WiFi AP recovery та hardware verification baseline вже реалізовані.
 
 Основний напрямок роботи зараз:
 
-- повторний 24h / 48h / 7d long-run verification після CrashInfo hotfix;
-- збір `resetInfo` після можливого `Exception` reset;
+- закриття залишкових hardware/UI acceptance checks;
+- збір `resetInfo` лише у разі нового `Exception` reset;
 - контроль heap / fragmentation / RuntimeGuard;
 - перевірка деградації Web Dashboard після тривалого uptime;
 - перевірка WiFi reconnect та WiFi AP recovery після втрати домашньої мережі;
@@ -360,5 +360,5 @@
 1. Hardware-verify TCP/SSH HealthCheck на реальному контрольованому хості.
 2. Hardware-verify Tuya LAN `3.5` status DPQuery через `6699`.
 3. Перевірити OTA update на RC build.
-4. Провести фінальний 24h / 7d long-run verification.
+4. Підтвердити фінальні hardware/UI acceptance checks.
 5. Перевірити baseline `config.json`, README, Roadmap, ProjectStatus, ReleaseChecklist та Changelog перед `1.0.0`.

@@ -353,6 +353,44 @@ The next long-run attempt should continue with 0.9.3-crashinfo so any future une
 
 ## 0.9.3-crashinfo long-run snapshot
 
+### T+169h / 7-day validation
+
+Date/time:
+
+```text
+2026-09-21
+```
+
+Diagnostics:
+
+```json
+{"ok":true,"level":"warn","system":{"freeHeap":11536,"heapFragmentation":26,"uptimeSeconds":611407,"resetReason":"Software/System restart","heapWarning":true,"fragmentationWarning":false},"crashInfo":{"exception":false,"resetReason":"Software/System restart","resetInfo":"Software/System restart"},"network":{"connected":true,"rssi":-64,"quality":72,"reconnectCount":2,"warning":false},"health":{"available":true,"running":false,"responseTime":4,"sent":122139,"lost":88,"consecutiveFails":0,"warning":false},"watchdog":{"enabled":true,"restartPending":false,"lockedOut":false,"cooldown":false,"restartCount":3,"warning":false},"power":{"available":true,"restartInProgress":false,"restartCount":3,"errorCount":0,"warning":false},"tuya":{"connected":false,"relayState":true,"reconnectCount":0,"commandCount":6,"errorCount":0,"connectedAt":213923858,"lastDisconnectedAt":213964054,"lastCommandAt":213933919,"lastPacketAt":213944024,"lastErrorAt":0,"sessionStartCount":3,"sessionEstablishedCount":3,"sessionFailureCount":0},"runtimeGuard":{"enabled":true,"degraded":false,"restartScheduled":false,"freeHeap":11312,"heapFragmentation":24,"heapAtBoot":19128,"minFreeHeapSeen":10080,"heapDropFromBoot":7816,"maxHeapFragmentationSeen":36,"minFreeHeap":8000,"maxHeapFragmentation":60,"lastCheckAt":611366628,"degradedSince":0,"restartAt":0}}
+```
+
+Result:
+
+- [x] Runtime is alive after 7 days
+- [x] No exception reset recorded during this run
+- [x] `crashInfo.exception=false`
+- [x] WiFi is connected; reconnect count is stable at `2`
+- [x] HealthCheck is online; packet loss is `88 / 122139` (about `0.072%`)
+- [x] Watchdog and PowerService are not in a restart loop
+- [x] Tuya command path has `0` errors and all `3` sessions were established
+- [x] RuntimeGuard is not degraded and has no scheduled restart
+- [x] Minimum free heap remained above the `8000` byte guard threshold
+- [x] Maximum heap fragmentation remained below the `60%` guard threshold
+- [ ] Diagnostics level remains `warn` because the informational system heap threshold is `12000` bytes
+
+Notes:
+
+```text
+Uptime is 611407 seconds: 7 days, 1 hour, 50 minutes and 7 seconds.
+The test satisfies the 7-day long-run criterion for 0.9.3-crashinfo.
+The observed minimum free heap is 10080 bytes, which is 2080 bytes above the RuntimeGuard threshold. Heap fragmentation peaked at 36%, 24 percentage points below its threshold.
+The system-level heap warning is expected under the current 12000-byte diagnostics threshold and is not a RuntimeGuard degradation or restart condition.
+Tuya is intentionally disconnected while idle; its last controlled power cycles completed without recorded command or session failures.
+```
+
 ### T+91h
 
 Date/time:
@@ -480,10 +518,12 @@ Notes:
 ## Final decision
 
 ```text
-INTERRUPTED — exception reset detected before 7d pass
+PASS — 0.9.3-crashinfo completed the 7-day stability validation
 ```
 
-Release candidate can move toward `1.0.0` if:
+The preceding `0.9.2` run was interrupted by an Exception reset. The `0.9.3-crashinfo` rerun completed 7 days without a recorded exception or RuntimeGuard recovery.
+
+Release candidate can move toward `1.0.0` after the remaining hardware/UI acceptance checks:
 
 - 24h / 48h / 7d checks pass;
 - no crash / stack smashing / WDT reset;

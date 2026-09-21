@@ -1,6 +1,6 @@
 # ESP Watchdog — Roadmap
 
-Дата оновлення: 14.09.2026
+Дата оновлення: 21.09.2026
 
 Поточний baseline:
 
@@ -40,7 +40,7 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - runtime recovery guard;
 - OTA update over WiFi.
 
-Поточний етап — **Release Candidate `0.9.x` / CrashInfo hotfix після interrupted long-run test**.
+Поточний етап — **Release Candidate `0.9.3-crashinfo`: 7-day long-run validation пройдено; залишилися фінальні acceptance checks перед `1.0.0`**.
 
 ---
 

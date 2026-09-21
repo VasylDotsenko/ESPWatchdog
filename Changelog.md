@@ -63,6 +63,17 @@ resetReason = Exception
 - Tuya LAN command path;
 - Web UI behavior.
 
+### Long-run verification — 21.09.2026
+
+- `0.9.3-crashinfo` завершив 7-day stability validation;
+- uptime snapshot: `611407` секунд (`7d 01h 50m`);
+- `crashInfo.exception=false`, новий Exception reset не зафіксовано;
+- RuntimeGuard не переходив у degraded state та не планував restart;
+- мінімальний free heap: `10080` bytes, вище guard threshold `8000` bytes;
+- максимальна fragmentation: `36%`, нижче guard threshold `60%`;
+- HealthCheck packet loss: `88 / 122139` (близько `0.072%`);
+- Tuya command/session error counters залишилися нульовими.
+
 ---
 
 ## [0.9.2-long-run-test] - 08.09.2026

@@ -1,6 +1,6 @@
 # ESP Watchdog — Release Checklist
 
-Дата: 14.09.2026
+Дата: 21.09.2026
 
 Поточний baseline:
 
@@ -132,15 +132,15 @@ Production target:
 - `LongRunTest.md`;
 - `LongRunReport.md`.
 
-- [ ] 24h runtime без unexpected reset;
-- [ ] 48h runtime без деградації Web UI;
-- [ ] 7d runtime без критичного heap drop;
-- [ ] `freeHeap` не падає нижче RuntimeGuard threshold;
-- [ ] heap fragmentation лишається нижче RuntimeGuard threshold;
-- [ ] WiFi reconnect count не росте аномально;
-- [ ] HealthCheck lost count не росте аномально;
-- [ ] Watchdog не входить у restart loop;
-- [ ] Tuya command path лишається доступним після idle-period;
+- [x] 24h runtime без unexpected reset;
+- [x] 48h runtime без деградації RuntimeGuard;
+- [x] 7d runtime без критичного heap drop;
+- [x] `freeHeap` не падає нижче RuntimeGuard threshold;
+- [x] heap fragmentation лишається нижче RuntimeGuard threshold;
+- [x] WiFi reconnect count не росте аномально;
+- [x] HealthCheck lost count не росте аномально;
+- [x] Watchdog не входить у restart loop;
+- [x] Tuya command path лишається доступним після idle-period;
 - [ ] dashboard відкривається після 24h+ runtime;
 - [ ] logs page відкривається після 24h+ runtime.
 

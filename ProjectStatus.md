@@ -48,6 +48,8 @@
 
 Focused RC long-run validation для `1.1.0-rc.1-observability`: контролювати heap/fragmentation, Web UI, HealthCheck, обидва history-журнали та NTP epoch backfill протягом щонайменше 24 годин.
 
+Початковий RC snapshot підтверджено на пристрої: startup log backfill має валідний wall time, `HealthCheck` записав initial Online event з epoch, а очищений persistent restart history стартує порожнім.
+
 Основні документи поточного етапу:
 
 - `LongRunTest.md`;

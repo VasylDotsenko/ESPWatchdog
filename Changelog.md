@@ -40,6 +40,7 @@
 - Availability History перевірено на пристрої: failure `network_unavailable` та наступний перехід `success` / Online збережені у правильному порядку; реальний epoch-час з'являється після NTP synchronization.
 - NTP backfill перевірено на пристрої: рання failure-подія з початковим `epoch=0` отримала розрахований epoch після synchronization.
 - authenticated очищення Availability History перевірено на пристрої: Dashboard отримав `HTTP 200` і команду `availability_history_clear`.
+- RC initial snapshot: `APP_VERSION=1.1.0-rc.1-observability`, startup Logger time backfill, initial Health Online event та порожній cleared Restart History підтверджені на пристрої.
 
 ---
 

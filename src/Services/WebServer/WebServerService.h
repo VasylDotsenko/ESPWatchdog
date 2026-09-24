@@ -62,6 +62,8 @@ private:
 
     void handleApiPowerHistoryClear();
 
+    void handleApiHealthHistoryClear();
+
     void handleApiOptions();
 
     void handleHealth();

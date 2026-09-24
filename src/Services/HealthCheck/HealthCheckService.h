@@ -72,6 +72,8 @@ public:
 
     void reset();
 
+    void clearAvailabilityHistory();
+
 private:
 
     //---------------------------------------------------------------------

@@ -3,6 +3,7 @@
 #include "WebPages.h"
 #include "WebApiAuth.h"
 #include "WebApiDiagnostics.h"
+#include "WebApiHealth.h"
 #include "WebApiIndex.h"
 #include "WebApiStatus.h"
 #include "WebApiConfig.h"
@@ -292,6 +293,14 @@ void WebServerService::configureCommandApiRoutes()
         });
 
     m_server.on(
+        "/api/health/history/clear",
+        HTTP_POST,
+        [this]()
+        {
+            handleApiHealthHistoryClear();
+        });
+
+    m_server.on(
         "/api/power/on",
         HTTP_OPTIONS,
         [this]()
@@ -317,6 +326,14 @@ void WebServerService::configureCommandApiRoutes()
 
     m_server.on(
         "/api/power/history/clear",
+        HTTP_OPTIONS,
+        [this]()
+        {
+            handleApiOptions();
+        });
+
+    m_server.on(
+        "/api/health/history/clear",
         HTTP_OPTIONS,
         [this]()
         {
@@ -509,6 +526,16 @@ void WebServerService::handleApiPowerHistoryClear()
     }
 
     WebApiPower::handleClearHistory(m_server);
+}
+
+void WebServerService::handleApiHealthHistoryClear()
+{
+    if (!WebApiAuth::authorizeCommand(m_server))
+    {
+        return;
+    }
+
+    WebApiHealth::handleClearHistory(m_server);
 }
 
 void WebServerService::handleApiOptions()

@@ -118,6 +118,13 @@ void HealthCheckService::reset()
         TimerMode::Periodic);
 }
 
+void HealthCheckService::clearAvailabilityHistory()
+{
+    m_availabilityHistory = AvailabilityHistoryStatus {};
+
+    Log.info(F("HealthCheck: availability history cleared"));
+}
+
 //=============================================================================
 // Current state
 //=============================================================================

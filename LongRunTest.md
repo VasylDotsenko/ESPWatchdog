@@ -1,17 +1,17 @@
 # ESP Watchdog — Long-run Test
 
-Дата старту: 08.09.2026
+Дата старту RC: 24.09.2026
 
-Поточний baseline:
-
-```text
-0.9.3-crashinfo
-```
-
-Production target:
+Production baseline:
 
 ```text
 1.0.0
+```
+
+RC under test:
+
+```text
+1.1.0-rc.1-observability
 ```
 
 ---
@@ -19,6 +19,8 @@ Production target:
 ## Мета
 
 Підтвердити стабільну unattended роботу ESP Watchdog протягом тривалого часу без ручного перезапуску живлення.
+
+Статус: `1.0.0` long-run пройдено успішно. Поточний документ описує focused RC test для `1.1.0-rc.1-observability`; попередній 7-day snapshot збережений у `LongRunReport.md`.
 
 Основні ризики цього етапу:
 
@@ -28,6 +30,7 @@ Production target:
 - зависання WiFi recovery в AP mode;
 - нестабільність Tuya LAN після idle-period;
 - restart-loop після Watchdog / RuntimeGuard recovery.
+- коректність History після NTP synchronization, reboot і Dashboard actions.
 
 ---
 
@@ -50,6 +53,7 @@ Production target:
 - `HealthCheck.lost` не росте аномально;
 - `Watchdog` не входить у restart-loop;
 - Tuya relay command path доступний після idle-period.
+- `/api/health` та `/api/power` повертають коректні bounded history без timeout.
 
 ### 48 годин
 
@@ -66,6 +70,7 @@ Production target:
 - RuntimeGuard не виконує зайві restart;
 - WiFi reconnect / AP recovery працює передбачувано;
 - Tuya LAN power-cycle проходить успішно.
+- Availability History не створює flash writes і не впливає на HealthCheck statistics після clear.
 
 ---
 

@@ -19,9 +19,9 @@
 
 Поточний production baseline: `v1.0.0 Production`.
 
-Активна development-версія: `v1.1.0-dev-persistent-history`.
+Активна версія для перевірки: `v1.1.0-rc.1-observability`.
 
-### Поточна робота — Persistent Restart History
+### RC scope — Persistent Restart History
 
 - додано LittleFS persistence для bounded restart-history ring buffer;
 - історія переживає ESP reboot;
@@ -31,7 +31,7 @@
 - Dashboard та authenticated API дозволяють очистити history окремо від конфігурації.
 - clear action hardware-verified: history snapshot після команди порожній.
 
-### Поточна робота — Availability History
+### RC scope — Availability History
 
 - додано RAM-only bounded history для HealthCheck (`8` записів);
 - зберігаються лише failure-події та зміни доступності Online / Offline;
@@ -42,6 +42,11 @@
 - flash persistence не використовується: нова діагностика не збільшує зношення LittleFS.
 - hardware verification: `network_unavailable` і наступний `success` / Online коректно потрапили в history; до NTP sync подія має `epoch=0`, після sync — валідний epoch.
 - hardware verification NTP backfill: ранній запис з `epoch=0` ретроспективно отримав epoch після синхронізації часу.
+- hardware verification clear action: Dashboard виконав `availability_history_clear` з `HTTP 200`.
+
+### Наступний етап
+
+Focused RC long-run validation для `1.1.0-rc.1-observability`: контролювати heap/fragmentation, Web UI, HealthCheck, обидва history-журнали та NTP epoch backfill протягом щонайменше 24 годин.
 
 Основні документи поточного етапу:
 

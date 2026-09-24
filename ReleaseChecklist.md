@@ -1,20 +1,28 @@
 # ESP Watchdog — Release Checklist
 
-Дата: 21.09.2026
+Дата: 24.09.2026
 
-Поточний release:
+Поточний release candidate:
 
 ```text
-1.0.0-production
+1.1.0-rc.1-observability
 ```
 
-Наступний milestone:
+Release target:
 
 ```text
-1.1.0
+1.1.0 Production
 ```
 
 ---
+
+## 1.1.0 RC scope
+
+- Persistent Restart History у LittleFS;
+- Availability History у RAM;
+- NTP epoch backfill для подій до синхронізації часу;
+- API/Dashboard actions для очищення обох history-журналів;
+- без нових протоколів, змін конфігураційного формату або архітектурних рефакторингів під час RC.
 
 ## Maintenance Policy
 
@@ -31,8 +39,6 @@
 Планувати для `1.1.0`, якщо не потрібне як critical fix:
 
 - average RTT;
-- availability history;
-- restart history persistent storage;
 - full Tuya `3.4` support;
 - advanced dashboard analytics.
 
@@ -70,6 +76,9 @@
 - [ ] online state визначається коректно;
 - [ ] offline state визначається після `watchdog.failCount`;
 - [ ] false-positive restart не виникає при одиничній втраті перевірки.
+- [ ] `/api/health` повертає Availability History для failure і Online/Offline transition;
+- [ ] подія до NTP sync отримує epoch після synchronization;
+- [ ] `POST /api/health/history/clear` очищує лише history, не скидаючи HealthCheck statistics;
 
 ### Watchdog / Power
 
@@ -77,6 +86,9 @@
 - [ ] PowerService виконує power OFF;
 - [ ] PowerService виконує power ON після `powerOffTime`;
 - [ ] restart history фіксує success;
+- [ ] persistent Restart History зберігається після software reboot ESP;
+- [ ] незавершений restart після forced reboot позначається як `interrupted`;
+- [ ] `POST /api/power/history/clear` очищує лише persistent history;
 - [ ] `bootDelay` cooldown блокує повторний restart одразу після power-cycle;
 - [ ] `maxRestartPerDay` блокує restart-loop.
 
@@ -148,7 +160,7 @@
 
 ## Release Decision
 
-Статус: `1.0.0 Production` випущено 21.09.2026 після успішної 7-денної long-run validation.
+Статус: `1.0.0 Production` випущено 21.09.2026 після успішної 7-денної long-run validation. `1.1.0-rc.1-observability` очікує focused RC long-run validation.
 
 Release baseline включає:
 

@@ -8,10 +8,10 @@
 1.0.0
 ```
 
-Поточна development-гілка:
+Поточний release candidate:
 
 ```text
-1.1.0-dev-persistent-history
+1.1.0-rc.1-observability
 ```
 
 ---

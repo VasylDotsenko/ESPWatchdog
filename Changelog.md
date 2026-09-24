@@ -4,7 +4,7 @@
 
 ---
 
-## [1.1.0-dev-persistent-history] - 21.09.2026
+## [1.1.0-rc.1-observability] - 24.09.2026
 
 ### Added
 
@@ -39,6 +39,7 @@
 - authenticated очищення history перевірено: `/api/power` після команди повернув `count=0`, `total=0`, `entries=[]`.
 - Availability History перевірено на пристрої: failure `network_unavailable` та наступний перехід `success` / Online збережені у правильному порядку; реальний epoch-час з'являється після NTP synchronization.
 - NTP backfill перевірено на пристрої: рання failure-подія з початковим `epoch=0` отримала розрахований epoch після synchronization.
+- authenticated очищення Availability History перевірено на пристрої: Dashboard отримав `HTTP 200` і команду `availability_history_clear`.
 
 ---
 

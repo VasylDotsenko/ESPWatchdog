@@ -42,14 +42,15 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 
 Поточний етап — **`1.0.0 Production`: 7-day long-run validation пройдено, baseline зафіксовано**.
 
-Активна розробка: **`1.1.0-dev-persistent-history`**.
+Активний release candidate: **`1.1.0-rc.1-observability`**.
 
-### Активний інкремент: Availability History
+### RC scope: Availability History
 
 - RAM-only кільцева історія восьми останніх значущих подій HealthCheck;
 - фіксуються лише невдалі перевірки та переходи Online / Offline;
 - epoch-час використовується після NTP-синхронізації; попередні RAM-події отримують розрахований epoch автоматично;
 - детальна історія доступна через `GET /api/health` та Dashboard;
+- history очищується через authenticated `POST /api/health/history/clear` або кнопку Dashboard без скидання HealthCheck statistics;
 - `/api/status` передає лише метадані history без масивів записів, щоб не переповнювати фіксований response buffer ESP8266;
 - записів у LittleFS немає, отже модуль не додає flash wear.
 
@@ -601,7 +602,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 1.1.0 — Persistent Restart History
 
-Статус: core persistence hardware-verified 24.09.2026.
+Статус: `1.1.0-rc.1-observability`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — focused long-run validation.
 
 - restart history зберігається у LittleFS у `/restart-history.json`;
 - журнал обмежено десятьма останніми записами, тому розмір файла та RAM footprint стабільні;

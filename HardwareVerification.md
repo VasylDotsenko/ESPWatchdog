@@ -1,17 +1,17 @@
 # ESP Watchdog — Hardware Verification
 
-Дата: 08.09.2026
+Дата: 24.09.2026
 
-Поточний baseline:
-
-```text
-0.9.2-long-run-test
-```
-
-Production target:
+Production baseline:
 
 ```text
 1.0.0
+```
+
+Поточний release candidate:
+
+```text
+1.1.0-rc.1-observability
 ```
 
 ---
@@ -36,7 +36,7 @@ Production target:
 Очікувана версія:
 
 ```text
-0.9.2-long-run-test
+1.1.0-rc.1-observability
 ```
 
 Перевірити у dashboard або через:
@@ -226,6 +226,9 @@ http://192.168.10.44/api/status
 - `responseTime` має реальне значення;
 - `consecutiveFails=0` у нормальному стані;
 - `sent` збільшується з часом.
+- `history.entries` містить failure та Online/Offline transition, але не кожен successful probe;
+- рання подія з `epoch=0` отримує коректний epoch після NTP synchronization;
+- Dashboard action `CLEAR HISTORY` та `POST /api/health/history/clear` повертають `HTTP 200` і не скидають HealthCheck statistics.
 
 ---
 
@@ -414,10 +417,10 @@ curl -X POST http://192.168.10.44/api/power/restart \
 
 ### Якщо все пройшло
 
-Переходимо до:
+Переходимо до рішення щодо релізу:
 
 ```text
-0.9.2-long-run-test
+1.1.0 Production
 ```
 
 ### Якщо є bug
@@ -425,7 +428,7 @@ curl -X POST http://192.168.10.44/api/power/restart \
 Створити bugfix release:
 
 ```text
-0.9.1.x
+1.1.0-rc.2
 ```
 
 або:

@@ -31,6 +31,15 @@
 - Dashboard та authenticated API дозволяють очистити history окремо від конфігурації.
 - clear action hardware-verified: history snapshot після команди порожній.
 
+### Поточна робота — Availability History
+
+- додано RAM-only bounded history для HealthCheck (`8` записів);
+- зберігаються лише failure-події та зміни доступності Online / Offline;
+- подія містить uptime, NTP epoch (коли доступний), статус, RTT і лічильник consecutive failures;
+- детальні записи доступні через `GET /api/health` та Dashboard;
+- `/api/status` навмисно містить тільки `capacity` і `count` history — без `entries`, щоб не ризикувати переповненням буфера відповіді на ESP8266;
+- flash persistence не використовується: нова діагностика не збільшує зношення LittleFS.
+
 Основні документи поточного етапу:
 
 - `LongRunTest.md`;

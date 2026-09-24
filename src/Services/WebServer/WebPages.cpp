@@ -121,6 +121,21 @@ function restartHistory(ph){
   entries.map(e=>logLine(`${esc(eventTime(e))} · #${e.id} · ${esc(e.reasonText||'unknown')} → ${esc(e.resultText||'none')} · off=${e.requestedPowerOffTime||0} ms · dur=${e.actualDuration||0} ms`,e.resultText==='success'?'ok':(e.resultText==='failed'?'bad':'warn'))).join('')+
   `</div></section>`;
 }
+function healthEventTime(entry){
+ const epoch=Number(entry.epoch||0);
+ if(epoch>0)return new Date(epoch*1000).toLocaleString('uk-UA');
+ const uptime=Number(entry.timestamp||0);
+ return uptime>0?`uptime ${Math.floor(uptime/1000)} s`:'time unavailable';
+}
+function availabilityHistory(history){
+ const entries=(history.entries||[]).slice().reverse();
+ if(!entries.length)return card('Availability history',[row('Events','no failures or state changes')]);
+ return `<section class="card wide"><h2>Availability history</h2>`+
+  row('Stored',`${history.count||0}/${history.capacity||8} significant events`)+
+  `<div class="log">`+
+  entries.map(e=>logLine(`${esc(healthEventTime(e))} · ${esc(e.statusText||'error')} · ${e.available?'online':'offline'} · RTT=${e.responseTime||0} ms · fails=${e.consecutiveFails||0}`,e.available?'ok':'bad')).join('')+
+  `</div></section>`;
+}
 function commandLogCard(){
  const lines=commandLog.length?commandLog.map(x=>logLine(x)).join(''):logLine('No manual commands yet');
  return `<section class="card"><h2>Command log</h2><div class="log">${lines}</div></section>`;
@@ -230,7 +245,16 @@ async function renderLogs(){
 async function getJson(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw new Error(`${path}: HTTP ${r.status}`);return await r.json()}
 async function tryGetJson(path,fallback={}){try{return await getJson(path)}catch(e){return fallback}}
 async function loadDashboardStatus(){
- try{return await getJson('/api/status')}catch(e){}
+ try{
+  const s=await getJson('/api/status');
+  const healthEntries=s.health&&s.health.history&&s.health.history.entries;
+  const powerEntries=s.power&&s.power.history&&s.power.history.entries;
+  if(!Array.isArray(healthEntries)||!Array.isArray(powerEntries)){
+   const [health,power]=await Promise.all([tryGetJson('/api/health',s.health||{}),tryGetJson('/api/power',s.power||{})]);
+   s.health=health;s.power=power;
+  }
+  return s;
+ }catch(e){}
  const s={};
  s.system=await tryGetJson('/api/system');
  s.network=await tryGetJson('/api/network');
@@ -263,7 +287,7 @@ function render(s,c,d={}){
  }
  const sys=s.system||{}, fw=sys.firmware||{}, up=sys.uptime||{}, mem=sys.memory||{}, cpu=sys.cpu||{};
  const net=s.network||{}, ns=net.summary||{}, nc=net.configuration||{}, na=net.address||{}, sig=net.signal||{};
- const h=s.health||{}, hs=h.summary||{}, hst=h.statistics||{};
+ const h=s.health||{}, hs=h.summary||{}, hst=h.statistics||{}, hh=h.history||{};
  const w=s.watchdog||{}, ws=w.summary||{}, wc=w.configuration||{}, wst=w.statistics||{};
  const p=s.power||{}, ps=p.summary||{}, pst=p.statistics||{}, ph=p.history||{};
  const rg=(d&&d.runtimeGuard)||{};
@@ -278,6 +302,7 @@ function render(s,c,d={}){
   card('Tuya runtime',[row('Connected',tu.connected?'yes':'no',cls(tu.connected)),row('Relay',tu.relayState?'on':'off',tu.relayState?'ok':'warn'),row('Commands',tu.commandCount||0),row('Errors',tu.errorCount||0,(tu.errorCount||0)>0?'warn':'ok'),row('Reconnects',tu.reconnectCount||0),row('Sessions',`${tu.sessionEstablishedCount||0}/${tu.sessionStartCount||0}`,(tu.sessionFailureCount||0)>0?'warn':'ok'),row('Last packet',ms(tu.lastPacketAt||0)),row('Last error',ms(tu.lastErrorAt||0))]),
   ...configCards(c),
   controls(ps,wc),
+  availabilityHistory(hh),
   restartHistory(ph),
   commandLogCard()
  ].join('');

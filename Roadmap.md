@@ -44,6 +44,15 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 
 Активна розробка: **`1.1.0-dev-persistent-history`**.
 
+### Активний інкремент: Availability History
+
+- RAM-only кільцева історія восьми останніх значущих подій HealthCheck;
+- фіксуються лише невдалі перевірки та переходи Online / Offline;
+- epoch-час використовується після NTP-синхронізації, до цього показується uptime;
+- детальна історія доступна через `GET /api/health` та Dashboard;
+- `/api/status` передає лише метадані history без масивів записів, щоб не переповнювати фіксований response buffer ESP8266;
+- записів у LittleFS немає, отже модуль не додає flash wear.
+
 ---
 
 ## Завершено у 0.4.x

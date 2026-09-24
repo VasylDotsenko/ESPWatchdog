@@ -1,9 +1,25 @@
 #include "HealthCheckService.h"
 
+#include <time.h>
+
 #include "Services/Config/Config.h"
 #include "Services/Logger/Logger.h"
 
 HealthCheckService HealthCheck;
+
+namespace
+{
+    uint64_t wallTimeEpoch()
+    {
+        constexpr time_t MIN_VALID_EPOCH = 1600000000;
+
+        const time_t now = time(nullptr);
+
+        return now >= MIN_VALID_EPOCH
+            ? static_cast<uint64_t>(now)
+            : 0;
+    }
+}
 
 //=============================================================================
 // Dependency Injection
@@ -86,6 +102,7 @@ void HealthCheckService::loop()
 void HealthCheckService::reset()
 {
     m_info.reset();
+    m_availabilityHistory = AvailabilityHistoryStatus {};
 
     m_state = State::Idle;
 
@@ -147,6 +164,7 @@ HealthStatusData HealthCheckService::status() const
     status.timestamps.lastFail = m_info.lastFail;
     status.timestamps.availabilityChanged =
         m_info.availabilityChanged;
+    status.history = m_availabilityHistory;
 
     return status;
 }
@@ -256,7 +274,14 @@ void HealthCheckService::processResult()
             m_info.available ? "ONLINE" : "OFFLINE");
     }
 
-        Log.verbose(
+    // Store meaningful observations only: every failure and every online/offline
+    // transition. Normal successful probes remain represented by aggregate stats.
+    if (!result.success || previousAvailable != m_info.available)
+    {
+        appendAvailabilityHistory(result, now);
+    }
+
+    Log.verbose(
         F("HealthCheck: status=%u available=%u sent=%lu received=%lu lost=%lu "
           "success=%lu fails=%lu rtt=%lu ms"),
         static_cast<uint8_t>(result.status),
@@ -267,6 +292,31 @@ void HealthCheckService::processResult()
         m_info.consecutiveSuccess,
         m_info.consecutiveFails,
         m_info.responseTime);
+}
+
+void HealthCheckService::appendAvailabilityHistory(
+    const HealthCheckResult& result,
+    uint64_t timestamp)
+{
+    AvailabilityHistoryStatus& history = m_availabilityHistory;
+    AvailabilityHistoryEntry& entry =
+        history.entries[history.head];
+
+    entry = AvailabilityHistoryEntry {};
+    entry.timestamp = timestamp;
+    entry.epoch = wallTimeEpoch();
+    entry.status = result.status;
+    entry.available = m_info.available;
+    entry.responseTime = result.responseTime;
+    entry.consecutiveFails = m_info.consecutiveFails;
+
+    history.head = static_cast<uint8_t>(
+        (history.head + 1) % AvailabilityHistoryStatus::CAPACITY);
+
+    if (history.count < AvailabilityHistoryStatus::CAPACITY)
+    {
+        ++history.count;
+    }
 }
 
 //=============================================================================

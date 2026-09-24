@@ -9,6 +9,10 @@
 ### Added
 
 - `RestartHistoryStorage` для LittleFS файла `/restart-history.json`;
+- RAM-only Availability History для останніх восьми значущих HealthCheck подій;
+- HealthCheck JSON/API fields: status, RTT, consecutive failures та NTP epoch timestamp для кожної history event;
+- Dashboard card `Availability history`.
+- захист aggregate `/api/status` від переповнення JSON buffer: detailed history entries віддаються через `/api/health` та `/api/power`, Dashboard підвантажує їх автоматично.
 - збереження bounded history з десяти останніх power-cycle подій;
 - відновлення history та лічильників після ESP reboot;
 - новий reason `interrupted` для restart, який не завершився через неочікуваний reset;

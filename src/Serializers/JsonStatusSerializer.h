@@ -75,6 +75,10 @@ private:
         JsonObject target,
         const RestartHistoryStatus& history);
 
+    static void writeAvailabilityHistory(
+        JsonObject target,
+        const AvailabilityHistoryStatus& history);
+
     static void writeIPv4(
         JsonObject target,
         const char* key,

@@ -94,6 +94,10 @@ private:
 
     void processResult();
 
+    void appendAvailabilityHistory(
+        const HealthCheckResult& result,
+        uint64_t timestamp);
+
 private:
 
     //---------------------------------------------------------------------
@@ -119,6 +123,8 @@ private:
     //---------------------------------------------------------------------
 
     HealthCheckInfo m_info;
+
+    AvailabilityHistoryStatus m_availabilityHistory;
 };
 
 //=============================================================================

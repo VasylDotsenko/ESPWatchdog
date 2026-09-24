@@ -35,9 +35,33 @@ struct HealthStatusTimestamps
     uint64_t availabilityChanged = 0;
 };
 
+struct AvailabilityHistoryEntry
+{
+    uint64_t timestamp = 0;
+    uint64_t epoch = 0;
+
+    HealthCheckStatus status = HealthCheckStatus::Error;
+
+    bool available = false;
+
+    uint32_t responseTime = 0;
+    uint32_t consecutiveFails = 0;
+};
+
+struct AvailabilityHistoryStatus
+{
+    static constexpr uint8_t CAPACITY = 8;
+
+    AvailabilityHistoryEntry entries[CAPACITY] {};
+
+    uint8_t head = 0;
+    uint8_t count = 0;
+};
+
 struct HealthStatusData
 {
     HealthStatusSummary summary;
     HealthStatusStatistics statistics;
     HealthStatusTimestamps timestamps;
+    AvailabilityHistoryStatus history;
 };

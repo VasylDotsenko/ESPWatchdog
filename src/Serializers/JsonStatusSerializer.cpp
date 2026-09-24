@@ -185,6 +185,16 @@ bool JsonStatusSerializer::serialize(
         root["power"].to<JsonObject>(),
         status.power);
 
+    // Keep aggregate /api/status within the fixed ESP8266 response buffer.
+    // Detailed histories remain available through /api/health and /api/power.
+    JsonObject health = root["health"].as<JsonObject>();
+    JsonObject power = root["power"].as<JsonObject>();
+    JsonObject healthHistory = health["history"].as<JsonObject>();
+    JsonObject powerHistory = power["history"].as<JsonObject>();
+
+    healthHistory.remove("entries");
+    powerHistory.remove("entries");
+
     return finish(
         doc,
         output,
@@ -435,6 +445,40 @@ void JsonStatusSerializer::writeHealth(
     timestamps["availabilityChanged"] =
         static_cast<uint64_t>(
             status.timestamps.availabilityChanged);
+
+    writeAvailabilityHistory(
+        target["history"].to<JsonObject>(),
+        status.history);
+}
+
+void JsonStatusSerializer::writeAvailabilityHistory(
+    JsonObject target,
+    const AvailabilityHistoryStatus& history)
+{
+    target["capacity"] = AvailabilityHistoryStatus::CAPACITY;
+    target["count"] = history.count;
+
+    JsonArray entries = target["entries"].to<JsonArray>();
+
+    const uint8_t start = history.count < AvailabilityHistoryStatus::CAPACITY
+        ? 0
+        : history.head;
+
+    for (uint8_t offset = 0; offset < history.count; ++offset)
+    {
+        const uint8_t index = static_cast<uint8_t>(
+            (start + offset) % AvailabilityHistoryStatus::CAPACITY);
+        const AvailabilityHistoryEntry& entry = history.entries[index];
+        JsonObject item = entries.add<JsonObject>();
+
+        item["timestamp"] = entry.timestamp;
+        item["epoch"] = entry.epoch;
+        item["status"] = static_cast<uint8_t>(entry.status);
+        item["statusText"] = healthStatusText(entry.status);
+        item["available"] = entry.available;
+        item["responseTime"] = entry.responseTime;
+        item["consecutiveFails"] = entry.consecutiveFails;
+    }
 }
 
 void JsonStatusSerializer::writeWatchdog(

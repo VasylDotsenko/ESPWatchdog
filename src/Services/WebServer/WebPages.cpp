@@ -95,11 +95,19 @@ function controls(ps,wc){
   </div>
  </section>`;
 }
+function eventTime(entry){
+ const epoch=Number(entry.completedAtEpoch||entry.startedAtEpoch||0);
+ if(epoch>0)return new Date(epoch*1000).toLocaleString('uk-UA');
+ const uptime=Number(entry.completedAt||entry.startedAt||0);
+ return uptime>0?`uptime ${Math.floor(uptime/1000)} s`:'time unavailable';
+}
 function restartHistory(ph){
  const entries=(ph.entries||[]).slice().reverse().slice(0,8);
- if(!entries.length)return card('Restart history',[row('Entries','none')]);
- return `<section class="card"><h2>Restart history</h2><div class="log">`+
-  entries.map(e=>logLine(`#${e.id} ${e.reasonText||'unknown'} → ${e.resultText||'none'} · off=${e.requestedPowerOffTime||0} ms · dur=${e.actualDuration||0} ms`,e.resultText==='success'?'ok':(e.resultText==='failed'?'bad':'warn'))).join('')+
+ if(!entries.length)return card('Persistent restart history',[row('Entries','none')]);
+ return `<section class="card wide"><h2>Persistent restart history</h2>`+
+  row('Stored',`${ph.count||0}/${ph.capacity||10} · ${ph.succeeded||0} ok / ${ph.failed||0} failed`)+
+  `<div class="log">`+
+  entries.map(e=>logLine(`${esc(eventTime(e))} · #${e.id} · ${esc(e.reasonText||'unknown')} → ${esc(e.resultText||'none')} · off=${e.requestedPowerOffTime||0} ms · dur=${e.actualDuration||0} ms`,e.resultText==='success'?'ok':(e.resultText==='failed'?'bad':'warn'))).join('')+
   `</div></section>`;
 }
 function commandLogCard(){

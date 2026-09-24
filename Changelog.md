@@ -13,6 +13,7 @@
 - відновлення history та лічильників після ESP reboot;
 - новий reason `interrupted` для restart, який не завершився через неочікуваний reset;
 - Unix epoch timestamps для restart events після NTP synchronization;
+- Dashboard card `Persistent restart history` з реальним часом події, причиною, результатом і фактичною тривалістю power-cycle.
 - persistence на початку restart, після power OFF та після success/failed finalization.
 
 ### Safety

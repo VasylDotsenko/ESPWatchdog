@@ -173,3 +173,14 @@ bool RestartHistoryStorage::save(const RestartHistoryData& history) const
 
     return true;
 }
+
+bool RestartHistoryStorage::clear() const
+{
+    if (!Storage.remove(FILE_PATH))
+    {
+        Log.warning("RestartHistory: unable to remove persistent history");
+        return false;
+    }
+
+    return true;
+}

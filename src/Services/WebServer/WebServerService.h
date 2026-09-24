@@ -60,6 +60,8 @@ private:
 
     void handleApiPowerRestart();
 
+    void handleApiPowerHistoryClear();
+
     void handleApiOptions();
 
     void handleHealth();

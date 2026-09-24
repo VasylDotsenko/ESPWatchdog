@@ -241,6 +241,8 @@ Release baseline зафіксовано:
 
 Кожен watchdog або manual power-cycle записується у bounded LittleFS журнал `/restart-history.json`. Після reboot останні десять подій та їхні лічильники залишаються доступними через існуючий Power status API та Dashboard. Якщо reboot перериває power-cycle, запис фіксується як `interrupted` під час наступного boot. За наявності NTP sync Dashboard показує реальний час події.
 
+Dashboard має кнопку `CLEAR HISTORY`. Вона викликає authenticated `POST /api/power/history/clear`, не впливає на `config.json` і блокується, якщо power-cycle ще виконується.
+
 - неблокуюча сервісна архітектура;
 - централізований `Application` lifecycle;
 - конфігурація через LittleFS JSON;

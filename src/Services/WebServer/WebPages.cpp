@@ -101,11 +101,22 @@ function eventTime(entry){
  const uptime=Number(entry.completedAt||entry.startedAt||0);
  return uptime>0?`uptime ${Math.floor(uptime/1000)} s`:'time unavailable';
 }
+async function clearRestartHistory(){
+ if(!confirm('Clear persistent restart history? This cannot be undone.'))return;
+ addLog('Restart history: clearing','warn');
+ try{
+  const r=await fetch('/api/power/history/clear',{method:'POST',cache:'no-store',headers:authHeaders()});
+  const res=await apiResult(r);
+  addLog(apiSummary('Restart history',res),res.ok?'ok':'bad');
+  if(res.ok)await load();
+ }catch(e){addLog(`Restart history: ${e.message||'clear failed'}`,'bad')}
+}
 function restartHistory(ph){
  const entries=(ph.entries||[]).slice().reverse().slice(0,8);
  if(!entries.length)return card('Persistent restart history',[row('Entries','none')]);
  return `<section class="card wide"><h2>Persistent restart history</h2>`+
   row('Stored',`${ph.count||0}/${ph.capacity||10} · ${ph.succeeded||0} ok / ${ph.failed||0} failed`)+
+  `<div class="btns"><button class="danger" onclick="clearRestartHistory()">CLEAR HISTORY</button></div>`+
   `<div class="log">`+
   entries.map(e=>logLine(`${esc(eventTime(e))} · #${e.id} · ${esc(e.reasonText||'unknown')} → ${esc(e.resultText||'none')} · off=${e.requestedPowerOffTime||0} ms · dur=${e.actualDuration||0} ms`,e.resultText==='success'?'ok':(e.resultText==='failed'?'bad':'warn'))).join('')+
   `</div></section>`;

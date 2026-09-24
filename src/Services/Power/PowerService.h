@@ -34,6 +34,8 @@ public:
 
     void clearRestartCompleted();
 
+    bool clearRestartHistory();
+
     [[nodiscard]]
     bool available() const;
 

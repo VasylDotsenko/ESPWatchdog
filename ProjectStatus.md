@@ -28,6 +28,7 @@
 - незавершений power-cycle після reset позначається як `interrupted`;
 - жоден запис не виконується з hot path `loop()` без події restart.
 - core persistence перевірено на пристрої: запис manual restart зберігся після software reboot ESP.
+- Dashboard та authenticated API дозволяють очистити history окремо від конфігурації.
 
 Основні документи поточного етапу:
 

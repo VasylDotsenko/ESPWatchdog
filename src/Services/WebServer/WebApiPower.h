@@ -15,4 +15,7 @@ namespace WebApiPower
         ESP8266WebServer& server,
         char* jsonBuffer,
         size_t jsonBufferSize);
+
+    void handleClearHistory(
+        ESP8266WebServer& server);
 }

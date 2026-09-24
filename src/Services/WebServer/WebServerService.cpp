@@ -284,6 +284,14 @@ void WebServerService::configureCommandApiRoutes()
         });
 
     m_server.on(
+        "/api/power/history/clear",
+        HTTP_POST,
+        [this]()
+        {
+            handleApiPowerHistoryClear();
+        });
+
+    m_server.on(
         "/api/power/on",
         HTTP_OPTIONS,
         [this]()
@@ -301,6 +309,14 @@ void WebServerService::configureCommandApiRoutes()
 
     m_server.on(
         "/api/power/restart",
+        HTTP_OPTIONS,
+        [this]()
+        {
+            handleApiOptions();
+        });
+
+    m_server.on(
+        "/api/power/history/clear",
         HTTP_OPTIONS,
         [this]()
         {
@@ -483,6 +499,16 @@ void WebServerService::handleApiPowerRestart()
         m_server,
         m_jsonBuffer,
         sizeof(m_jsonBuffer));
+}
+
+void WebServerService::handleApiPowerHistoryClear()
+{
+    if (!WebApiAuth::authorizeCommand(m_server))
+    {
+        return;
+    }
+
+    WebApiPower::handleClearHistory(m_server);
 }
 
 void WebServerService::handleApiOptions()

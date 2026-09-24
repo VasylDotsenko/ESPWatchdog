@@ -11,6 +11,8 @@ public:
 
     bool save(const RestartHistoryData& history) const;
 
+    bool clear() const;
+
 private:
     static constexpr const char* FILE_PATH = "/restart-history.json";
     static constexpr uint8_t FORMAT_VERSION = 1;

@@ -278,6 +278,25 @@ void PowerService::clearRestartCompleted()
     m_data.runtime.restartCompleted = false;
 }
 
+bool PowerService::clearRestartHistory()
+{
+    if (m_data.runtime.restartInProgress)
+    {
+        return false;
+    }
+
+    if (!m_restartHistoryStorage.clear())
+    {
+        return false;
+    }
+
+    m_data.restartHistory = RestartHistoryData {};
+
+    Log.info("RestartHistory: cleared");
+
+    return true;
+}
+
 bool PowerService::available() const
 {
     return m_controller != nullptr &&

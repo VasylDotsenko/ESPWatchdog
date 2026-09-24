@@ -601,6 +601,7 @@ URL: http://192.168.4.1/config/wifi
 - за наявності NTP sync записи містять Unix epoch timestamps для коректного відображення реального часу після reboot;
 - існуючі `/api/status` та Web UI отримують відновлену історію через поточний Power status serializer;
 - persistence виконується лише при початку, power OFF та фіналізації power-cycle, а не в основному `loop()`.
+- history можна очистити через authenticated `POST /api/power/history/clear` або кнопку Dashboard без впливу на `config.json`.
 
 Підтверджено на пристрої:
 

@@ -150,3 +150,30 @@ void WebApiPower::handleRestart(
         202,
         jsonBuffer);
 }
+
+void WebApiPower::handleClearHistory(
+    ESP8266WebServer& server)
+{
+    if (Power.restartInProgress())
+    {
+        WebApiResponse::sendJson(
+            server,
+            409,
+            "{\"ok\":false,\"error\":\"restart_in_progress\"}");
+        return;
+    }
+
+    if (!Power.clearRestartHistory())
+    {
+        WebApiResponse::sendJson(
+            server,
+            500,
+            "{\"ok\":false,\"error\":\"restart_history_clear_failed\"}");
+        return;
+    }
+
+    WebApiResponse::sendJson(
+        server,
+        200,
+        "{\"ok\":true,\"command\":\"restart_history_clear\"}");
+}

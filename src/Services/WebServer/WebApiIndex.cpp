@@ -26,6 +26,7 @@ namespace
         "{\"method\":\"POST\",\"path\":\"/api/power/on\",\"description\":\"turn power on\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/off\",\"description\":\"turn power off\"},"
         "{\"method\":\"POST\",\"path\":\"/api/power/restart\",\"description\":\"restart power output\"},"
+        "{\"method\":\"POST\",\"path\":\"/api/power/history/clear\",\"description\":\"clear persistent restart history\"},"
         "{\"method\":\"GET\",\"path\":\"/config/device\",\"description\":\"device configuration page\"},"
         "{\"method\":\"GET\",\"path\":\"/config/wifi\",\"description\":\"wifi configuration page\"},"
         "{\"method\":\"GET\",\"path\":\"/config/watchdog\",\"description\":\"watchdog configuration page\"},"

@@ -8,6 +8,7 @@
 
 ### Added
 
+- уніфіковано документацію: canonical README, Changelog, Roadmap, ProjectStatus і ReleaseChecklist зберігаються лише в корені репозиторію; `docs/README.md` є навігаційним index;
 - `RestartHistoryStorage` для LittleFS файла `/restart-history.json`;
 - RAM-only Availability History для останніх восьми значущих HealthCheck подій;
 - HealthCheck JSON/API fields: status, RTT, consecutive failures та NTP epoch timestamp для кожної history event;
@@ -36,6 +37,7 @@
 - transient PowerService runtime counters після boot коректно не відновлюються, оскільки вони описують лише поточну boot session.
 - authenticated очищення history перевірено: `/api/power` після команди повернув `count=0`, `total=0`, `entries=[]`.
 - Availability History перевірено на пристрої: failure `network_unavailable` та наступний перехід `success` / Online збережені у правильному порядку; реальний epoch-час з'являється після NTP synchronization.
+- NTP backfill перевірено на пристрої: рання failure-подія з початковим `epoch=0` отримала розрахований epoch після synchronization.
 
 ---
 

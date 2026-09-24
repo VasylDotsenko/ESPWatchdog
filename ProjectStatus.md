@@ -40,11 +40,16 @@
 - `/api/status` навмисно містить тільки `capacity` і `count` history — без `entries`, щоб не ризикувати переповненням буфера відповіді на ESP8266;
 - flash persistence не використовується: нова діагностика не збільшує зношення LittleFS.
 - hardware verification: `network_unavailable` і наступний `success` / Online коректно потрапили в history; до NTP sync подія має `epoch=0`, після sync — валідний epoch.
+- hardware verification NTP backfill: ранній запис з `epoch=0` ретроспективно отримав epoch після синхронізації часу.
 
 Основні документи поточного етапу:
 
 - `LongRunTest.md`;
 - `LongRunReport.md`.
+
+### Документація
+
+Canonical release та status документи зберігаються лише в корені репозиторію. Папка `docs/` містить технічні матеріали (`Architecture.md`, `CodingStyle.md`) та короткий `docs/README.md` index без копій Changelog, Roadmap, ProjectStatus або ReleaseChecklist.
 
 ## Вже зроблено
 

@@ -302,6 +302,8 @@ HealthCheck тримає у RAM останні вісім значущих ме�
 - `ProjectStatus.md` — фактичний стан реалізації;
 - `Roadmap.md` — подальший план розвитку до `1.0.0`.
 - `ReleaseChecklist.md` — RC checklist для hardware verification.
+
+Детальна технічна документація без дублювання release-файлів: [`docs/README.md`](docs/README.md).
 - `HardwareVerification.md` — покроковий сценарій перевірки на реальному пристрої.
 - Tuya LAN crypto / packet / protocol / service layers;
 - hardware-verified power-cycle через `TCOGCZ16-A`.

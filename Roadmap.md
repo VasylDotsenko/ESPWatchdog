@@ -592,7 +592,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 1.1.0 — Persistent Restart History
 
-Статус: у розробці.
+Статус: core persistence hardware-verified 24.09.2026.
 
 - restart history зберігається у LittleFS у `/restart-history.json`;
 - журнал обмежено десятьма останніми записами, тому розмір файла та RAM footprint стабільні;
@@ -601,6 +601,13 @@ URL: http://192.168.4.1/config/wifi
 - за наявності NTP sync записи містять Unix epoch timestamps для коректного відображення реального часу після reboot;
 - існуючі `/api/status` та Web UI отримують відновлену історію через поточний Power status serializer;
 - persistence виконується лише при початку, power OFF та фіналізації power-cycle, а не в основному `loop()`.
+
+Підтверджено на пристрої:
+
+- manual power-cycle записаний як `id=1`, `manual_command`, `success`;
+- після software restart ESP запис лишився у `/api/power`;
+- runtime counters (`restartCount`, `lastPowerOn` тощо) очікувано починаються з нуля після boot, тоді як `history` лишається persistent;
+- NTP epoch timestamps збережені у записі.
 
 Можливі напрями:
 

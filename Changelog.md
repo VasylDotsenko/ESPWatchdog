@@ -21,6 +21,13 @@
 - помилка запису history лише логується та не блокує watchdog або power-control;
 - `config.json` не змінюється.
 
+### Hardware verification — 24.09.2026
+
+- manual restart `id=1` успішно збережений у persistent history;
+- після software restart ESP history відновився через `/api/power`;
+- старий запис зберіг `resultText=success`, duration та NTP epoch timestamps;
+- transient PowerService runtime counters після boot коректно не відновлюються, оскільки вони описують лише поточну boot session.
+
 ---
 
 ## [1.0.0] - 21.09.2026

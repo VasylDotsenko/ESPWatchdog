@@ -129,12 +129,23 @@ function healthEventTime(entry){
 }
 function availabilityHistory(history){
  const entries=(history.entries||[]).slice().reverse();
- if(!entries.length)return card('Availability history',[row('Events','no failures or state changes')]);
  return `<section class="card wide"><h2>Availability history</h2>`+
   row('Stored',`${history.count||0}/${history.capacity||8} significant events`)+
-  `<div class="log">`+
-  entries.map(e=>logLine(`${esc(healthEventTime(e))} · ${esc(e.statusText||'error')} · ${e.available?'online':'offline'} · RTT=${e.responseTime||0} ms · fails=${e.consecutiveFails||0}`,e.available?'ok':'bad')).join('')+
+  `<div class="btns"><button class="danger" onclick="clearAvailabilityHistory()">CLEAR HISTORY</button></div>`+
+  `<div class="log">`+(entries.length
+   ?entries.map(e=>logLine(`${esc(healthEventTime(e))} · ${esc(e.statusText||'error')} · ${e.available?'online':'offline'} · RTT=${e.responseTime||0} ms · fails=${e.consecutiveFails||0}`,e.available?'ok':'bad')).join('')
+   :logLine('No failures or state changes'))+
   `</div></section>`;
+}
+async function clearAvailabilityHistory(){
+ if(!confirm('Clear availability history? This cannot be undone.'))return;
+ addLog('Availability history: clearing','warn');
+ try{
+  const r=await fetch('/api/health/history/clear',{method:'POST',cache:'no-store',headers:authHeaders()});
+  const res=await apiResult(r);
+  addLog(apiSummary('Availability history',res),res.ok?'ok':'bad');
+  if(res.ok)await load();
+ }catch(e){addLog(`Availability history: ${e.message||'clear failed'}`,'bad')}
 }
 function commandLogCard(){
  const lines=commandLog.length?commandLog.map(x=>logLine(x)).join(''):logLine('No manual commands yet');

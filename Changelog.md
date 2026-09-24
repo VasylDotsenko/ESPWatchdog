@@ -14,6 +14,7 @@
 - HealthCheck JSON/API fields: status, RTT, consecutive failures та NTP epoch timestamp для кожної history event;
 - автоматичне backfill epoch для HealthCheck подій, що сталися до NTP synchronization;
 - Dashboard card `Availability history`.
+- authenticated `POST /api/health/history/clear` та Dashboard action для очищення Availability History без зміни статистики HealthCheck.
 - захист aggregate `/api/status` від переповнення JSON buffer: detailed history entries віддаються через `/api/health` та `/api/power`, Dashboard підвантажує їх автоматично.
 - збереження bounded history з десяти останніх power-cycle подій;
 - відновлення history та лічильників після ESP reboot;

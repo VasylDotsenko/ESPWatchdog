@@ -4,6 +4,25 @@
 
 ---
 
+## [1.1.0-dev-persistent-history] - 21.09.2026
+
+### Added
+
+- `RestartHistoryStorage` для LittleFS файла `/restart-history.json`;
+- збереження bounded history з десяти останніх power-cycle подій;
+- відновлення history та лічильників після ESP reboot;
+- новий reason `interrupted` для restart, який не завершився через неочікуваний reset;
+- Unix epoch timestamps для restart events після NTP synchronization;
+- persistence на початку restart, після power OFF та після success/failed finalization.
+
+### Safety
+
+- persistence не викликається у звичайному `PowerService::loop()` без події;
+- помилка запису history лише логується та не блокує watchdog або power-control;
+- `config.json` не змінюється.
+
+---
+
 ## [1.0.0] - 21.09.2026
 
 ### Статус

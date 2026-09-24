@@ -8,6 +8,12 @@
 1.0.0
 ```
 
+Поточна development-гілка:
+
+```text
+1.1.0-dev-persistent-history
+```
+
 ---
 
 ## Призначення
@@ -230,6 +236,10 @@ Release baseline зафіксовано:
 ---
 
 ## Основні можливості
+
+### Persistent Restart History (1.1.0 development)
+
+Кожен watchdog або manual power-cycle записується у bounded LittleFS журнал `/restart-history.json`. Після reboot останні десять подій та їхні лічильники залишаються доступними через існуючий Power status API. Якщо reboot перериває power-cycle, запис фіксується як `interrupted` під час наступного boot.
 
 - неблокуюча сервісна архітектура;
 - централізований `Application` lifecycle;

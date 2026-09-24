@@ -6,13 +6,13 @@
 
 #define FW_NAME              "ESP Watchdog"
 
-#define FW_VERSION_MAJOR     0
-#define FW_VERSION_MINOR     9
-#define FW_VERSION_PATCH     3
+#define FW_VERSION_MAJOR     1
+#define FW_VERSION_MINOR     1
+#define FW_VERSION_PATCH     0
 
-#define FW_VERSION_STRING    "0.9.3"
-#define FW_VERSION_LABEL     "crashinfo"
-#define FW_VERSION_FULL      "0.9.3-crashinfo"
+#define FW_VERSION_STRING    "1.1.0"
+#define FW_VERSION_LABEL     "dev-persistent-history"
+#define FW_VERSION_FULL      "1.1.0-dev-persistent-history"
 
 //=============================================================================
 // Project
@@ -27,4 +27,4 @@
 // Production Target
 //=============================================================================
 
-#define FW_TARGET_VERSION    "1.0.0"
+#define FW_TARGET_VERSION    FW_VERSION_STRING

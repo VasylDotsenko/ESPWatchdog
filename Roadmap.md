@@ -42,6 +42,8 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 
 Поточний етап — **`1.0.0 Production`: 7-day long-run validation пройдено, baseline зафіксовано**.
 
+Активна розробка: **`1.1.0-dev-persistent-history`**.
+
 ---
 
 ## Завершено у 0.4.x
@@ -587,6 +589,18 @@ URL: http://192.168.4.1/config/wifi
 ---
 
 ## Після 1.0
+
+### 1.1.0 — Persistent Restart History
+
+Статус: у розробці.
+
+- restart history зберігається у LittleFS у `/restart-history.json`;
+- журнал обмежено десятьма останніми записами, тому розмір файла та RAM footprint стабільні;
+- записи відновлюються після ESP reboot;
+- незавершений restart після неочікуваного reboot позначається як `interrupted`;
+- за наявності NTP sync записи містять Unix epoch timestamps для коректного відображення реального часу після reboot;
+- існуючі `/api/status` та Web UI отримують відновлену історію через поточний Power status serializer;
+- persistence виконується лише при початку, power OFF та фіналізації power-cycle, а не в основному `loop()`.
 
 Можливі напрями:
 

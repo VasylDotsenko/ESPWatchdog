@@ -1,11 +1,24 @@
 #include "PowerService.h"
 
+#include <time.h>
+
 #include "Services/Logger/Logger.h"
 
 PowerService Power;
 
 namespace
 {
+    uint64_t wallTimeEpoch()
+    {
+        constexpr time_t MIN_VALID_EPOCH = 1600000000;
+
+        const time_t now = time(nullptr);
+
+        return now >= MIN_VALID_EPOCH
+            ? static_cast<uint64_t>(now)
+            : 0;
+    }
+
     const char* restartResultText(RestartResult result)
     {
         switch (result)
@@ -47,6 +60,9 @@ namespace
             case RestartReason::PowerOnTimeout:
                 return "power_on_timeout";
 
+            case RestartReason::Interrupted:
+                return "interrupted";
+
             case RestartReason::Unknown:
             default:
                 return "unknown";
@@ -56,6 +72,16 @@ namespace
 
 bool PowerService::begin()
 {
+    if (!m_restartHistoryStorage.load(m_data.restartHistory))
+    {
+        Log.warning("PowerService: restart history unavailable");
+    }
+    else if (recoverInterruptedRestartHistory())
+    {
+        persistRestartHistory();
+        Log.warning("PowerService: recovered interrupted restart history entry");
+    }
+
     if (m_controller == nullptr)
     {
         m_data.state = PowerState::Disabled;
@@ -355,6 +381,7 @@ bool PowerService::powerOn()
     if (entry != nullptr)
     {
         entry->powerOnAt = m_data.statistics.lastPowerOn;
+        entry->powerOnAtEpoch = wallTimeEpoch();
     }
 
     Log.info("PowerService: power ON");
@@ -384,6 +411,8 @@ bool PowerService::powerOff()
     if (entry != nullptr)
     {
         entry->powerOffAt = m_data.statistics.lastPowerOff;
+        entry->powerOffAtEpoch = wallTimeEpoch();
+        persistRestartHistory();
     }
 
     Log.warning("PowerService: power OFF");
@@ -429,6 +458,10 @@ void PowerService::beginRestartHistory(
     entry->completedAt = 0;
     entry->powerOffAt = 0;
     entry->powerOnAt = 0;
+    entry->startedAtEpoch = wallTimeEpoch();
+    entry->completedAtEpoch = 0;
+    entry->powerOffAtEpoch = 0;
+    entry->powerOnAtEpoch = 0;
     entry->requestedPowerOffTime = powerOffTime;
     entry->actualDuration = 0;
     entry->controllerAvailableAtStart = available();
@@ -437,6 +470,8 @@ void PowerService::beginRestartHistory(
 
     ++m_data.restartHistory.total;
     m_data.restartHistory.lastStartedAt = now;
+
+    persistRestartHistory();
 }
 
 void PowerService::completeRestartHistory()
@@ -452,6 +487,7 @@ void PowerService::completeRestartHistory()
 
     entry->result = RestartResult::Success;
     entry->completedAt = now;
+    entry->completedAtEpoch = wallTimeEpoch();
 
     if (entry->startedAt > 0 &&
         now >= entry->startedAt)
@@ -466,6 +502,8 @@ void PowerService::completeRestartHistory()
     logRestartHistoryEntry(*entry);
 
     m_data.runtime.activeRestartId = 0;
+
+    persistRestartHistory();
 }
 
 void PowerService::failRestartHistory(
@@ -489,6 +527,7 @@ void PowerService::failRestartHistory(
     entry->reason = reason;
     entry->result = RestartResult::Failed;
     entry->completedAt = now;
+    entry->completedAtEpoch = wallTimeEpoch();
 
     if (entry->startedAt > 0 &&
         now >= entry->startedAt)
@@ -503,6 +542,8 @@ void PowerService::failRestartHistory(
     logRestartHistoryEntry(*entry);
 
     m_data.runtime.activeRestartId = 0;
+
+    persistRestartHistory();
 }
 
 void PowerService::logRestartHistoryEntry(
@@ -557,4 +598,41 @@ RestartHistoryEntry* PowerService::appendRestartEntry()
     }
 
     return &entry;
+}
+
+void PowerService::persistRestartHistory() const
+{
+    m_restartHistoryStorage.save(m_data.restartHistory);
+}
+
+bool PowerService::recoverInterruptedRestartHistory()
+{
+    bool changed = false;
+
+    for (uint8_t index = 0;
+         index < m_data.restartHistory.count;
+         ++index)
+    {
+        RestartHistoryEntry& entry =
+            m_data.restartHistory.entries[index];
+
+        if (entry.id == 0 ||
+            entry.result != RestartResult::InProgress)
+        {
+            continue;
+        }
+
+        entry.result = RestartResult::Failed;
+        entry.reason = RestartReason::Interrupted;
+        entry.completedAt = entry.powerOnAt > 0
+            ? entry.powerOnAt
+            : entry.powerOffAt;
+        entry.actualDuration = 0;
+
+        ++m_data.restartHistory.failed;
+        m_data.restartHistory.lastFailedAt = entry.completedAt;
+        changed = true;
+    }
+
+    return changed;
 }

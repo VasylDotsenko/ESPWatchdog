@@ -136,6 +136,9 @@ namespace
             case RestartReason::PowerOnTimeout:
                 return "power_on_timeout";
 
+            case RestartReason::Interrupted:
+                return "interrupted";
+
             case RestartReason::Unknown:
             default:
                 return "unknown";
@@ -591,6 +594,14 @@ void JsonStatusSerializer::writeRestartHistory(
             static_cast<uint64_t>(entry.powerOffAt);
         item["powerOnAt"] =
             static_cast<uint64_t>(entry.powerOnAt);
+        item["startedAtEpoch"] =
+            static_cast<uint64_t>(entry.startedAtEpoch);
+        item["completedAtEpoch"] =
+            static_cast<uint64_t>(entry.completedAtEpoch);
+        item["powerOffAtEpoch"] =
+            static_cast<uint64_t>(entry.powerOffAtEpoch);
+        item["powerOnAtEpoch"] =
+            static_cast<uint64_t>(entry.powerOnAtEpoch);
         item["requestedPowerOffTime"] =
             entry.requestedPowerOffTime;
         item["actualDuration"] =

@@ -4,6 +4,7 @@
 
 # Device-specific configuration and credentials
 data/config.json
+data/restart-history.json
 config.json
 platformio.local.ini
 .env

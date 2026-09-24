@@ -18,7 +18,8 @@ enum class RestartReason : uint8_t
     ControllerUnavailable,
     PowerOffFailed,
     PowerOnFailed,
-    PowerOnTimeout
+    PowerOnTimeout,
+    Interrupted
 };
 
 struct RestartHistoryEntry
@@ -33,6 +34,12 @@ struct RestartHistoryEntry
 
     uint64_t powerOffAt = 0;
     uint64_t powerOnAt = 0;
+
+    // Unix epoch seconds when NTP was synchronized; zero before time sync.
+    uint64_t startedAtEpoch = 0;
+    uint64_t completedAtEpoch = 0;
+    uint64_t powerOffAtEpoch = 0;
+    uint64_t powerOnAtEpoch = 0;
 
     uint32_t requestedPowerOffTime = 0;
     uint32_t actualDuration = 0;

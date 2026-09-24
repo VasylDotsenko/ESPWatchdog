@@ -17,7 +17,16 @@
 - bugfix/stability only;
 - maintenance only до наступного feature-релізу `1.1.0`.
 
-Поточний стан: `v1.0.0 Production`.
+Поточний production baseline: `v1.0.0 Production`.
+
+Активна development-версія: `v1.1.0-dev-persistent-history`.
+
+### Поточна робота — Persistent Restart History
+
+- додано LittleFS persistence для bounded restart-history ring buffer;
+- історія переживає ESP reboot;
+- незавершений power-cycle після reset позначається як `interrupted`;
+- жоден запис не виконується з hot path `loop()` без події restart.
 
 Основні документи поточного етапу:
 

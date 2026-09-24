@@ -7,6 +7,7 @@
 #include "IPowerController.h"
 #include "Models/PowerData.h"
 #include "Models/PowerStatusData.h"
+#include "RestartHistoryStorage.h"
 
 class PowerService final : public IService
 {
@@ -67,10 +68,16 @@ private:
 
     RestartHistoryEntry* appendRestartEntry();
 
+    void persistRestartHistory() const;
+
+    bool recoverInterruptedRestartHistory();
+
 private:
     IPowerController* m_controller = nullptr;
 
     PowerData m_data;
+
+    RestartHistoryStorage m_restartHistoryStorage;
 
     Timer m_powerOffTimer;
 };

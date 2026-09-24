@@ -609,6 +609,7 @@ URL: http://192.168.4.1/config/wifi
 - після software restart ESP запис лишився у `/api/power`;
 - runtime counters (`restartCount`, `lastPowerOn` тощо) очікувано починаються з нуля після boot, тоді як `history` лишається persistent;
 - NTP epoch timestamps збережені у записі.
+- clear history перевірено: після authenticated команди `/api/power` повернув порожній history snapshot.
 
 Можливі напрями:
 

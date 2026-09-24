@@ -29,6 +29,7 @@
 - після software restart ESP history відновився через `/api/power`;
 - старий запис зберіг `resultText=success`, duration та NTP epoch timestamps;
 - transient PowerService runtime counters після boot коректно не відновлюються, оскільки вони описують лише поточну boot session.
+- authenticated очищення history перевірено: `/api/power` після команди повернув `count=0`, `total=0`, `entries=[]`.
 
 ---
 

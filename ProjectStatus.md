@@ -29,6 +29,7 @@
 - жоден запис не виконується з hot path `loop()` без події restart.
 - core persistence перевірено на пристрої: запис manual restart зберігся після software reboot ESP.
 - Dashboard та authenticated API дозволяють очистити history окремо від конфігурації.
+- clear action hardware-verified: history snapshot після команди порожній.
 
 Основні документи поточного етапу:
 

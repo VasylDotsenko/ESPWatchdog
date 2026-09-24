@@ -64,6 +64,8 @@ void HealthCheckService::loop()
         return;
     }
 
+    synchronizeAvailabilityHistoryTime();
+
     m_provider->loop();
 
     switch (m_state)
@@ -316,6 +318,48 @@ void HealthCheckService::appendAvailabilityHistory(
     if (history.count < AvailabilityHistoryStatus::CAPACITY)
     {
         ++history.count;
+    }
+}
+
+void HealthCheckService::synchronizeAvailabilityHistoryTime()
+{
+    const uint64_t nowEpoch = wallTimeEpoch();
+
+    if (nowEpoch == 0 ||
+        m_availabilityHistory.count == 0)
+    {
+        return;
+    }
+
+    const uint32_t nowMillis = millis();
+
+    const uint8_t start =
+        m_availabilityHistory.count < AvailabilityHistoryStatus::CAPACITY
+            ? 0
+            : m_availabilityHistory.head;
+
+    for (uint8_t offset = 0;
+         offset < m_availabilityHistory.count;
+         ++offset)
+    {
+        const uint8_t index = static_cast<uint8_t>(
+            (start + offset) % AvailabilityHistoryStatus::CAPACITY);
+        AvailabilityHistoryEntry& entry =
+            m_availabilityHistory.entries[index];
+
+        if (entry.epoch != 0)
+        {
+            continue;
+        }
+
+        const uint32_t elapsedMs = static_cast<uint32_t>(
+            nowMillis - static_cast<uint32_t>(entry.timestamp));
+        const uint64_t elapsedSeconds = elapsedMs / 1000UL;
+
+        if (nowEpoch >= elapsedSeconds)
+        {
+            entry.epoch = nowEpoch - elapsedSeconds;
+        }
     }
 }
 

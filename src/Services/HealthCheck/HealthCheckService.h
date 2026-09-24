@@ -98,6 +98,8 @@ private:
         const HealthCheckResult& result,
         uint64_t timestamp);
 
+    void synchronizeAvailabilityHistoryTime();
+
 private:
 
     //---------------------------------------------------------------------

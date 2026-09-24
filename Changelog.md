@@ -11,6 +11,7 @@
 - `RestartHistoryStorage` для LittleFS файла `/restart-history.json`;
 - RAM-only Availability History для останніх восьми значущих HealthCheck подій;
 - HealthCheck JSON/API fields: status, RTT, consecutive failures та NTP epoch timestamp для кожної history event;
+- автоматичне backfill epoch для HealthCheck подій, що сталися до NTP synchronization;
 - Dashboard card `Availability history`.
 - захист aggregate `/api/status` від переповнення JSON buffer: detailed history entries віддаються через `/api/health` та `/api/power`, Dashboard підвантажує їх автоматично.
 - збереження bounded history з десяти останніх power-cycle подій;
@@ -34,6 +35,7 @@
 - старий запис зберіг `resultText=success`, duration та NTP epoch timestamps;
 - transient PowerService runtime counters після boot коректно не відновлюються, оскільки вони описують лише поточну boot session.
 - authenticated очищення history перевірено: `/api/power` після команди повернув `count=0`, `total=0`, `entries=[]`.
+- Availability History перевірено на пристрої: failure `network_unavailable` та наступний перехід `success` / Online збережені у правильному порядку; реальний epoch-час з'являється після NTP synchronization.
 
 ---
 

@@ -245,7 +245,7 @@ Dashboard має кнопку `CLEAR HISTORY`. Вона викликає authent
 
 ### Availability History (1.1.0 development)
 
-HealthCheck тримає у RAM останні вісім значущих мережевих подій: кожну невдалу перевірку та кожен перехід online/offline. Dashboard і `/api/health` показують статус, RTT, число consecutive failures і реальний час події після NTP sync. Звичайні успішні probes не записуються, тому журнал не засмічується. History скидається після reboot та не записується у flash.
+HealthCheck тримає у RAM останні вісім значущих мережевих подій: кожну невдалу перевірку та кожен перехід online/offline. Dashboard і `/api/health` показують статус, RTT, число consecutive failures і реальний час події після NTP sync. Події, що сталися до NTP sync, автоматично отримують обчислений epoch після синхронізації. Звичайні успішні probes не записуються, тому журнал не засмічується. History скидається після reboot та не записується у flash.
 
 `/api/status` містить лише summary/count для великих history-журналів, щоб стабільно вкладатися у фіксований ESP8266 JSON buffer. Повні entries доступні через `/api/health` та `/api/power`; Dashboard завантажує їх автоматично.
 

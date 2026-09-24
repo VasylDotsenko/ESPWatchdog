@@ -35,10 +35,11 @@
 
 - додано RAM-only bounded history для HealthCheck (`8` записів);
 - зберігаються лише failure-події та зміни доступності Online / Offline;
-- подія містить uptime, NTP epoch (коли доступний), статус, RTT і лічильник consecutive failures;
+- подія містить uptime, NTP epoch, статус, RTT і лічильник consecutive failures; epoch для подій до NTP sync обчислюється ретроспективно;
 - детальні записи доступні через `GET /api/health` та Dashboard;
 - `/api/status` навмисно містить тільки `capacity` і `count` history — без `entries`, щоб не ризикувати переповненням буфера відповіді на ESP8266;
 - flash persistence не використовується: нова діагностика не збільшує зношення LittleFS.
+- hardware verification: `network_unavailable` і наступний `success` / Online коректно потрапили в history; до NTP sync подія має `epoch=0`, після sync — валідний epoch.
 
 Основні документи поточного етапу:
 

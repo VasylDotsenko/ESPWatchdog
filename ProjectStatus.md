@@ -19,7 +19,7 @@
 
 Поточний production baseline: `v1.0.0 Production`.
 
-Активна версія для перевірки: `v1.1.0-rc.1-observability`.
+Активна версія для перевірки: `v1.1.0-rc.2-wifi-netif-guard`.
 
 ### RC scope — Persistent Restart History
 
@@ -46,9 +46,16 @@
 
 ### Наступний етап
 
-Focused RC long-run validation для `1.1.0-rc.1-observability`: контролювати heap/fragmentation, Web UI, HealthCheck, обидва history-журнали та NTP epoch backfill протягом щонайменше 24 годин.
+Focused RC long-run validation для `1.1.0-rc.2-wifi-netif-guard`: контролювати heap/fragmentation, Web UI, HealthCheck, обидва history-журнали та NTP epoch backfill протягом щонайменше 24 годин.
 
 Початковий RC snapshot підтверджено на пристрої: startup log backfill має валідний wall time, `HealthCheck` записав initial Online event з epoch, а очищений persistent restart history стартує порожнім.
+
+### RC.2 stability hotfix — WiFi STA netif guard
+
+- crash декодовано як `cnx_node_search` у ESP8266 WiFi SDK (`Exception 28`, `EXCVADDR 0x98`);
+- збіг із відомим SDK race після STA disconnect: lwIP може передати packet після звільнення WiFi connection node;
+- `WiFiService` тепер переводить STA lwIP netif у down до кожного application-initiated `WiFi.disconnect()`;
+- RC long-run test потрібно почати заново на `1.1.0-rc.2-wifi-netif-guard`, окремо перевіривши WiFi reconnect/AP recovery.
 
 Основні документи поточного етапу:
 

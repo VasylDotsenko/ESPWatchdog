@@ -5,7 +5,7 @@
 Поточний release candidate:
 
 ```text
-1.1.0-rc.1-observability
+1.1.0-rc.2-wifi-netif-guard
 ```
 
 Release target:
@@ -22,6 +22,7 @@ Release target:
 - Availability History у RAM;
 - NTP epoch backfill для подій до синхронізації часу;
 - API/Dashboard actions для очищення обох history-журналів;
+- ESP8266 STA netif guard перед application-initiated WiFi disconnect;
 - без нових протоколів, змін конфігураційного формату або архітектурних рефакторингів під час RC.
 
 ## Maintenance Policy
@@ -68,6 +69,7 @@ Release target:
 - [ ] якщо домашня WiFi-мережа недоступна, але `wifi.ssid` заданий, AP працює як rescue portal;
 - [ ] через 5 хвилин rescue AP вимикається і пристрій повторно пробує STA-підключення;
 - [ ] якщо WiFi не відновився протягом 20 хвилин, ESP виконує контрольований restart;
+- [ ] повторний STA reconnect не викликає `Exception 28` / `cnx_node_search`;
 - [ ] якщо `wifi.ssid` порожній, AP не перезавантажує ESP і лишається доступним для першого налаштування.
 
 ### HealthCheck
@@ -160,7 +162,7 @@ Release target:
 
 ## Release Decision
 
-Статус: `1.0.0 Production` випущено 21.09.2026 після успішної 7-денної long-run validation. `1.1.0-rc.1-observability` очікує focused RC long-run validation.
+Статус: `1.0.0 Production` випущено 21.09.2026 після успішної 7-денної long-run validation. `1.1.0-rc.2-wifi-netif-guard` очікує focused RC long-run validation.
 
 Release baseline включає:
 

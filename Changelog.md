@@ -4,10 +4,11 @@
 
 ---
 
-## [1.1.0-rc.1-observability] - 24.09.2026
+## [1.1.0-rc.2-wifi-netif-guard] - 27.09.2026
 
 ### Added
 
+- ESP8266 STA netif guard перед кожним application-initiated `WiFi.disconnect()`;
 - уніфіковано документацію: canonical README, Changelog, Roadmap, ProjectStatus і ReleaseChecklist зберігаються лише в корені репозиторію; `docs/README.md` є навігаційним index;
 - `RestartHistoryStorage` для LittleFS файла `/restart-history.json`;
 - RAM-only Availability History для останніх восьми значущих HealthCheck подій;
@@ -26,6 +27,7 @@
 
 ### Safety
 
+- виправлено відомий ESP8266 SDK race: lwIP packet після STA disconnect міг звернутися до вже звільненого WiFi connection node та впасти в `cnx_node_search` / `EXCVADDR 0x98`;
 - persistence не викликається у звичайному `PowerService::loop()` без події;
 - помилка запису history лише логується та не блокує watchdog або power-control;
 - `config.json` не змінюється.

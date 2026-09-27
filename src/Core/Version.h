@@ -11,8 +11,8 @@
 #define FW_VERSION_PATCH     0
 
 #define FW_VERSION_STRING    "1.1.0"
-#define FW_VERSION_LABEL     "rc.1-observability"
-#define FW_VERSION_FULL      "1.1.0-rc.1-observability"
+#define FW_VERSION_LABEL     "rc.2-wifi-netif-guard"
+#define FW_VERSION_FULL      "1.1.0-rc.2-wifi-netif-guard"
 
 //=============================================================================
 // Project

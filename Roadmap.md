@@ -42,7 +42,7 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 
 Поточний етап — **`1.0.0 Production`: 7-day long-run validation пройдено, baseline зафіксовано**.
 
-Активний release candidate: **`1.1.0-rc.1-observability`**.
+Активний release candidate: **`1.1.0-rc.2-wifi-netif-guard`**.
 
 ### RC scope: Availability History
 
@@ -53,6 +53,13 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - history очищується через authenticated `POST /api/health/history/clear` або кнопку Dashboard без скидання HealthCheck statistics;
 - `/api/status` передає лише метадані history без масивів записів, щоб не переповнювати фіксований response buffer ESP8266;
 - записів у LittleFS немає, отже модуль не додає flash wear.
+
+### RC.2 stability hotfix: ESP8266 STA netif guard
+
+- crash `Exception 28`, `EXCVADDR 0x98`, `epc1=cnx_node_search` декодовано за ELF;
+- перед `WiFi.disconnect()` STA lwIP netif переводиться у down стан;
+- це блокує delayed lwIP traffic у вивільнений WiFi SDK connection node після reconnect/disconnect;
+- потрібен focused long-run test із WiFi reconnect сценаріями.
 
 ---
 
@@ -602,7 +609,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 1.1.0 — Persistent Restart History
 
-Статус: `1.1.0-rc.1-observability`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — focused long-run validation.
+Статус: `1.1.0-rc.2-wifi-netif-guard`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — focused long-run validation після WiFi stability hotfix.
 
 - restart history зберігається у LittleFS у `/restart-history.json`;
 - журнал обмежено десятьма останніми записами, тому розмір файла та RAM footprint стабільні;

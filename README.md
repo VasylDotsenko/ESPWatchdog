@@ -11,7 +11,7 @@
 Поточний release candidate:
 
 ```text
-1.1.0-rc.1-observability
+1.1.0-rc.2-wifi-netif-guard
 ```
 
 ---

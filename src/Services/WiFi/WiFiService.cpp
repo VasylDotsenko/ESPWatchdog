@@ -3,6 +3,24 @@
 #include <ESP8266WiFi.h>
 #include <cstring>
 
+extern "C"
+{
+#include <lwip/init.h>
+#include <lwip/netif.h>
+}
+
+#if LWIP_VERSION_MAJOR != 1
+// The ESP8266 SDK owns the lwIP-v1 STA glue. Its netif_set_down symbol is
+// intentionally different from the lwIP-v2 API exposed by the Arduino core.
+#undef netif_set_down
+extern "C"
+{
+    struct netif* eagle_lwip_getif(int netifIndex);
+
+    void netif_set_down(struct netif* netif);
+}
+#endif
+
 #include "Services/Config/Config.h"
 #include "Services/Logger/Logger.h"
 
@@ -52,6 +70,24 @@ uint8_t signalQuality(int32_t rssi)
     }
 
     return static_cast<uint8_t>(2 * (rssi + 100));
+}
+
+void disconnectStationSafely()
+{
+#if LWIP_VERSION_MAJOR != 1
+    // The SDK can free its WiFi connection node before its STA netif becomes
+    // down. A pending lwIP timer could then transmit via that stale node and
+    // crash in cnx_node_search. Drop outgoing lwIP traffic first.
+    struct netif* stationNetif =
+        eagle_lwip_getif(STATION_IF);
+
+    if (stationNetif != nullptr)
+    {
+        netif_set_down(stationNetif);
+    }
+#endif
+
+    WiFi.disconnect(false);
 }
 }
 
@@ -121,7 +157,7 @@ bool WiFiService::connect()
 
 void WiFiService::disconnect()
 {
-    WiFi.disconnect(false);
+    disconnectStationSafely();
 
     m_connectTimeout.stop();
     m_data.connected = false;
@@ -295,7 +331,7 @@ bool WiFiService::startSetupPortal(const char* reason)
 {
     const bool recoveryMode = hasConfiguredStation();
 
-    WiFi.disconnect(false);
+    disconnectStationSafely();
 
     WiFi.mode(WIFI_AP_STA);
     WiFi.persistent(false);

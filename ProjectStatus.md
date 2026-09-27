@@ -19,7 +19,7 @@
 
 Поточний production baseline: `v1.0.0 Production`.
 
-Активна версія для перевірки: `v1.1.0-rc.2-wifi-netif-guard`.
+Активна версія для перевірки: `v1.1.0-rc.3-runtime-baseline`.
 
 ### RC scope — Persistent Restart History
 
@@ -46,7 +46,7 @@
 
 ### Наступний етап
 
-Focused RC long-run validation для `1.1.0-rc.2-wifi-netif-guard`: контролювати heap/fragmentation, Web UI, HealthCheck, обидва history-журнали та NTP epoch backfill протягом щонайменше 24 годин.
+Focused RC long-run validation для `1.1.0-rc.3-runtime-baseline`: контролювати heap/fragmentation, Web UI, HealthCheck, обидва history-журнали та NTP epoch backfill протягом щонайменше 24 годин.
 
 Початковий RC snapshot підтверджено на пристрої: startup log backfill має валідний wall time, `HealthCheck` записав initial Online event з epoch, а очищений persistent restart history стартує порожнім.
 
@@ -56,6 +56,13 @@ Focused RC long-run validation для `1.1.0-rc.2-wifi-netif-guard`: контр�
 - збіг із відомим SDK race після STA disconnect: lwIP може передати packet після звільнення WiFi connection node;
 - `WiFiService` тепер переводить STA lwIP netif у down до кожного application-initiated `WiFi.disconnect()`;
 - RC long-run test потрібно почати заново на `1.1.0-rc.2-wifi-netif-guard`, окремо перевіривши WiFi reconnect/AP recovery.
+
+### RC.3 diagnostics hotfix — RuntimeGuard baseline
+
+- виявлено, що RuntimeGuard фіксував `heapAtBoot` до запуску Tuya, Power, HealthCheck, WebServer та OTA;
+- типовий початковий allocation після цього помилково виглядав як runtime heap drop;
+- baseline тепер фіксується наприкінці `Application::begin()`;
+- потрібно перевірити, що `heapAtBoot` близький до `freeHeap` одразу після OTA boot.
 
 Основні документи поточного етапу:
 

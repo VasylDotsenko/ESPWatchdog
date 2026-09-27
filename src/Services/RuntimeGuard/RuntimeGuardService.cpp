@@ -15,9 +15,6 @@ bool RuntimeGuardService::begin()
     m_status.enabled = true;
     m_status.freeHeap = ESP.getFreeHeap();
     m_status.heapFragmentation = ESP.getHeapFragmentation();
-    m_status.heapAtBoot = m_status.freeHeap;
-    m_status.minFreeHeapSeen = m_status.freeHeap;
-    m_status.maxHeapFragmentationSeen = m_status.heapFragmentation;
     m_status.minFreeHeap = MIN_FREE_HEAP_BYTES;
     m_status.maxHeapFragmentation = MAX_HEAP_FRAGMENTATION;
     m_lastCheck = 0;
@@ -28,6 +25,24 @@ bool RuntimeGuardService::begin()
         MAX_HEAP_FRAGMENTATION);
 
     return true;
+}
+
+void RuntimeGuardService::captureStartupBaseline()
+{
+    const uint32_t freeHeap = ESP.getFreeHeap();
+    const uint8_t heapFragmentation = ESP.getHeapFragmentation();
+
+    m_status.freeHeap = freeHeap;
+    m_status.heapFragmentation = heapFragmentation;
+    m_status.heapAtBoot = freeHeap;
+    m_status.minFreeHeapSeen = freeHeap;
+    m_status.heapDropFromBoot = 0;
+    m_status.maxHeapFragmentationSeen = heapFragmentation;
+
+    Log.info(
+        "RuntimeGuard: startup baseline, heap=%lu bytes, frag=%u%%",
+        static_cast<unsigned long>(freeHeap),
+        heapFragmentation);
 }
 
 void RuntimeGuardService::loop()

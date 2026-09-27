@@ -11,7 +11,7 @@ Production baseline:
 Поточний release candidate:
 
 ```text
-1.1.0-rc.2-wifi-netif-guard
+1.1.0-rc.3-runtime-baseline
 ```
 
 ---
@@ -36,7 +36,7 @@ Production baseline:
 Очікувана версія:
 
 ```text
-1.1.0-rc.2-wifi-netif-guard
+1.1.0-rc.3-runtime-baseline
 ```
 
 Перевірити у dashboard або через:

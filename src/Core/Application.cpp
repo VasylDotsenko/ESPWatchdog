@@ -113,6 +113,9 @@ bool Application::begin()
         return false;
     }
 
+    // All long-lived services have allocated their runtime state now.
+    RuntimeGuard.captureStartupBaseline();
+
     Log.info("Application: started");
 
     return true;

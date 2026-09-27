@@ -42,7 +42,7 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 
 Поточний етап — **`1.0.0 Production`: 7-day long-run validation пройдено, baseline зафіксовано**.
 
-Активний release candidate: **`1.1.0-rc.2-wifi-netif-guard`**.
+Активний release candidate: **`1.1.0-rc.3-runtime-baseline`**.
 
 ### RC scope: Availability History
 
@@ -60,6 +60,12 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - перед `WiFi.disconnect()` STA lwIP netif переводиться у down стан;
 - це блокує delayed lwIP traffic у вивільнений WiFi SDK connection node після reconnect/disconnect;
 - потрібен focused long-run test із WiFi reconnect сценаріями.
+
+### RC.3 diagnostics hotfix: RuntimeGuard baseline
+
+- `heapAtBoot` фіксується лише після старту Tuya, Power, HealthCheck, WebServer та OTA;
+- `heapDropFromBoot` тепер показує runtime-зміну після повного startup, а не звичайні startup allocations;
+- required: порівняти baseline та actual heap після OTA boot.
 
 ---
 
@@ -609,7 +615,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 1.1.0 — Persistent Restart History
 
-Статус: `1.1.0-rc.2-wifi-netif-guard`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — focused long-run validation після WiFi stability hotfix.
+Статус: `1.1.0-rc.3-runtime-baseline`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — focused long-run validation після WiFi та diagnostics hotfixes.
 
 - restart history зберігається у LittleFS у `/restart-history.json`;
 - журнал обмежено десятьма останніми записами, тому розмір файла та RAM footprint стабільні;

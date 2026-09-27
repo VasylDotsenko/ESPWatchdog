@@ -29,6 +29,9 @@ class RuntimeGuardService
 public:
     bool begin();
 
+    // Must be called once after all long-lived application services start.
+    void captureStartupBaseline();
+
     void loop();
 
     RuntimeGuardStatus status() const;

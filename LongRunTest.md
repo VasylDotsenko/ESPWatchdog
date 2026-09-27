@@ -11,7 +11,7 @@ Production baseline:
 RC under test:
 
 ```text
-1.1.0-rc.2-wifi-netif-guard
+1.1.0-rc.3-runtime-baseline
 ```
 
 ---
@@ -20,7 +20,7 @@ RC under test:
 
 Підтвердити стабільну unattended роботу ESP Watchdog протягом тривалого часу без ручного перезапуску живлення.
 
-Статус: `1.0.0` long-run пройдено успішно. Поточний документ описує focused RC test для `1.1.0-rc.2-wifi-netif-guard`; попередній 7-day snapshot збережений у `LongRunReport.md`.
+Статус: `1.0.0` long-run пройдено успішно. Поточний документ описує focused RC test для `1.1.0-rc.3-runtime-baseline`; попередній 7-day snapshot збережений у `LongRunReport.md`.
 
 Основні ризики цього етапу:
 

@@ -11,8 +11,8 @@
 #define FW_VERSION_PATCH     0
 
 #define FW_VERSION_STRING    "1.1.0"
-#define FW_VERSION_LABEL     "rc.3-runtime-baseline"
-#define FW_VERSION_FULL      "1.1.0-rc.3-runtime-baseline"
+#define FW_VERSION_LABEL     "rc.4-deferred-baseline"
+#define FW_VERSION_FULL      "1.1.0-rc.4-deferred-baseline"
 
 //=============================================================================
 // Project

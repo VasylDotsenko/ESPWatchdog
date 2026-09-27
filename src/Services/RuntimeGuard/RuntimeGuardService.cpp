@@ -18,6 +18,8 @@ bool RuntimeGuardService::begin()
     m_status.minFreeHeap = MIN_FREE_HEAP_BYTES;
     m_status.maxHeapFragmentation = MAX_HEAP_FRAGMENTATION;
     m_lastCheck = 0;
+    m_networkConnectedAt = 0;
+    m_startupBaselinePending = false;
 
     Log.info(
         "RuntimeGuard: started, minHeap=%lu bytes, maxFrag=%u%%",
@@ -29,25 +31,22 @@ bool RuntimeGuardService::begin()
 
 void RuntimeGuardService::captureStartupBaseline()
 {
-    const uint32_t freeHeap = ESP.getFreeHeap();
-    const uint8_t heapFragmentation = ESP.getHeapFragmentation();
-
-    m_status.freeHeap = freeHeap;
-    m_status.heapFragmentation = heapFragmentation;
-    m_status.heapAtBoot = freeHeap;
-    m_status.minFreeHeapSeen = freeHeap;
+    m_status.startupBaselineReady = false;
+    m_status.heapAtBoot = 0;
+    m_status.minFreeHeapSeen = 0;
     m_status.heapDropFromBoot = 0;
-    m_status.maxHeapFragmentationSeen = heapFragmentation;
+    m_status.maxHeapFragmentationSeen = 0;
+    m_networkConnectedAt = 0;
+    m_startupBaselinePending = true;
 
-    Log.info(
-        "RuntimeGuard: startup baseline, heap=%lu bytes, frag=%u%%",
-        static_cast<unsigned long>(freeHeap),
-        heapFragmentation);
+    Log.info("RuntimeGuard: startup baseline armed");
 }
 
 void RuntimeGuardService::loop()
 {
     const uint32_t now = millis();
+
+    updateStartupBaseline(now);
 
     if (m_status.restartScheduled)
     {
@@ -83,7 +82,8 @@ RuntimeGuardStatus RuntimeGuardService::status() const
     status.heapFragmentation =
         ESP.getHeapFragmentation();
 
-    if (status.heapAtBoot > status.freeHeap)
+    if (status.startupBaselineReady &&
+        status.heapAtBoot > status.freeHeap)
     {
         status.heapDropFromBoot =
             status.heapAtBoot - status.freeHeap;
@@ -94,6 +94,50 @@ RuntimeGuardStatus RuntimeGuardService::status() const
     }
 
     return status;
+}
+
+void RuntimeGuardService::updateStartupBaseline(
+    uint32_t now)
+{
+    if (!m_startupBaselinePending)
+    {
+        return;
+    }
+
+    if (!Network.isConnected())
+    {
+        m_networkConnectedAt = 0;
+        return;
+    }
+
+    if (m_networkConnectedAt == 0)
+    {
+        m_networkConnectedAt = now;
+        return;
+    }
+
+    if (static_cast<uint32_t>(now - m_networkConnectedAt) <
+        STARTUP_BASELINE_SETTLE_MS)
+    {
+        return;
+    }
+
+    const uint32_t freeHeap = ESP.getFreeHeap();
+    const uint8_t heapFragmentation = ESP.getHeapFragmentation();
+
+    m_status.freeHeap = freeHeap;
+    m_status.heapFragmentation = heapFragmentation;
+    m_status.heapAtBoot = freeHeap;
+    m_status.minFreeHeapSeen = freeHeap;
+    m_status.heapDropFromBoot = 0;
+    m_status.maxHeapFragmentationSeen = heapFragmentation;
+    m_status.startupBaselineReady = true;
+    m_startupBaselinePending = false;
+
+    Log.info(
+        "RuntimeGuard: startup baseline ready, heap=%lu bytes, frag=%u%%",
+        static_cast<unsigned long>(freeHeap),
+        heapFragmentation);
 }
 
 void RuntimeGuardService::check()
@@ -174,6 +218,11 @@ void RuntimeGuardService::updateObservedMetrics(
     uint32_t freeHeap,
     uint8_t heapFragmentation)
 {
+    if (!m_status.startupBaselineReady)
+    {
+        return;
+    }
+
     if (m_status.heapAtBoot == 0)
     {
         m_status.heapAtBoot = freeHeap;

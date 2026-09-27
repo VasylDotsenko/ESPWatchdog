@@ -222,7 +222,7 @@ void WebApiDiagnostics::handleGet(
         jsonBuffer,
         jsonBufferSize,
         "\"runtimeGuard\":{\"enabled\":%s,\"degraded\":%s,"
-        "\"restartScheduled\":%s,\"freeHeap\":%lu,"
+        "\"restartScheduled\":%s,\"startupBaselineReady\":%s,\"freeHeap\":%lu,"
         "\"heapFragmentation\":%u,\"heapAtBoot\":%lu,"
         "\"minFreeHeapSeen\":%lu,\"heapDropFromBoot\":%lu,"
         "\"maxHeapFragmentationSeen\":%u,\"minFreeHeap\":%lu,"
@@ -232,6 +232,7 @@ void WebApiDiagnostics::handleGet(
         guardStatus.enabled ? "true" : "false",
         guardStatus.degraded ? "true" : "false",
         guardStatus.restartScheduled ? "true" : "false",
+        guardStatus.startupBaselineReady ? "true" : "false",
         static_cast<unsigned long>(guardStatus.freeHeap),
         guardStatus.heapFragmentation,
         static_cast<unsigned long>(guardStatus.heapAtBoot),

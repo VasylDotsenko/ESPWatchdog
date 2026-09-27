@@ -7,6 +7,7 @@ struct RuntimeGuardStatus
     bool enabled = true;
     bool degraded = false;
     bool restartScheduled = false;
+    bool startupBaselineReady = false;
 
     uint32_t freeHeap = 0;
     uint32_t heapFragmentation = 0;
@@ -29,7 +30,8 @@ class RuntimeGuardService
 public:
     bool begin();
 
-    // Must be called once after all long-lived application services start.
+    // Arms deferred startup baseline capture. Call once after all application
+    // services have started; the sample is taken after stable WiFi settles.
     void captureStartupBaseline();
 
     void loop();
@@ -38,6 +40,7 @@ public:
 
 private:
     static constexpr uint32_t CHECK_INTERVAL_MS = 60000;
+    static constexpr uint32_t STARTUP_BASELINE_SETTLE_MS = 15000;
     static constexpr uint32_t MIN_UPTIME_BEFORE_RECOVERY_MS = 3600000;
     static constexpr uint32_t DEGRADED_DURATION_MS = 600000;
     static constexpr uint32_t RESTART_DELAY_MS = 3000;
@@ -48,6 +51,9 @@ private:
 
 private:
     void check();
+
+    void updateStartupBaseline(
+        uint32_t now);
 
     void updateObservedMetrics(
         uint32_t freeHeap,
@@ -62,6 +68,8 @@ private:
     RuntimeGuardStatus m_status;
 
     uint32_t m_lastCheck = 0;
+    uint32_t m_networkConnectedAt = 0;
+    bool m_startupBaselinePending = false;
 };
 
 extern RuntimeGuardService RuntimeGuard;

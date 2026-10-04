@@ -1,0 +1,31 @@
+[2026-09-30 10:35:19 EEST] Monitoring http://192.168.10.44/api/diagnostics for 24 hour(s)
+[2026-09-30 10:35:19 EEST] Log file: /Users/vasyldotsenko/Documents/ESPWatchdog/logs/diagnostics-monitor.jsonl
+[2026-09-30 10:35:19 EEST] OK    heap=8888 B, min=7968 B, frag=20%, drop=1304 B, uptime=219486 s
+[2026-09-30 10:35:19 EEST] ALERT Minimum heap below 8000 B: 7968 B
+[2026-09-30 11:35:19 EEST] OK    heap=9728 B, min=7968 B, frag=27%, drop=464 B, uptime=223086 s
+[2026-09-30 12:35:19 EEST] OK    heap=8152 B, min=7968 B, frag=42%, drop=2040 B, uptime=226686 s
+[2026-09-30 12:35:19 EEST] ALERT RuntimeGuard heap dropped 1576 B within one hour
+[2026-09-30 13:35:19 EEST] OK    heap=8920 B, min=7968 B, frag=31%, drop=1272 B, uptime=230286 s
+[2026-09-30 14:35:19 EEST] OK    heap=8920 B, min=7968 B, frag=20%, drop=1272 B, uptime=233886 s
+[2026-09-30 16:12:39 EEST] OK    heap=9768 B, min=7968 B, frag=27%, drop=424 B, uptime=239725 s
+[2026-09-30 16:35:19 EEST] OK    heap=8920 B, min=7968 B, frag=21%, drop=1272 B, uptime=241086 s
+[2026-09-30 18:55:26 EEST] OK    heap=8920 B, min=7968 B, frag=21%, drop=1272 B, uptime=249492 s
+[2026-09-30 19:35:19 EEST] OK    heap=8920 B, min=7968 B, frag=21%, drop=1272 B, uptime=251886 s
+[2026-09-30 20:35:19 EEST] OK    heap=9008 B, min=5848 B, frag=22%, drop=1184 B, uptime=255486 s
+[2026-09-30 20:35:19 EEST] ALERT New watchdog.restartCount: 5 → 6
+[2026-09-30 21:35:19 EEST] OK    heap=8920 B, min=5848 B, frag=21%, drop=1272 B, uptime=259086 s
+[2026-09-30 22:35:19 EEST] OK    heap=8920 B, min=5848 B, frag=21%, drop=1272 B, uptime=262686 s
+[2026-10-01 00:23:21 EEST] OK    heap=8920 B, min=5848 B, frag=21%, drop=1272 B, uptime=269168 s
+[2026-10-01 00:35:19 EEST] OK    heap=9648 B, min=5848 B, frag=26%, drop=544 B, uptime=269886 s
+[2026-10-01 01:35:19 EEST] OK    heap=10112 B, min=5848 B, frag=28%, drop=80 B, uptime=273486 s
+[2026-10-01 02:51:05 EEST] OK    heap=8920 B, min=5848 B, frag=29%, drop=1272 B, uptime=278031 s
+[2026-10-01 02:51:05 EEST] ALERT RuntimeGuard heap dropped 1192 B within one hour
+[2026-10-01 04:03:30 EEST] OK    heap=8920 B, min=5848 B, frag=29%, drop=1272 B, uptime=282376 s
+[2026-10-01 04:35:19 EEST] OK    heap=8920 B, min=5848 B, frag=21%, drop=1272 B, uptime=284286 s
+[2026-10-01 05:35:19 EEST] OK    heap=8920 B, min=5848 B, frag=32%, drop=1272 B, uptime=287886 s
+[2026-10-01 07:00:16 EEST] OK    heap=8920 B, min=5848 B, frag=20%, drop=1272 B, uptime=292983 s
+[2026-10-01 07:35:19 EEST] OK    heap=8920 B, min=5848 B, frag=21%, drop=1272 B, uptime=295086 s
+[2026-10-01 08:35:19 EEST] OK    heap=8920 B, min=5848 B, frag=21%, drop=1272 B, uptime=298686 s
+[2026-10-01 10:20:37 EEST] OK    heap=9576 B, min=5848 B, frag=26%, drop=616 B, uptime=305003 s
+[2026-10-01 10:35:19 EEST] OK    heap=8920 B, min=5848 B, frag=21%, drop=1272 B, uptime=305886 s
+[2026-10-01 10:35:20 EEST] Finished: {"finishedAt": "2026-10-01 10:35:20 EEST", "successfulChecks": 24, "alerts": 4, "lowestRuntimeGuardHeap": 8152, "highestFragmentation": 43, "output": "/Users/vasyldotsenko/Documents/ESPWatchdog/logs/diagnostics-monitor.jsonl"}

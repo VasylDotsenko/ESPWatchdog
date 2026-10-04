@@ -12,6 +12,7 @@ struct WatchdogStatusSummary
     bool restartPending = false;
     bool restartRequired = false;
     bool lockedOut = false;
+    bool restartLimitReached = false;
     bool cooldown = false;
 
     uint32_t consecutiveFailures = 0;
@@ -28,6 +29,8 @@ struct WatchdogStatusConfiguration
 struct WatchdogStatusStatistics
 {
     uint32_t restartCount = 0;
+    uint8_t restartsLast24Hours = 0;
+    bool quotaTimeSynchronized = false;
 
     uint64_t lastSuccess = 0;
     uint64_t lastFailure = 0;

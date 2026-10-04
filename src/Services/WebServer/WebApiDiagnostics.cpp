@@ -71,7 +71,8 @@ void WebApiDiagnostics::handleGet(
     const bool watchdogWarning =
         status.watchdog.summary.restartPending ||
         status.watchdog.summary.restartRequired ||
-        status.watchdog.summary.cooldown;
+        status.watchdog.summary.cooldown ||
+        status.watchdog.summary.restartLimitReached;
 
     const bool watchdogError =
         status.watchdog.summary.lockedOut;
@@ -173,15 +174,18 @@ void WebApiDiagnostics::handleGet(
         jsonBuffer,
         jsonBufferSize,
         "\"watchdog\":{\"enabled\":%s,\"restartPending\":%s,"
-        "\"lockedOut\":%s,\"cooldown\":%s,\"restartCount\":%lu,"
-        "\"warning\":%s},"
+        "\"lockedOut\":%s,\"restartLimitReached\":%s,"
+        "\"cooldown\":%s,\"restartCount\":%lu,"
+        "\"restartsLast24Hours\":%u,\"warning\":%s},"
         "\"power\":{\"available\":%s,\"restartInProgress\":%s,"
         "\"restartCount\":%lu,\"errorCount\":%lu,\"warning\":%s},",
         status.watchdog.summary.enabled ? "true" : "false",
         status.watchdog.summary.restartPending ? "true" : "false",
         status.watchdog.summary.lockedOut ? "true" : "false",
+        status.watchdog.summary.restartLimitReached ? "true" : "false",
         status.watchdog.summary.cooldown ? "true" : "false",
         static_cast<unsigned long>(status.watchdog.statistics.restartCount),
+        status.watchdog.statistics.restartsLast24Hours,
         (watchdogWarning || watchdogError) ? "true" : "false",
         status.power.summary.available ? "true" : "false",
         status.power.summary.restartInProgress ? "true" : "false",

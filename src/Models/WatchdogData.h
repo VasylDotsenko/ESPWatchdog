@@ -28,7 +28,12 @@ struct WatchdogRuntime
 
 struct WatchdogStatistics
 {
+    // Restart count for the current ESP boot; retained for session telemetry.
     uint32_t restartCount = 0;
+    // Successful watchdog power-cycles within the rolling 24-hour window.
+    uint8_t restartsLast24Hours = 0;
+    bool quotaTimeSynchronized = false;
+
     uint64_t lastSuccess = 0;
     uint64_t lastFailure = 0;
     uint64_t lastRestart = 0;

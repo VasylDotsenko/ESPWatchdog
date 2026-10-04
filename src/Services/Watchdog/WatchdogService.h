@@ -7,6 +7,7 @@
 #include "Models/WatchdogData.h"
 #include "Models/WatchdogStatusData.h"
 #include "Services/HealthCheck/HealthCheckInfo.h"
+#include "WatchdogRestartQuotaStorage.h"
 
 class WatchdogService final : public IService
 {
@@ -44,11 +45,20 @@ private:
 
     void requestRestart();
 
+    void refreshRestartQuota();
+
+    void recordWatchdogRestart();
+
+    [[nodiscard]]
+    bool restartLimitReached() const;
+
     [[nodiscard]]
     bool canRestart() const;
 
 private:
     WatchdogData m_data;
+    WatchdogRestartQuotaData m_restartQuota;
+    WatchdogRestartQuotaStorage m_restartQuotaStorage;
 
     Timer m_cooldownTimer;
 };

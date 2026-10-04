@@ -1,0 +1,102 @@
+{
+    "summary": {
+        "available": true,
+        "running": false,
+        "lastStatus": 0,
+        "lastStatusText": "success",
+        "responseTime": 4
+    },
+    "statistics": {
+        "sent": 116639,
+        "received": 113576,
+        "lost": 3063,
+        "consecutiveSuccess": 36,
+        "consecutiveFails": 0,
+        "minResponseTime": 2,
+        "maxResponseTime": 9891
+    },
+    "timestamps": {
+        "lastCheck": 599228653,
+        "lastSuccess": 599228653,
+        "lastFail": 598980212,
+        "availabilityChanged": 599060061
+    },
+    "history": {
+        "capacity": 8,
+        "count": 8,
+        "entries": [
+            {
+                "timestamp": 598918166,
+                "epoch": 1791133148,
+                "status": 1,
+                "statusText": "timeout",
+                "available": false,
+                "responseTime": 10002,
+                "consecutiveFails": 986
+            },
+            {
+                "timestamp": 598928171,
+                "epoch": 1791133158,
+                "status": 1,
+                "statusText": "timeout",
+                "available": false,
+                "responseTime": 10002,
+                "consecutiveFails": 987
+            },
+            {
+                "timestamp": 598938175,
+                "epoch": 1791133168,
+                "status": 1,
+                "statusText": "timeout",
+                "available": false,
+                "responseTime": 10001,
+                "consecutiveFails": 988
+            },
+            {
+                "timestamp": 598948179,
+                "epoch": 1791133178,
+                "status": 1,
+                "statusText": "timeout",
+                "available": false,
+                "responseTime": 10002,
+                "consecutiveFails": 989
+            },
+            {
+                "timestamp": 598958183,
+                "epoch": 1791133188,
+                "status": 1,
+                "statusText": "timeout",
+                "available": false,
+                "responseTime": 10002,
+                "consecutiveFails": 990
+            },
+            {
+                "timestamp": 598968186,
+                "epoch": 1791133198,
+                "status": 1,
+                "statusText": "timeout",
+                "available": false,
+                "responseTime": 10001,
+                "consecutiveFails": 991
+            },
+            {
+                "timestamp": 598980212,
+                "epoch": 1791133210,
+                "status": 1,
+                "statusText": "timeout",
+                "available": false,
+                "responseTime": 10002,
+                "consecutiveFails": 992
+            },
+            {
+                "timestamp": 599060061,
+                "epoch": 1791133290,
+                "status": 0,
+                "statusText": "success",
+                "available": true,
+                "responseTime": 1794,
+                "consecutiveFails": 0
+            }
+        ]
+    }
+}

@@ -498,6 +498,8 @@ void JsonStatusSerializer::writeWatchdog(
     summary["restartRequired"] =
         status.summary.restartRequired;
     summary["lockedOut"] = status.summary.lockedOut;
+    summary["restartLimitReached"] =
+        status.summary.restartLimitReached;
     summary["cooldown"] = status.summary.cooldown;
     summary["consecutiveFailures"] =
         status.summary.consecutiveFailures;
@@ -519,6 +521,10 @@ void JsonStatusSerializer::writeWatchdog(
 
     statistics["restartCount"] =
         status.statistics.restartCount;
+    statistics["restartsLast24Hours"] =
+        status.statistics.restartsLast24Hours;
+    statistics["quotaTimeSynchronized"] =
+        status.statistics.quotaTimeSynchronized;
     statistics["lastSuccess"] =
         static_cast<uint64_t>(status.statistics.lastSuccess);
     statistics["lastFailure"] =

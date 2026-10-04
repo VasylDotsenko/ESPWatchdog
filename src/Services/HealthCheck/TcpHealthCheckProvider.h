@@ -1,7 +1,12 @@
 #pragma once
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+
+extern "C"
+{
+#include <espconn.h>
+#include <lwip/ip4_addr.h>
+}
 
 #include "Services/HealthCheck/IHealthCheckProvider.h"
 
@@ -10,7 +15,8 @@
 //=============================================================================
 //
 // Checks host availability by opening a TCP connection to the configured
-// watchdog target port.
+// watchdog target port. The connection and DNS lookup run through espconn
+// callbacks, so a failed target never blocks the Arduino loop.
 //
 // For SSH-based health checks use:
 //
@@ -42,16 +48,61 @@ public:
     const HealthCheckResult& result() const override;
 
 private:
+    static constexpr size_t HOST_CAPACITY = 64;
+
+    static TcpHealthCheckProvider* providerFromCallback(void* argument);
+
+    static void onConnected(void* argument);
+
+    static void onReconnect(void* argument, sint8 error);
+
+    static void onDisconnected(void* argument);
+
+    static void onDnsFound(
+        const char* name,
+        ipv4_addr_t* address,
+        void* argument);
+
+    void beginConnection(const ipv4_addr_t& address);
+
+    void handleConnected();
+
+    void handleReconnect(sint8 error);
+
+    void handleDisconnected();
+
+    void completeSuccess();
+
+    void completeFailure(HealthCheckStatus status);
+
+    void abortConnection();
+
+    HealthCheckStatus statusFromError(sint8 error) const;
+
     void reset();
 
 private:
-    WiFiClient m_client;
+    espconn m_connection {};
+
+    esp_tcp m_tcp {};
+
+    ipv4_addr_t m_resolvedAddress {};
+
+    char m_host[HOST_CAPACITY] {};
 
     HealthCheckResult m_result;
+
+    uint32_t m_startedAt = 0;
+
+    uint32_t m_timeoutMs = 0;
 
     bool m_running = false;
 
     bool m_finished = false;
+
+    bool m_dnsPending = false;
+
+    bool m_connectionActive = false;
 };
 
 //=============================================================================

@@ -19,7 +19,14 @@
 
 Поточний production baseline: `v1.0.0 Production`.
 
-Активна версія для перевірки: `v1.1.0-rc.3-runtime-baseline`.
+Активна версія для перевірки: `v1.1.0-rc.6-async-tcp-healthcheck`.
+
+### RC.6 stability fix — asynchronous TCP HealthCheck
+
+- підтверджена причина недоступності Dashboard при тривалому outage контрольованого вузла: synchronous `WiFiClient.connect()` утримував `Application::loop()` до `pingTimeout`;
+- TCP provider переписано на ESP8266 `espconn` callbacks з неблокуючим DNS lookup, connect і timeout;
+- WebServer, OTA, Tuya, RuntimeGuard та watchdog мають продовжувати обробку між HealthCheck callbacks;
+- потребує hardware verification за сценарієм тривалої недоступності target host.
 
 ### RC scope — Persistent Restart History
 
@@ -46,7 +53,7 @@
 
 ### Наступний етап
 
-Focused RC long-run validation для `1.1.0-rc.3-runtime-baseline`: контролювати heap/fragmentation, Web UI, HealthCheck, обидва history-журнали та NTP epoch backfill протягом щонайменше 24 годин.
+Focused RC long-run validation для `1.1.0-rc.6-async-tcp-healthcheck`: спочатку підтвердити Web UI/API responsiveness при target outage, потім перевірити `restartsLast24Hours`, persistence quota після software restart ESP, автоматичне звільнення slot через 24 години, а також heap/fragmentation і обидва history-журнали.
 
 Початковий RC snapshot підтверджено на пристрої: startup log backfill має валідний wall time, `HealthCheck` записав initial Online event з epoch, а очищений persistent restart history стартує порожнім.
 
@@ -63,6 +70,19 @@ Focused RC long-run validation для `1.1.0-rc.3-runtime-baseline`: контр�
 - типовий початковий allocation після цього помилково виглядав як runtime heap drop;
 - baseline тепер фіксується наприкінці `Application::begin()`;
 - потрібно перевірити, що `heapAtBoot` близький до `freeHeap` одразу після OTA boot.
+
+### RC.4 diagnostics hotfix — deferred RuntimeGuard baseline
+
+- зафіксовано, що кінець `Application::begin()` все ще передує асинхронним WiFi/DHCP/NTP і початковим TCP allocations;
+- baseline тепер береться лише через 15 секунд стабільного WiFi після startup;
+- до завершення очікування API повертає `startupBaselineReady=false`, Dashboard показує `settling` і не інтерпретує heap metrics як runtime trend.
+
+### RC.5 stability fix — rolling Watchdog quota
+
+- виявлено: `maxRestartPerDay` помилково обмежував restart у межах boot ESP, а не за добу;
+- додано окремий persistent rolling quota журнал на 32 timestamp;
+- тільки успішний `watchdog_failure` power-cycle займає quota slot;
+- API/Dashboard відокремлюють session `restartCount` від `restartsLast24Hours`.
 
 Основні документи поточного етапу:
 

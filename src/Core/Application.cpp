@@ -2,7 +2,7 @@
 
 #include "Services/Config/Config.h"
 #include "Services/HealthCheck/HealthCheckService.h"
-#include "Services/HealthCheck/TcpHealthCheckProvider.h"
+#include "Services/HealthCheck/TcpHealthCheckProviderFactory.h"
 #include "Services/Logger/Logger.h"
 #include "Services/OTA/OtaService.h"
 #include "Services/Power/PowerService.h"
@@ -87,7 +87,7 @@ bool Application::begin()
         return false;
     }
 
-    HealthCheck.setProvider(TcpProvider);
+    HealthCheck.setProvider(tcpHealthCheckProvider());
 
     if (!HealthCheck.begin())
     {

@@ -11,7 +11,7 @@
 Поточний release candidate:
 
 ```text
-1.1.0-rc.3-runtime-baseline
+1.1.0-rc.6-async-tcp-healthcheck
 ```
 
 ---
@@ -254,7 +254,7 @@ HealthCheck тримає у RAM останні вісім значущих ме�
 - конфігурація через LittleFS JSON;
 - стабільний `Logger` із `printf`-style API;
 - WiFi reconnect state machine;
-- TCP HealthCheck через `WiFiClient.connect()`;
+- неблокуючий TCP/SSH HealthCheck через ESP8266 `espconn` callbacks;
 - ICMP HealthCheck через native ESP8266 SDK ping як fallback provider;
 - накопичення health statistics;
 - Watchdog decision-layer;

@@ -42,7 +42,13 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 
 Поточний етап — **`1.0.0 Production`: 7-day long-run validation пройдено, baseline зафіксовано**.
 
-Активний release candidate: **`1.1.0-rc.3-runtime-baseline`**.
+Активний release candidate: **`1.1.0-rc.6-async-tcp-healthcheck`**.
+
+### RC.6 stability fix: asynchronous TCP HealthCheck
+
+- блокуючий `WiFiClient.connect()` замінено на асинхронний ESP8266 `espconn` connection flow;
+- DNS lookup, TCP connect, failure callback та timeout не блокують `Application::loop()`;
+- required: hardware-verify Dashboard/API availability під час тривалої недоступності контрольованого вузла.
 
 ### RC scope: Availability History
 
@@ -66,6 +72,20 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 - `heapAtBoot` фіксується лише після старту Tuya, Power, HealthCheck, WebServer та OTA;
 - `heapDropFromBoot` тепер показує runtime-зміну після повного startup, а не звичайні startup allocations;
 - required: порівняти baseline та actual heap після OTA boot.
+
+### RC.4 diagnostics hotfix: deferred RuntimeGuard baseline
+
+- baseline очікує підключення WiFi і 15 секунд стабільної мережі;
+- це виключає штатні DHCP/NTP/Health/OTA алокації зі стартового heap drop;
+- `/api/diagnostics` і Dashboard показують, чи baseline вже готовий;
+- required: після рядка `startup baseline ready` перевірити, що `heapAtBoot` близький до `freeHeap`.
+
+### RC.5 stability fix: rolling Watchdog quota
+
+- `maxRestartPerDay` рахує лише успішні watchdog restart у rolling вікні 24 годин;
+- quota зберігається окремо від короткої restart history у LittleFS;
+- Dashboard/API показують `restartsLast24Hours` і досягнення ліміту;
+- required: перевірити persistence quota після software restart ESP та автоматичне звільнення slot через 24 години.
 
 ---
 
@@ -615,7 +635,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 1.1.0 — Persistent Restart History
 
-Статус: `1.1.0-rc.3-runtime-baseline`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — focused long-run validation після WiFi та diagnostics hotfixes.
+Статус: `1.1.0-rc.6-async-tcp-healthcheck`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — hardware verification async TCP HealthCheck під час недоступності контрольованого вузла, після чого focused long-run validation rolling quota.
 
 - restart history зберігається у LittleFS у `/restart-history.json`;
 - журнал обмежено десятьма останніми записами, тому розмір файла та RAM footprint стабільні;

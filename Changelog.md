@@ -4,6 +4,63 @@
 
 ---
 
+## [1.1.0-rc.6-async-tcp-healthcheck] - 04.10.2026
+
+### Fixed
+
+- `TcpHealthCheckProvider` більше не викликає блокуючий `WiFiClient.connect()`;
+- DNS lookup і TCP connect виконуються через асинхронні callbacks ESP8266 `espconn`;
+- timeout контролюється у `TcpHealthCheckProvider::loop()` через `millis()`;
+- недоступність контрольованого SSH/TCP-вузла більше не повинна блокувати `WebServer`, OTA, Tuya, RuntimeGuard або обробку watchdog.
+
+### Validation required
+
+- вимкнути або заблокувати `watchdog.targetHost` щонайменше на 2–3 `pingTimeout`;
+- у цей час перевірити, що Dashboard і `GET /api/diagnostics` відповідають без затримки;
+- після відновлення вузла перевірити перехід HealthCheck назад у `ONLINE`.
+
+---
+
+## [1.1.0-rc.5-rolling-watchdog-quota] - 04.10.2026
+
+### Fixed
+
+- `watchdog.maxRestartPerDay` більше не працює як помилковий ліміт restart від boot ESP;
+- додано persistent rolling quota за останні 24 години у `/watchdog-restart-quota.json`;
+- до quota потрапляють лише успішно завершені power-cycle, ініційовані `watchdog_failure`;
+- після виходу старої restart-події з 24-годинного вікна слот автоматично знову доступний;
+- до синхронізації NTP застосовується консервативний fallback per-boot quota.
+
+### Observability
+
+- `GET /api/watchdog` повертає `restartLimitReached`, `restartsLast24Hours` і `quotaTimeSynchronized`;
+- `/api/diagnostics` та Dashboard показують rolling quota окремо від session `restartCount`;
+- persistent quota не залежить від короткої Dashboard restart history (10 записів).
+
+### Validation required
+
+- після OTA quota починається як порожній rolling журнал і заповнюється лише новими watchdog restart;
+- після першого NTP sync `quotaTimeSynchronized` має стати `true`;
+- після одного watchdog power-cycle `restartsLast24Hours` має збільшитися на один і залишатися після software restart ESP.
+
+---
+
+## [1.1.0-rc.4-deferred-baseline] - 27.09.2026
+
+### Fixed
+
+- RuntimeGuard більше не бере `heapAtBoot` одразу після `Application::begin()`;
+- baseline тепер очікує підключення STA WiFi і 15 секунд стабільного з’єднання, щоб завершилися DHCP, NTP, перша health-перевірка та фонові алокації Web/OTA;
+- до готовності baseline `/api/diagnostics` повертає `runtimeGuard.startupBaselineReady=false`, а Dashboard чесно показує стан `settling`;
+- `heapDropFromBoot`, мінімум heap і максимум fragmentation починають вимірюватися лише після валідного baseline.
+
+### Validation
+
+- після WiFi connect очікується лог `RuntimeGuard: startup baseline ready, ...`;
+- після цього `heapAtBoot` має бути близьким до поточного `freeHeap`, без штучного стартового drop у кілька KB.
+
+---
+
 ## [1.1.0-rc.3-runtime-baseline] - 27.09.2026
 
 ### Added

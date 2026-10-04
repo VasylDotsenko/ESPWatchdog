@@ -11,7 +11,7 @@
 Поточний release candidate:
 
 ```text
-1.1.0-rc.6-async-tcp-healthcheck
+1.1.0-rc.7-tcp-socket-lifecycle
 ```
 
 ---

@@ -201,7 +201,7 @@ void TcpHealthCheckProvider::onConnected(void* argument)
 
     if (provider != nullptr)
     {
-        provider->handleConnected();
+        provider->handleConnected(static_cast<espconn*>(argument));
     }
 }
 
@@ -215,7 +215,9 @@ void TcpHealthCheckProvider::onReconnect(
 
     if (provider != nullptr)
     {
-        provider->handleReconnect(error);
+        provider->handleReconnect(
+            static_cast<espconn*>(argument),
+            error);
     }
 }
 
@@ -227,7 +229,7 @@ void TcpHealthCheckProvider::onDisconnected(void* argument)
 
     if (provider != nullptr)
     {
-        provider->handleDisconnected();
+        provider->handleDisconnected(static_cast<espconn*>(argument));
     }
 }
 
@@ -286,38 +288,44 @@ void TcpHealthCheckProvider::beginConnection(
 
 //=============================================================================
 
-void TcpHealthCheckProvider::handleConnected()
+void TcpHealthCheckProvider::handleConnected(espconn* connection)
 {
     if (!m_running)
     {
         return;
     }
+
+    m_activeConnection = connection;
 
     completeSuccess();
 }
 
 //=============================================================================
 
-void TcpHealthCheckProvider::handleReconnect(sint8 error)
+void TcpHealthCheckProvider::handleReconnect(
+    espconn* connection,
+    sint8 error)
 {
     if (!m_running)
     {
         return;
     }
 
+    m_activeConnection = connection;
     m_connectionActive = false;
     completeFailure(statusFromError(error));
 }
 
 //=============================================================================
 
-void TcpHealthCheckProvider::handleDisconnected()
+void TcpHealthCheckProvider::handleDisconnected(espconn* connection)
 {
     if (!m_running)
     {
         return;
     }
 
+    m_activeConnection = connection;
     m_connectionActive = false;
     completeFailure(HealthCheckStatus::HostUnreachable);
 }
@@ -379,14 +387,17 @@ void TcpHealthCheckProvider::completeFailure(HealthCheckStatus status)
 
 void TcpHealthCheckProvider::abortConnection()
 {
-    if (!m_connectionActive)
+    if (!m_connectionActive ||
+        m_activeConnection == nullptr)
     {
         return;
     }
 
     m_connectionActive = false;
 
-    espconn_abort(&m_connection);
+    espconn_abort(m_activeConnection);
+
+    m_activeConnection = nullptr;
 }
 
 //=============================================================================
@@ -428,4 +439,5 @@ void TcpHealthCheckProvider::reset()
     m_finished = false;
     m_dnsPending = false;
     m_connectionActive = false;
+    m_activeConnection = nullptr;
 }

@@ -65,11 +65,13 @@ private:
 
     void beginConnection(const ipv4_addr_t& address);
 
-    void handleConnected();
+    void handleConnected(espconn* connection);
 
-    void handleReconnect(sint8 error);
+    void handleReconnect(
+        espconn* connection,
+        sint8 error);
 
-    void handleDisconnected();
+    void handleDisconnected(espconn* connection);
 
     void completeSuccess();
 
@@ -103,6 +105,10 @@ private:
     bool m_dnsPending = false;
 
     bool m_connectionActive = false;
+
+    // espconn gives callbacks a runtime connection descriptor. It can differ
+    // from m_connection, therefore socket teardown must use this pointer.
+    espconn* m_activeConnection = nullptr;
 };
 
 //=============================================================================

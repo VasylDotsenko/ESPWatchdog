@@ -4,6 +4,21 @@
 
 ---
 
+## [1.1.0-rc.7-tcp-socket-lifecycle] - 04.10.2026
+
+### Fixed
+
+- виправлено життєвий цикл `espconn` після успішного TCP probe;
+- provider тепер зберігає runtime socket descriptor з callback, а не намагається закривати лише початковий descriptor;
+- наступні TCP probes після першого успіху більше не повинні завершуватися негайним `host_unreachable` з RTT `0 ms`.
+
+### Evidence
+
+- RC.6 hardware snapshot: один успіх (`597 ms`), після якого дев’ять наступних probes завершились `host_unreachable` з `0 ms`;
+- причина: socket teardown виконувався не для runtime descriptor, створеного ESP8266 network stack.
+
+---
+
 ## [1.1.0-rc.6-async-tcp-healthcheck] - 04.10.2026
 
 ### Fixed

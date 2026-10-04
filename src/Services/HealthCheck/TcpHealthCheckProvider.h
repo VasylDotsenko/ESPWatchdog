@@ -77,6 +77,8 @@ private:
 
     void completeFailure(HealthCheckStatus status);
 
+    void disconnectConnection();
+
     void abortConnection();
 
     HealthCheckStatus statusFromError(sint8 error) const;

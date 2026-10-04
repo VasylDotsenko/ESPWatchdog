@@ -279,6 +279,11 @@ void TcpHealthCheckProvider::beginConnection(
 
     if (connectResult != ESPCONN_OK)
     {
+        Log.warning(
+            "TCP provider: espconn_connect rejected, error=%d localPort=%u",
+            static_cast<int>(connectResult),
+            static_cast<unsigned>(m_tcp.local_port));
+
         completeFailure(statusFromError(connectResult));
         return;
     }
@@ -353,7 +358,7 @@ void TcpHealthCheckProvider::completeSuccess()
         static_cast<unsigned>(m_tcp.remote_port),
         static_cast<unsigned long>(m_result.responseTime));
 
-    abortConnection();
+    disconnectConnection();
 }
 
 //=============================================================================
@@ -396,6 +401,23 @@ void TcpHealthCheckProvider::abortConnection()
     m_connectionActive = false;
 
     espconn_abort(m_activeConnection);
+
+    m_activeConnection = nullptr;
+}
+
+//=============================================================================
+
+void TcpHealthCheckProvider::disconnectConnection()
+{
+    if (!m_connectionActive ||
+        m_activeConnection == nullptr)
+    {
+        return;
+    }
+
+    m_connectionActive = false;
+
+    espconn_disconnect(m_activeConnection);
 
     m_activeConnection = nullptr;
 }

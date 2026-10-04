@@ -19,7 +19,13 @@
 
 Поточний production baseline: `v1.0.0 Production`.
 
-Активна версія для перевірки: `v1.1.0-rc.7-tcp-socket-lifecycle`.
+Активна версія для перевірки: `v1.1.0-rc.8-tcp-graceful-close`.
+
+### RC.8 stability fix — graceful TCP close
+
+- RC.7 після першої success-перевірки все ще давав `host_unreachable` з RTT `0 ms`;
+- успішний probe тепер закривається normal `espconn_disconnect()` замість forceful abort;
+- якщо SDK локально відхилить наступний connect, serial log міститиме numeric `espconn` error code та local port для остаточного діагнозу.
 
 ### RC.7 stability fix — TCP socket lifecycle
 
@@ -59,7 +65,7 @@
 
 ### Наступний етап
 
-Focused RC long-run validation для `1.1.0-rc.7-tcp-socket-lifecycle`: підтвердити не менше десяти TCP success probes після reboot і Web UI/API responsiveness при target outage; далі перевірити `restartsLast24Hours`, persistence quota після software restart ESP, автоматичне звільнення slot через 24 години, heap/fragmentation і обидва history-журнали.
+Focused RC long-run validation для `1.1.0-rc.8-tcp-graceful-close`: підтвердити не менше десяти TCP success probes після reboot і Web UI/API responsiveness при target outage; далі перевірити `restartsLast24Hours`, persistence quota після software restart ESP, автоматичне звільнення slot через 24 години, heap/fragmentation і обидва history-журнали.
 
 Початковий RC snapshot підтверджено на пристрої: startup log backfill має валідний wall time, `HealthCheck` записав initial Online event з epoch, а очищений persistent restart history стартує порожнім.
 

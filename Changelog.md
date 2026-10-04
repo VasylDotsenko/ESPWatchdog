@@ -4,6 +4,21 @@
 
 ---
 
+## [1.1.0-rc.8-tcp-graceful-close] - 04.10.2026
+
+### Fixed
+
+- successful TCP probes тепер завершуються normal `espconn_disconnect()`, а не forceful `espconn_abort()`;
+- додано raw `espconn_connect` error code і local port у warning log, якщо ESP8266 SDK відхиляє нове TCP-з’єднання до початку network timeout;
+- це усуває ризик залишити connection node у SDK після короткої SSH availability probe.
+
+### Validation required
+
+- після reboot отримати щонайменше 10 TCP success probes поспіль;
+- якщо проблема повториться, надіслати рядок `TCP provider: espconn_connect rejected` з numeric error code.
+
+---
+
 ## [1.1.0-rc.7-tcp-socket-lifecycle] - 04.10.2026
 
 ### Fixed

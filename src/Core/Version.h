@@ -11,8 +11,8 @@
 #define FW_VERSION_PATCH     0
 
 #define FW_VERSION_STRING    "1.1.0"
-#define FW_VERSION_LABEL     "rc.7-tcp-socket-lifecycle"
-#define FW_VERSION_FULL      "1.1.0-rc.7-tcp-socket-lifecycle"
+#define FW_VERSION_LABEL     "rc.8-tcp-graceful-close"
+#define FW_VERSION_FULL      "1.1.0-rc.8-tcp-graceful-close"
 
 //=============================================================================
 // Project

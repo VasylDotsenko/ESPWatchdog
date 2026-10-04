@@ -42,7 +42,12 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 
 Поточний етап — **`1.0.0 Production`: 7-day long-run validation пройдено, baseline зафіксовано**.
 
-Активний release candidate: **`1.1.0-rc.7-tcp-socket-lifecycle`**.
+Активний release candidate: **`1.1.0-rc.8-tcp-graceful-close`**.
+
+### RC.8 stability fix: graceful TCP close
+
+- successful TCP probe закривається normal `espconn_disconnect()`;
+- у випадку local SDK rejection лог містить raw `espconn` error code та local port.
 
 ### RC.7 stability fix: TCP socket lifecycle
 
@@ -640,7 +645,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 1.1.0 — Persistent Restart History
 
-Статус: `1.1.0-rc.7-tcp-socket-lifecycle`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — підтвердити послідовні TCP probes після reboot та Dashboard/API availability під час target outage, після чого focused long-run validation rolling quota.
+Статус: `1.1.0-rc.8-tcp-graceful-close`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — підтвердити послідовні TCP probes після reboot та Dashboard/API availability під час target outage, після чого focused long-run validation rolling quota.
 
 - restart history зберігається у LittleFS у `/restart-history.json`;
 - журнал обмежено десятьма останніми записами, тому розмір файла та RAM footprint стабільні;

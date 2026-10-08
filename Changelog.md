@@ -4,6 +4,44 @@
 
 ---
 
+## [1.1.0-rc.10-bounded-tcp-healthcheck] - 04.10.2026
+
+### Fixed
+
+- RC.6–RC.9 `espconn` implementation вилучено: `ESPCONN_ISCONN (-15)` підтвердив нестабільний lifecycle legacy SDK socket descriptor;
+- provider повернуто на підтримуваний ESP8266 Arduino `WiFiClient`, який сам звільняє `ClientContext` після кожної probe;
+- timeout TCP probe обмежено `250 ms`, незалежно від більшого `watchdog.pingTimeout`;
+- контрольований вузол може бути недоступним без багатосекундного блокування Dashboard, Web API, OTA або watchdog.
+
+### Trade-off
+
+- це bounded synchronous operation, а не raw SDK callback flow: один HealthCheck probe може зайняти до `250 ms` раз на `pingInterval`;
+- для локального SSH target це безпечно: попередній успішний RTT був `4–8 ms`.
+
+### Validation required
+
+- після reboot отримати щонайменше 10 successive `success` probes;
+- під час target outage Dashboard/API мають залишатися доступними; максимальна додаткова затримка одного probe — `250 ms`.
+
+---
+
+## [1.1.0-rc.9-tcp-close-state] - 04.10.2026
+
+### Fixed
+
+- підтверджено `ESPCONN_ISCONN` (`-15`) після першої success-перевірки: SDK ще утримував попередній TCP node;
+- додано explicit `Closing` state для TCP provider;
+- наступний probe не запускається, доки не надійшов disconnect/reconnect callback;
+- якщо callback відсутній понад `250 ms`, provider безпечно завершує socket через fallback abort;
+- це не блокує `Application::loop()` і не створює повторні connection nodes.
+
+### Validation required
+
+- після reboot у `/api/health` має зростати `received`, а `consecutiveFails` лишатися `0` для доступного host;
+- якщо з’явиться `close callback timeout`, надіслати відповідний рядок з `/api/logs`.
+
+---
+
 ## [1.1.0-rc.8-tcp-graceful-close] - 04.10.2026
 
 ### Fixed

@@ -19,7 +19,20 @@
 
 Поточний production baseline: `v1.0.0 Production`.
 
-Активна версія для перевірки: `v1.1.0-rc.8-tcp-graceful-close`.
+Активна версія для перевірки: `v1.1.0-rc.10-bounded-tcp-healthcheck`.
+
+### RC.10 stability fix — bounded TCP HealthCheck
+
+- RC.6–RC.9 raw `espconn` path не підходить для repeated client probes: hardware log підтвердив `ESPCONN_ISCONN (-15)` після першого success;
+- TCP provider повернено на підтримуваний Arduino `WiFiClient`, який володіє та звільняє `ClientContext` самостійно;
+- кожен TCP probe має жорстку межу `250 ms`, тому недоступний target не може заблокувати runtime на `pingTimeout` у 10 секунд;
+- для локального SSH host з RTT `4–8 ms` цього timeout достатньо.
+
+### RC.9 stability fix — TCP close state
+
+- raw log підтвердив `ESPCONN_ISCONN (-15)` після першої success-перевірки;
+- причина: Espressif SDK ще тримав попередній TCP node, тоді як provider починав новий probe;
+- додано Closing state, callback-based teardown і `250 ms` fallback abort без блокування основного loop.
 
 ### RC.8 stability fix — graceful TCP close
 
@@ -65,7 +78,7 @@
 
 ### Наступний етап
 
-Focused RC long-run validation для `1.1.0-rc.8-tcp-graceful-close`: підтвердити не менше десяти TCP success probes після reboot і Web UI/API responsiveness при target outage; далі перевірити `restartsLast24Hours`, persistence quota після software restart ESP, автоматичне звільнення slot через 24 години, heap/fragmentation і обидва history-журнали.
+Focused RC long-run validation для `1.1.0-rc.10-bounded-tcp-healthcheck`: підтвердити не менше десяти TCP success probes після reboot і Web UI/API responsiveness при target outage; далі перевірити `restartsLast24Hours`, persistence quota після software restart ESP, автоматичне звільнення slot через 24 години, heap/fragmentation і обидва history-журнали.
 
 Початковий RC snapshot підтверджено на пристрої: startup log backfill має валідний wall time, `HealthCheck` записав initial Online event з epoch, а очищений persistent restart history стартує порожнім.
 

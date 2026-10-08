@@ -1,12 +1,5 @@
 #include "TcpHealthCheckProvider.h"
 
-#include <cstring>
-
-extern "C"
-{
-#include <user_interface.h>
-}
-
 #include "Services/Config/Config.h"
 #include "Services/Logger/Logger.h"
 
@@ -24,6 +17,8 @@ IHealthCheckProvider& tcpHealthCheckProvider()
 bool TcpHealthCheckProvider::begin()
 {
     reset();
+    m_client.setNoDelay(true);
+
     return true;
 }
 
@@ -44,15 +39,13 @@ bool TcpHealthCheckProvider::start(
     if (host == nullptr ||
         host[0] == '\0')
     {
-        m_result.success = false;
         m_result.status = HealthCheckStatus::Error;
         m_finished = true;
         return true;
     }
 
-    if (wifi_station_get_connect_status() != STATION_GOT_IP)
+    if (!WiFi.isConnected())
     {
-        m_result.success = false;
         m_result.status = HealthCheckStatus::NetworkUnavailable;
         m_finished = true;
         return true;
@@ -62,62 +55,49 @@ bool TcpHealthCheckProvider::start(
 
     if (watchdog.targetPort == 0)
     {
-        m_result.success = false;
         m_result.status = HealthCheckStatus::Error;
         m_finished = true;
         return true;
     }
 
+    const uint32_t connectTimeoutMs =
+        timeoutMs == 0
+            ? 1
+            : min(timeoutMs, MAX_CONNECT_SLICE_MS);
+
     m_running = true;
-    m_startedAt = millis();
-    m_timeoutMs = timeoutMs;
 
-    std::strncpy(
-        m_host,
+    const uint32_t startedAt = millis();
+
+    m_client.setTimeout(connectTimeoutMs);
+
+    const bool connected = m_client.connect(
         host,
-        sizeof(m_host) - 1);
-    m_host[sizeof(m_host) - 1] = '\0';
+        watchdog.targetPort);
 
-    m_connection = {};
-    m_tcp = {};
+    const uint32_t elapsed = millis() - startedAt;
 
-    m_connection.type = ESPCONN_TCP;
-    m_connection.state = ESPCONN_NONE;
-    m_connection.proto.tcp = &m_tcp;
-    m_connection.reverse = this;
+    m_client.stop();
 
-    m_tcp.local_port = espconn_port();
-    m_tcp.remote_port = watchdog.targetPort;
+    m_result.success = connected;
+    m_result.responseTime = elapsed;
+    m_result.status = connected
+        ? HealthCheckStatus::Success
+        : (elapsed >= connectTimeoutMs
+            ? HealthCheckStatus::Timeout
+            : HealthCheckStatus::HostUnreachable);
 
-    espconn_regist_connectcb(
-        &m_connection,
-        &TcpHealthCheckProvider::onConnected);
-    espconn_regist_reconcb(
-        &m_connection,
-        &TcpHealthCheckProvider::onReconnect);
-    espconn_regist_disconcb(
-        &m_connection,
-        &TcpHealthCheckProvider::onDisconnected);
+    m_running = false;
+    m_finished = true;
 
-    const err_t dnsResult = espconn_gethostbyname(
-        &m_connection,
-        m_host,
-        &m_resolvedAddress,
-        &TcpHealthCheckProvider::onDnsFound);
+    Log.verbose(
+        "TCP provider: %s %s:%u, status=%u, time=%lu ms",
+        connected ? "connected to" : "failed to connect to",
+        host,
+        static_cast<unsigned>(watchdog.targetPort),
+        static_cast<uint8_t>(m_result.status),
+        static_cast<unsigned long>(elapsed));
 
-    if (dnsResult == ESPCONN_OK)
-    {
-        beginConnection(m_resolvedAddress);
-        return true;
-    }
-
-    if (dnsResult == ESPCONN_INPROGRESS)
-    {
-        m_dnsPending = true;
-        return true;
-    }
-
-    completeFailure(HealthCheckStatus::DnsFailed);
     return true;
 }
 
@@ -125,15 +105,6 @@ bool TcpHealthCheckProvider::start(
 
 void TcpHealthCheckProvider::loop()
 {
-    if (!m_running)
-    {
-        return;
-    }
-
-    if (static_cast<uint32_t>(millis() - m_startedAt) >= m_timeoutMs)
-    {
-        completeFailure(HealthCheckStatus::Timeout);
-    }
 }
 
 //=============================================================================
@@ -154,20 +125,14 @@ bool TcpHealthCheckProvider::finished() const
 
 void TcpHealthCheckProvider::cancel()
 {
-    if (!m_running)
-    {
-        return;
-    }
+    m_client.stop();
 
     m_running = false;
     m_finished = true;
-    m_dnsPending = false;
 
     m_result.success = false;
     m_result.status = HealthCheckStatus::Cancelled;
     m_result.responseTime = 0;
-
-    abortConnection();
 }
 
 //=============================================================================
@@ -179,287 +144,14 @@ const HealthCheckResult& TcpHealthCheckProvider::result() const
 
 //=============================================================================
 
-TcpHealthCheckProvider* TcpHealthCheckProvider::providerFromCallback(
-    void* argument)
-{
-    auto* connection = static_cast<espconn*>(argument);
-
-    if (connection == nullptr ||
-        connection->reverse == nullptr)
-    {
-        return nullptr;
-    }
-
-    return static_cast<TcpHealthCheckProvider*>(connection->reverse);
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::onConnected(void* argument)
-{
-    TcpHealthCheckProvider* provider = providerFromCallback(argument);
-
-    if (provider != nullptr)
-    {
-        provider->handleConnected(static_cast<espconn*>(argument));
-    }
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::onReconnect(
-    void* argument,
-    sint8 error)
-{
-    TcpHealthCheckProvider* provider = providerFromCallback(argument);
-
-    if (provider != nullptr)
-    {
-        provider->handleReconnect(
-            static_cast<espconn*>(argument),
-            error);
-    }
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::onDisconnected(void* argument)
-{
-    TcpHealthCheckProvider* provider = providerFromCallback(argument);
-
-    if (provider != nullptr)
-    {
-        provider->handleDisconnected(static_cast<espconn*>(argument));
-    }
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::onDnsFound(
-    const char*,
-    ipv4_addr_t* address,
-    void* argument)
-{
-    TcpHealthCheckProvider* provider = providerFromCallback(argument);
-
-    if (provider == nullptr ||
-        !provider->m_running ||
-        !provider->m_dnsPending)
-    {
-        return;
-    }
-
-    if (address == nullptr)
-    {
-        provider->completeFailure(HealthCheckStatus::DnsFailed);
-        return;
-    }
-
-    provider->beginConnection(*address);
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::beginConnection(
-    const ipv4_addr_t& address)
-{
-    if (!m_running)
-    {
-        return;
-    }
-
-    m_dnsPending = false;
-
-    m_tcp.remote_ip[0] = ip4_addr1(&address);
-    m_tcp.remote_ip[1] = ip4_addr2(&address);
-    m_tcp.remote_ip[2] = ip4_addr3(&address);
-    m_tcp.remote_ip[3] = ip4_addr4(&address);
-
-    const sint8 connectResult = espconn_connect(&m_connection);
-
-    if (connectResult != ESPCONN_OK)
-    {
-        Log.warning(
-            "TCP provider: espconn_connect rejected, error=%d localPort=%u",
-            static_cast<int>(connectResult),
-            static_cast<unsigned>(m_tcp.local_port));
-
-        completeFailure(statusFromError(connectResult));
-        return;
-    }
-
-    m_connectionActive = true;
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::handleConnected(espconn* connection)
-{
-    if (!m_running)
-    {
-        return;
-    }
-
-    m_activeConnection = connection;
-
-    completeSuccess();
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::handleReconnect(
-    espconn* connection,
-    sint8 error)
-{
-    if (!m_running)
-    {
-        return;
-    }
-
-    m_activeConnection = connection;
-    m_connectionActive = false;
-    completeFailure(statusFromError(error));
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::handleDisconnected(espconn* connection)
-{
-    if (!m_running)
-    {
-        return;
-    }
-
-    m_activeConnection = connection;
-    m_connectionActive = false;
-    completeFailure(HealthCheckStatus::HostUnreachable);
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::completeSuccess()
-{
-    if (!m_running)
-    {
-        return;
-    }
-
-    m_result.success = true;
-    m_result.status = HealthCheckStatus::Success;
-    m_result.responseTime = millis() - m_startedAt;
-
-    m_running = false;
-    m_finished = true;
-    m_dnsPending = false;
-
-    Log.verbose(
-        "TCP provider: connected to %s:%u in %lu ms",
-        m_host,
-        static_cast<unsigned>(m_tcp.remote_port),
-        static_cast<unsigned long>(m_result.responseTime));
-
-    disconnectConnection();
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::completeFailure(HealthCheckStatus status)
-{
-    if (!m_running)
-    {
-        return;
-    }
-
-    m_result.success = false;
-    m_result.status = status;
-    m_result.responseTime = millis() - m_startedAt;
-
-    m_running = false;
-    m_finished = true;
-    m_dnsPending = false;
-
-    Log.verbose(
-        "TCP provider: failed to connect to %s:%u, status=%u, time=%lu ms",
-        m_host,
-        static_cast<unsigned>(m_tcp.remote_port),
-        static_cast<uint8_t>(m_result.status),
-        static_cast<unsigned long>(m_result.responseTime));
-
-    abortConnection();
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::abortConnection()
-{
-    if (!m_connectionActive ||
-        m_activeConnection == nullptr)
-    {
-        return;
-    }
-
-    m_connectionActive = false;
-
-    espconn_abort(m_activeConnection);
-
-    m_activeConnection = nullptr;
-}
-
-//=============================================================================
-
-void TcpHealthCheckProvider::disconnectConnection()
-{
-    if (!m_connectionActive ||
-        m_activeConnection == nullptr)
-    {
-        return;
-    }
-
-    m_connectionActive = false;
-
-    espconn_disconnect(m_activeConnection);
-
-    m_activeConnection = nullptr;
-}
-
-//=============================================================================
-
-HealthCheckStatus TcpHealthCheckProvider::statusFromError(sint8 error) const
-{
-    if (error == ESPCONN_TIMEOUT)
-    {
-        return HealthCheckStatus::Timeout;
-    }
-
-    if (error == ESPCONN_RTE)
-    {
-        return HealthCheckStatus::NetworkUnavailable;
-    }
-
-    return HealthCheckStatus::HostUnreachable;
-}
-
-//=============================================================================
-
 void TcpHealthCheckProvider::reset()
 {
-    abortConnection();
+    m_client.stop();
 
-    m_connection = {};
-    m_tcp = {};
-    m_resolvedAddress = {};
-    m_host[0] = '\0';
+    m_running = false;
+    m_finished = false;
 
     m_result.success = false;
     m_result.status = HealthCheckStatus::Error;
     m_result.responseTime = 0;
-
-    m_startedAt = 0;
-    m_timeoutMs = 0;
-
-    m_running = false;
-    m_finished = false;
-    m_dnsPending = false;
-    m_connectionActive = false;
-    m_activeConnection = nullptr;
 }

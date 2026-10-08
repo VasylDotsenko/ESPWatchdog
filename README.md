@@ -11,7 +11,7 @@
 Поточний release candidate:
 
 ```text
-1.1.0-rc.8-tcp-graceful-close
+1.1.0-rc.10-bounded-tcp-healthcheck
 ```
 
 ---

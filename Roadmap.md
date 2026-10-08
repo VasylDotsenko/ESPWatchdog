@@ -42,7 +42,18 @@ ESP Watchdog вже має робочий runtime для ESP8266 / WeMos D1 mini
 
 Поточний етап — **`1.0.0 Production`: 7-day long-run validation пройдено, baseline зафіксовано**.
 
-Активний release candidate: **`1.1.0-rc.8-tcp-graceful-close`**.
+Активний release candidate: **`1.1.0-rc.10-bounded-tcp-healthcheck`**.
+
+### RC.10 stability fix: bounded TCP HealthCheck
+
+- raw `espconn` callbacks вилучено після підтвердженого `ESPCONN_ISCONN (-15)`;
+- використовуємо підтримуваний Arduino `WiFiClient` з timeout slice `250 ms`;
+- required: підтвердити 10 success probes після reboot та доступність Dashboard при target outage.
+
+### RC.9 stability fix: TCP close state
+
+- `ESPCONN_ISCONN` після першого success probe усунуто explicit Closing state;
+- next probe очікує disconnect callback; fallback abort спрацьовує лише після `250 ms` без callback.
 
 ### RC.8 stability fix: graceful TCP close
 
@@ -645,7 +656,7 @@ URL: http://192.168.4.1/config/wifi
 
 ### 1.1.0 — Persistent Restart History
 
-Статус: `1.1.0-rc.8-tcp-graceful-close`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — підтвердити послідовні TCP probes після reboot та Dashboard/API availability під час target outage, після чого focused long-run validation rolling quota.
+Статус: `1.1.0-rc.10-bounded-tcp-healthcheck`; core persistence та Availability History hardware-verified 24.09.2026. Наступний крок — підтвердити послідовні TCP probes після reboot та Dashboard/API availability під час target outage, після чого focused long-run validation rolling quota.
 
 - restart history зберігається у LittleFS у `/restart-history.json`;
 - журнал обмежено десятьма останніми записами, тому розмір файла та RAM footprint стабільні;
